@@ -1,0 +1,4 @@
+LR,batch_size,epsilon_min,EPSILON,inputfile
+0.00001,64,0.05,3000,Ore blocks_small2478v3.xlsx
+0.000001,64,0.05,3000,Ore blocks_small2478v3.xlsx
+0.0000001,64,0.05,3000,Ore blocks_small2478v3.xlsx
