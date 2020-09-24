@@ -447,7 +447,7 @@ if __name__ == "__main__":
     plt.ylabel('Score')
     #plt.show()
     
-    scenario=str(f'{inputfile} test{test}, epsilon{epsilon_min}, lr{LR}, batch{batch_size}')
+    scenario=str(f'{inputfile} test{test}, dropout{dropout}, lr{LR}, batch{batch_size}')
     agent.model.save(f'{scenario}_model.h5')
     plt.savefig(f'fig_{scenario}.png')
     outputdf=pd.DataFrame(output)
