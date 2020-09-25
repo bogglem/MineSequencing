@@ -1,13 +1,12 @@
 LR,batch_size,epsilon_min,EPSILON,dropout,inputfile
+0.000001,64,0.05,3000,0,Ore blocks_easy10x10x8.xlsx
+0.000001,128,0.05,3000,0,Ore blocks_easy10x10x8.xlsx
+0.000001,256,0.05,3000,0,Ore blocks_easy10x10x8.xlsx
+0.000001,64,0.05,3000,0.1,Ore blocks_easy10x10x8.xlsx
 0.000001,128,0.05,3000,0.1,Ore blocks_easy10x10x8.xlsx
-0.000001,128,0.05,3000,0.2,Ore blocks_easy10x10x8.xlsx
-0.000001,128,0.05,3000,0.4,Ore blocks_easy10x10x8.xlsx
+0.000001,256,0.05,3000,0.1,Ore blocks_easy10x10x8.xlsx
+0.000001,64,0.05,3000,0.5,Ore blocks_easy10x10x8.xlsx
 0.000001,128,0.05,3000,0.5,Ore blocks_easy10x10x8.xlsx
-0.0000001,128,0.05,3000,0.1,Ore blocks_easy10x10x8.xlsx
-0.0000001,128,0.05,3000,0.2,Ore blocks_easy10x10x8.xlsx
-0.0000001,128,0.05,3000,0.4,Ore blocks_easy10x10x8.xlsx
-0.0000001,128,0.05,3000,0.5,Ore blocks_easy10x10x8.xlsx
-0.000001,128,0.05,3000,0.1,Ore blocks_easy6x6x4.xlsx
-0.000001,128,0.05,3000,0.2,Ore blocks_easy6x6x4.xlsx
-0.000001,128,0.05,3000,0.4,Ore blocks_easy6x6x4.xlsx
+0.000001,256,0.05,3000,0.5,Ore blocks_easy10x10x8.xlsx
+0.000001,64,0.05,3000,0.5,Ore blocks_easy6x6x4.xlsx
 0.000001,128,0.05,3000,0.5,Ore blocks_easy6x6x4.xlsx
