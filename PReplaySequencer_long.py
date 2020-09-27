@@ -22,7 +22,7 @@ import numpy as np
 from collections import deque
 from keras.models import Sequential
 #from keras.utils import normalize
-from keras.layers import Dense, Conv3D, MaxPooling3D, Flatten, Dropout
+from keras.layers import Dense, Conv3D, MaxPooling3D, Flatten, Dropout, BatchNormalization
 from keras.optimizers import Adam
 from keras.models import load_model
 from copy import deepcopy
@@ -31,18 +31,18 @@ from sklearn.preprocessing import MinMaxScaler
 #from tensorflow import Print
 
 
-LR=0.00001
-batch_size=64
-EPSINIT=1.0
-inputfile="Ore blocks_sandbox4x4x3v2.xlsx"
-epsilon_min=0.01
+LR=0.000001
+batch_size=128
+EPSINIT=3000.0
+inputfile="Ore blocks_easy10x10x8.xlsx"
+epsilon_min=0.05
 memcap=20000
 EPISODES = 200
-
-test='PER-dropout'
+dropout=0.5
+test='PERCNN-dropout'
 
 start=time.time()
-end=start+11.5*60*60
+end=start+72*60*60
 
 mined=-1
 
@@ -320,23 +320,23 @@ class DQNAgent:
         #else: a generator to produce such vector for 3D C
 #state_size[2]
             model = Sequential()
-            model.add(Conv3D(1, kernel_size=(1, 1, 1), activation='relu', kernel_initializer='he_uniform', input_shape=state_size, padding='valid'))
+            model.add(Conv3D(3, kernel_size=(1, 1, state_size[2]), activation='relu', kernel_initializer='he_uniform', input_shape=state_size, padding='valid'))
             #model.add(MaxPooling3D(pool_size=(1, 1, 1)))
             #model.add(Dropout(0.1))
-            #model.add(Conv3D(3, kernel_size=(3, 3, 3), strides=(2,2,2), activation='relu', kernel_initializer='he_uniform', padding='valid'))
+            model.add(Conv3D(6, kernel_size=(3, 3, 1), strides=(2,2,1), activation='relu', kernel_initializer='he_uniform', padding='valid'))
             #model.add(Dropout(0.1))
             #model.add(Conv3D(32, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform', padding='same'))
             #model.add(Dropout(0.1))
-            
+            #model.add(BatchNormalization())
             model.add(Flatten())    
 
             #model.add(Dense(64, activation='relu'))
             #model.add(Dropout(0.1))
             #model.add(Dense(24, input_dim=self.state_size, activation='relu'))
             model.add(Dense(128, activation='relu'))
-            model.add(Dropout(0.1))
+            model.add(Dropout(dropout))
             model.add(Dense(64, activation='relu'))
-            model.add(Dropout(0.1))
+            model.add(Dropout(dropout))
             #model.add(Dense(64, activation='relu'))
             #model.add(Dropout(0.5))
             model.add(Dense(self.action_size, activation='linear'))
@@ -400,9 +400,9 @@ if __name__ == "__main__":
     output=list()
     e=0
     #
-    #while time.time()<end:    
-    for e in range(EPISODES):
-      #  e+=1
+    while time.time()<end:    
+    #for e in range(EPISODES):
+        e+=1
         agent.state = env.reset()
 
         while True:
