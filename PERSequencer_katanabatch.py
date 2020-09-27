@@ -57,7 +57,7 @@ dropout=inputarray.loc[idx].dropout
 memcap=200000
 #EPISODES = 200
 
-test='PER'
+test='explormod'
 
 start=time.time()
 end=start+11.5*60*60
@@ -88,12 +88,14 @@ class environment:
         self.Jlen=self.Jmax-self.Jmin+1
         self.RLlen=self.RLmax-self.RLmin+1
         self.action_space=np.zeros((self.Ilen)*(self.Jlen))
+        self.actioncounter=np.zeros((self.Ilen)*(self.Jlen))
+        
         self.RL=self.RLlen-1
         self.channels = 3
         self.geo_array= np.zeros([self.Ilen, self.Jlen, self.RLlen, self.channels], dtype=float)
         self.actionlimit=np.ones([self.Ilen, self.Jlen])        
         self.turns=(self.RLlen*self.Ilen*self.Jlen)
-        
+        self.epsilonmod=np.zeros(self.turns)
         
       # normalising input space 
         
@@ -147,12 +149,15 @@ class environment:
         self.actcoords(action)
         
         if (self.turncounter<self.turns): #& (data2.empty!=True): 
-                       
+            
             self.actionslist.append(action)
             self.evaluate()
-            self.update()
-            self.turncounter+=1      
-               
+            self.update()     
+            self.actioncounter[action]+=1
+            #if max(self.actioncounter)>self.RLlen:
+            self.epsilonmod[self.turncounter]=round(max((self.actioncounter))/(self.RLlen),ndigits=2)
+            self.turncounter+=1
+            
         else: 
             self.terminal =True
                             
@@ -207,7 +212,7 @@ class environment:
         self.i=-1
         self.j=-1
         self.actionslist=list()
-        
+        self.actioncounter=np.zeros((self.Ilen)*(self.Jlen))
         
         return self.ob_sample
 
@@ -336,26 +341,27 @@ class DQNAgent:
          #   model=load_model('model.h5')
          #episodic_loss(state,action,self.memory)
         #else: a generator to produce such vector for 3D C
-
+#state_size[2]
             model = Sequential()
             model.add(Conv3D(1, kernel_size=(1, 1, 1), activation='relu', kernel_initializer='he_uniform', input_shape=state_size, padding='valid'))
             #model.add(MaxPooling3D(pool_size=(1, 1, 1)))
             #model.add(Dropout(0.1))
-            #model.add(Conv3D(16, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform', padding='same'))
+            #model.add(Conv3D(3, kernel_size=(3, 3, 3), strides=(2,2,2), activation='relu', kernel_initializer='he_uniform', padding='valid'))
             #model.add(Dropout(0.1))
             #model.add(Conv3D(32, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform', padding='same'))
             #model.add(Dropout(0.1))
             
-            model.add(Flatten())            
+            model.add(Flatten())    
 
             #model.add(Dense(64, activation='relu'))
             #model.add(Dropout(0.1))
-            #model.add(Dense(128, input_dim=self.state_size, activation='relu'))
+            #model.add(Dense(24, input_dim=self.state_size, activation='relu'))
             model.add(Dense(128, activation='relu'))
             model.add(Dropout(dropout))
-            model.add(Dense(128, activation='relu'))
+            model.add(Dense(64, activation='relu'))
             model.add(Dropout(dropout))
-            #model.add(Dropout(0.1))
+            #model.add(Dense(64, activation='relu'))
+            #model.add(Dropout(0.5))
             model.add(Dense(self.action_size, activation='linear'))
             #episodic_loss(state,action,self.memory)
             model.compile(loss='mse',
@@ -371,14 +377,23 @@ class DQNAgent:
         self.memory.add(TDerror,[state, action, reward, next_state, done])
         
  
-    def act(self, state, actionlimit):
+    def act(self, state, actionlimit, epsilonmod):
         #for q_ (PER)
         act_values = self.model.predict(state)
-        
+
         if np.random.rand() <= self.epsilon:
-            action = randomact(actionlimit) #random.randrange(self.action_size)
-        else: 
-            action = np.argmax(act_values[0])
+            action = randomact(actionlimit) #random.randrange(self.action_size)  
+  
+        elif epsilonmod>1:
+            
+            if np.random.rand() <= 0.5:
+                action = randomact(actionlimit) #random.randrange(self.action_size)
+            else: 
+                action = np.argmax(act_values[0])        
+               
+        elif epsilonmod<=1:
+                   
+                action = np.argmax(act_values[0])
         
         q_= max(act_values[0])
         return action , q_  # returns action and q value
@@ -424,18 +439,18 @@ if __name__ == "__main__":
 
         while True:
             
-            agent.action, q_ = agent.act(agent.state, env.actionlimit)
+            agent.action, q_ = agent.act(agent.state, env.actionlimit, env.epsilonmod[env.turncounter-1])
             next_state, reward, done = env.step(agent.action)
             agent.memorize(agent.state, agent.action, reward, next_state, done, q_)
             agent.state = next_state
             agent.replay()
             if done:
-                #print("episode: {}/{}, score: {}, e: {:.2}, actions: {}"
-                #      .format(e, EPISODES, env.discountedmined, agent.epsilon, env.actionslist))
+                #print("episode: {}/{}, score: {}, e: {:.2}, actions: {}, expmod: {}"
+                #      .format(e, EPISODES, env.discountedmined, agent.epsilon, env.actionslist, env.epsilonmod))
                 
                 episodelist.append(e)
                 scorelist.append(env.discountedmined)
-                output.append([e,env.discountedmined,agent.epsilon, env.actionslist])
+                output.append([e,env.discountedmined,agent.epsilon, env.actionslist, env.epsilonmod])
                 
                 break
             #if len(agent.memory.minibatch()) > agent.batch_size:
