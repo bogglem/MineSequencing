@@ -57,7 +57,7 @@ dropout=inputarray.loc[idx].dropout
 memcap=200000
 #EPISODES = 200
 
-test='explormod'
+test='exmod-TDreplay'
 
 start=time.time()
 end=start+11.5*60*60
@@ -443,18 +443,18 @@ if __name__ == "__main__":
             next_state, reward, done = env.step(agent.action)
             agent.memorize(agent.state, agent.action, reward, next_state, done, q_)
             agent.state = next_state
-            
+                
             if done:
                 #print("episode: {}/{}, score: {}, e: {:.2}, actions: {}, expmod: {}"
                 #      .format(e, EPISODES, env.discountedmined, agent.epsilon, env.actionslist, env.epsilonmod))
-                agent.replay()    
+                
                 episodelist.append(e)
                 scorelist.append(env.discountedmined)
                 output.append([e,env.discountedmined,agent.epsilon, env.actionslist, deepcopy(env.epsilonmod)])
                 
                 break
             #if len(agent.memory.minibatch()) > agent.batch_size:
-                
+            agent.replay() 
     
 #    agent.model.save("model.h5")
     plt.plot(episodelist,scorelist)
