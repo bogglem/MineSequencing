@@ -356,9 +356,9 @@ class DQNAgent:
             #model.add(Dense(64, activation='relu'))
             #model.add(Dropout(0.1))
             #model.add(Dense(24, input_dim=self.state_size, activation='relu'))
-            model.add(Dense(128, activation='relu'))
+            model.add(Dense(256, activation='relu'))
             model.add(Dropout(dropout))
-            model.add(Dense(64, activation='relu'))
+            model.add(Dense(256, activation='relu'))
             model.add(Dropout(dropout))
             #model.add(Dense(64, activation='relu'))
             #model.add(Dropout(0.5))
@@ -384,14 +384,14 @@ class DQNAgent:
         if np.random.rand() <= self.epsilon:
             action = randomact(actionlimit) #random.randrange(self.action_size)  
   
-        elif epsilonmod>1:
+        elif epsilonmod>2:
             
             if np.random.rand() <= 0.5:
                 action = randomact(actionlimit) #random.randrange(self.action_size)
             else: 
                 action = np.argmax(act_values[0])        
                
-        elif epsilonmod<=1:
+        elif epsilonmod<=2:
                    
                 action = np.argmax(act_values[0])
         
@@ -443,14 +443,14 @@ if __name__ == "__main__":
             next_state, reward, done = env.step(agent.action)
             agent.memorize(agent.state, agent.action, reward, next_state, done, q_)
             agent.state = next_state
-            agent.replay()
+            
             if done:
                 #print("episode: {}/{}, score: {}, e: {:.2}, actions: {}, expmod: {}"
                 #      .format(e, EPISODES, env.discountedmined, agent.epsilon, env.actionslist, env.epsilonmod))
-                
+                agent.replay()    
                 episodelist.append(e)
                 scorelist.append(env.discountedmined)
-                output.append([e,env.discountedmined,agent.epsilon, env.actionslist, env.epsilonmod])
+                output.append([e,env.discountedmined,agent.epsilon, env.actionslist, deepcopy(env.epsilonmod)])
                 
                 break
             #if len(agent.memory.minibatch()) > agent.batch_size:

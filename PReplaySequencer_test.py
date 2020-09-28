@@ -32,7 +32,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 
 LR=0.00001
-batch_size=64
+batch_size=256
 EPSINIT=1.0
 inputfile="Ore blocks_sandbox4x4x3v2.xlsx"
 epsilon_min=0.01
@@ -425,14 +425,14 @@ if __name__ == "__main__":
             next_state, reward, done = env.step(agent.action)
             agent.memorize(agent.state, agent.action, reward, next_state, done, q_)
             agent.state = next_state
-            agent.replay()
+            
             if done:
                 print("episode: {}/{}, score: {}, e: {:.2}, actions: {}, expmod: {}"
                       .format(e, EPISODES, env.discountedmined, agent.epsilon, env.actionslist, env.epsilonmod))
-                
+                agent.replay()    
                 episodelist.append(e)
                 scorelist.append(env.discountedmined)
-                output.append([e,env.discountedmined,agent.epsilon, env.actionslist, env.epsilonmod])
+                output.append([e,env.discountedmined,agent.epsilon, env.actionslist, deepcopy(env.epsilonmod)])
                 
                 break
             #if len(agent.memory.minibatch()) > agent.batch_size:
