@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 """
+Created on Wed Sep 23 19:17:43 2020
+
+@author: Tim Pelech
+"""
+
+# -*- coding: utf-8 -*-
+"""
 Created on Tue Aug 25 11:52:39 2020
 
 @author: Tim Pelech
@@ -13,32 +20,43 @@ Created on Sat Aug 22 12:25:04 2020
 """
 import pandas as pd
 
-
 # -*- coding: utf-8 -*-
+import sys
 import time
 import random
 import matplotlib.pyplot as plt
 import numpy as np
-from collections import deque
+#from collections import deque
 from keras.models import Sequential, clone_model, load_model
 #from keras.utils import normalize
 from keras.layers import Dense, Conv3D, MaxPooling3D, Flatten, Dropout
 from keras.optimizers import Adam
 from copy import deepcopy
-import keras.backend as tf
+#import keras.backend as tf
 from sklearn.preprocessing import MinMaxScaler
 #from tensorflow import Print
 
 
-LR=0.00001
-batch_size=128
-EPSINIT=1.0
-inputfile="Ore blocks_sandbox4x4x3v2.xlsx"
-epsilon_min=0.01
-memcap=20000
-EPISODES = 200
-dropout=0.2
-test='PER-dropout'
+idx=int(sys.argv[1])
+
+inputarray=pd.read_csv('PER_job_input_array.csv')
+ 
+LR=inputarray.loc[idx].LR
+batch_size=inputarray.loc[idx].batch_size
+EPSINIT=inputarray.loc[idx].EPSILON
+inputfile=inputarray.loc[idx].inputfile
+epsilon_min=inputarray.loc[idx].epsilon_min
+dropout=inputarray.loc[idx].dropout
+
+#LR=0.0001
+#batch_size=32
+#EPSINIT=100.0
+#inputfile="Ore blocks_easy9x9x7.xlsx"
+#epsilon_min=0.01
+memcap=200000
+#EPISODES = 200
+
+test='new_Q'
 
 start=time.time()
 end=start+11.5*60*60
@@ -337,9 +355,9 @@ class DQNAgent:
             #model.add(Dense(64, activation='relu'))
             #model.add(Dropout(0.1))
             #model.add(Dense(24, input_dim=self.state_size, activation='relu'))
-            model.add(Dense(128, activation='relu'))
+            model.add(Dense(256, activation='relu'))
             model.add(Dropout(dropout))
-            model.add(Dense(64, activation='relu'))
+            model.add(Dense(256, activation='relu'))
             model.add(Dropout(dropout))
             #model.add(Dense(64, activation='relu'))
             #model.add(Dropout(0.5))
@@ -365,14 +383,14 @@ class DQNAgent:
         if np.random.rand() <= self.epsilon:
             action = randomact(actionlimit) #random.randrange(self.action_size)  
   
-        elif epsilonmod>1:
+        elif epsilonmod>2:
             
             if np.random.rand() <= 0.5:
                 action = randomact(actionlimit) #random.randrange(self.action_size)
             else: 
                 action = np.argmax(act_values[0])        
                
-        elif epsilonmod<=1:
+        elif epsilonmod<=2:
                    
                 action = np.argmax(act_values[0])
         
@@ -380,12 +398,12 @@ class DQNAgent:
         return action , q_  # returns action and q value
 
     def replay(self, stationary_model):
-        minibatch = self.memory.minibatch(self.batch_size) #random.sample(self.memory, self.batch_size)
+        minibatch = self.memory.minibatch(self.batch_size)#random.sample(self.memory, self.batch_size)
         for state, action, reward, next_state, done in minibatch:
             q_update = reward
             if not done:
-                q_update = (reward + self.gamma *
-                          np.amax(stationary_model.predict(next_state)[0]))
+                q_update = np.amax(stationary_model.predict(state)[0])+LR*(reward + self.gamma * 
+                                  np.amax(stationary_model.predict(next_state)[0])-np.amax(stationary_model.predict(state)[0]))
             q_values = stationary_model.predict(state)
             q_values[0][action] = q_update
             self.model.fit(state, q_values, epochs=1, verbose=0)
@@ -405,7 +423,6 @@ if __name__ == "__main__":
     
     action_size = len(env.action_space)    #.n
     agent = DQNAgent(state_size, action_size)
-    
     #agent.load("model.h5")
     done = False
     
@@ -414,13 +431,11 @@ if __name__ == "__main__":
     output=list()
     e=0
     #
-    #while time.time()<end:    
-    for e in range(EPISODES):
-      #  e+=1
+    while time.time()<end:    
+    #for e in range(EPISODES):
+        e+=1
         agent.state = env.reset()
-         
         stationary_model=clone_model(agent.model)
-
 
         while True:
             
@@ -428,19 +443,18 @@ if __name__ == "__main__":
             next_state, reward, done = env.step(agent.action)
             agent.memorize(agent.state, agent.action, reward, next_state, done, q_)
             agent.state = next_state
-            agent.replay(stationary_model)
-            
+                
             if done:
-                print("episode: {}/{}, score: {}, e: {:.2}, actions: {}, expmod: {}"
-                      .format(e, EPISODES, env.discountedmined, agent.epsilon, env.actionslist, env.epsilonmod))
-                    # replay compares against a stationary model
+                #print("episode: {}/{}, score: {}, e: {:.2}, actions: {}, expmod: {}"
+                #      .format(e, EPISODES, env.discountedmined, agent.epsilon, env.actionslist, env.epsilonmod))
+                
                 episodelist.append(e)
                 scorelist.append(env.discountedmined)
                 output.append([e,env.discountedmined,agent.epsilon, env.actionslist, deepcopy(env.epsilonmod)])
                 
                 break
             #if len(agent.memory.minibatch()) > agent.batch_size:
-                
+            agent.replay(stationary_model) 
     
 #    agent.model.save("model.h5")
     plt.plot(episodelist,scorelist)
@@ -448,7 +462,7 @@ if __name__ == "__main__":
     plt.ylabel('Score')
     #plt.show()
     
-    scenario=str(f'{inputfile} test{test}, epsilon{epsilon_min}, lr{LR}, batch{batch_size}')
+    scenario=str(f'{inputfile} test{test}, dropout{dropout}, lr{LR}, batch{batch_size}')
     agent.model.save(f'{scenario}_model.h5')
     plt.savefig(f'fig_{scenario}.png')
     outputdf=pd.DataFrame(output)

@@ -30,12 +30,12 @@ from sklearn.preprocessing import MinMaxScaler
 #from tensorflow import Print
 
 
-LR=0.00001
-batch_size=128
+LR=0.0001
+batch_size=64
 EPSINIT=1.0
 inputfile="Ore blocks_sandbox4x4x3v2.xlsx"
 epsilon_min=0.01
-memcap=20000
+memcap=10000
 EPISODES = 200
 dropout=0.2
 test='PER-dropout'
@@ -384,8 +384,8 @@ class DQNAgent:
         for state, action, reward, next_state, done in minibatch:
             q_update = reward
             if not done:
-                q_update = (reward + self.gamma *
-                          np.amax(stationary_model.predict(next_state)[0]))
+                q_update = np.amax(stationary_model.predict(state)[0])+LR*(reward + self.gamma * 
+                                  np.amax(stationary_model.predict(next_state)[0])-np.amax(stationary_model.predict(state)[0]))
             q_values = stationary_model.predict(state)
             q_values[0][action] = q_update
             self.model.fit(state, q_values, epochs=1, verbose=0)
