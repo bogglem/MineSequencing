@@ -20,17 +20,19 @@ import random
 import matplotlib.pyplot as plt
 import numpy as np
 from collections import deque
+import tensorflow as tf
+from keras import Model
 from keras.models import Sequential, clone_model, load_model
-#from keras.utils import normalize
 from keras.layers import Dense, Conv3D, MaxPooling3D, Flatten, Dropout
 from keras.optimizers import Adam
 from copy import deepcopy
-import keras.backend as tf
+import keras.backend as K
 from sklearn.preprocessing import MinMaxScaler
 #from tensorflow import Print
 
-
-LR=0.00001
+gamma=0.95
+LR_actor=0.00001
+LR_critic=0.001
 batch_size=64
 EPSINIT=10.0
 inputfile="Ore blocks_easy6x6x4.xlsx"
@@ -39,12 +41,14 @@ memcap=10000
 EPISODES = 200
 dropout=0
 test='no-expmod'
-gamma=0.97
 
 start=time.time()
-end=start+60.5*60*60
+end=start+11.5*60*60
 
 mined=-1
+
+#sess = tf.Session()
+#sess.run(tf.initialize_all_variables())
 
 class environment: 
 
@@ -132,12 +136,12 @@ class environment:
         
         if (self.turncounter<self.turns): #& (data2.empty!=True): 
             
-            self.actionslist.append(action)
+            #self.actionslist.append(action)
             self.evaluate()
             self.update()     
-            self.actioncounter[action]+=1
+            #self.actioncounter[action]+=1
             #if max(self.actioncounter)>self.RLlen:
-            self.epsilonmod[self.turncounter]=round(max((self.actioncounter))/(self.RLlen),ndigits=2)
+            #self.epsilonmod[self.turncounter]=round(max((self.actioncounter))/(self.RLlen),ndigits=2)
             self.turncounter+=1
             
         else: 
@@ -171,7 +175,7 @@ class environment:
                 self.termimal=True
            
         self.turnore=(H2O*Tonnes*State)
-        self.discountedmined+=self.turnore*(self.turns-self.turncounter)/self.turns
+        self.discountedmined+=self.turnore*self.gamma^(self.turncounter)
         
     def update(self):
     
@@ -204,194 +208,57 @@ state = list([1])
 action= list([1])
 #memory=list([1])
 
-class SumTree:
-    write = 0
-
-    def __init__(self, memcap):
-        self.capacity = memcap
-        self.tree = np.zeros( 2*self.capacity - 1 )
-        self.data = np.zeros( self.capacity, dtype=object )
-
-    def _propagate(self, idx, delta):
-        parent = (idx - 1) // 2
-
-        self.tree[parent] += delta
-
-        if parent != 0:
-            self._propagate(parent, delta)
-
-    def _retrieve(self, idx, s):
-        left = 2 * idx + 1
-        right = left + 1
-
-        if left >= len(self.tree):
-            return idx
-
-        if s <= self.tree[left]:
-            return self._retrieve(left, s)
-        else:
-            return self._retrieve(right, s-self.tree[left])
-
-    def total(self):
-        return self.tree[0]
-
-    def add(self, p, data):
-        idx = self.write + self.capacity - 1
-
-        self.data[self.write] = data
-        self.update(idx, p)
-
-        self.write += 1
-        if self.write >= self.capacity:
-            self.write = 0
-
-    def update(self, idx, p):
-        delta = p - self.tree[idx]
-
-        self.tree[idx] = p
-        self._propagate(idx, delta)
-
-    def get(self, s):
-        idx = self._retrieve(0, s)
-        dataIdx = idx - self.capacity + 1
-
-        return (idx, self.tree[idx], self.data[dataIdx])
-
-
-class Memory:   # stored as ( s, a, r, s_ ) in SumTree
-    e = 0.01
-    a = 0.6
-
-    def __init__(self, memcap):
-        self.tree = SumTree(memcap)
-
-    def _getPriority(self, TDerror):
-        return (TDerror + self.e) ** self.a
-
-    def add(self, TDerror, sample):
-        p = self._getPriority(TDerror)
-        self.tree.add(p, sample) 
-
-    def minibatch(self, batch_size):
-        batch = []
-        segment = self.tree.total() / batch_size
-
-        for i in range(batch_size):
-            a = segment * i
-            b = segment * (i + 1)
-
-            s = random.uniform(a, b)
-            (idx, p, data) = self.tree.get(s)
-            batch.append(data)
-            #print(p)
-        return batch
-
-    def update(self, idx, TDerror):
-        p = self._getPriority(TDerror)
-        self.tree.update(idx, p)
-        
-    def batchfull(self, batch_size):
-        
-        if self.tree.total()>batch_size:
-            isfull = True
-        else:
-            isfull = False
-            
-        return isfull
-        
-        
-
-
-def randomact(actionlimit):
-        
-    actnotemptydf=pd.DataFrame(actionlimit.flatten())
-    actnotemptydf.columns=['a']
-    b=actnotemptydf[actnotemptydf.a==1]
-    actnotempty=list(b.index)
-    act=random.sample(actnotempty,1)[0]
-          
-    return act
-
 
 class DQNAgent:  
         
     def __init__(self, state_size, action_size):
 
         self.action_size = action_size
-        self.memory = Memory(memcap)
+        self.memory = deque(maxlen=memcap)
         self.gamma = gamma   # discount rate
-        self.epsilon = EPSINIT  # exploration rate
-        self.epsilon_min = epsilon_min
-        self.epsilon_decay = 0.995
-        self.learning_rate = LR
         self.batch_size = batch_size
-        self.model = self.build_model()
+        self.VCritic = VCritic.build_Critic(state_size)
+        self.PActor= PActor.build_Actor(self.action_size, state_size)
+
+
+    def memorize(self, state, action, reward, next_state, done):
+     
+        self.memory.append(state, action, reward, next_state, done)
         
-    def build_model(self):
-        # Neural Net for Deep-Q learning Model
-
-        #if os.listdir().count('model.h5')>0:
-         #   model=load_model('model.h5')
-         #episodic_loss(state,action,self.memory)
-        #else: a generator to produce such vector for 3D C
-#state_size[2]
-            model = Sequential()
-            model.add(Conv3D(1, kernel_size=(1, 1, 1), activation='relu', kernel_initializer='he_uniform', input_shape=state_size, padding='valid'))
-            #model.add(MaxPooling3D(pool_size=(1, 1, 1)))
-            #model.add(Dropout(0.1))
-            #model.add(Conv3D(3, kernel_size=(3, 3, 3), strides=(2,2,2), activation='relu', kernel_initializer='he_uniform', padding='valid'))
-            #model.add(Dropout(0.1))
-            #model.add(Conv3D(32, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform', padding='same'))
-            #model.add(Dropout(0.1))
-            
-            model.add(Flatten())    
-
-            #model.add(Dense(64, activation='relu'))
-            #model.add(Dropout(0.1))
-            #model.add(Dense(24, input_dim=self.state_size, activation='relu'))
-            model.add(Dense(64, activation='relu'))
-            model.add(Dropout(dropout))
-            model.add(Dense(64, activation='relu'))
-            #model.add(Dropout(dropout))
-            #model.add(Dense(64, activation='relu'))
-            #model.add(Dropout(0.5))
-            model.add(Dense(self.action_size, activation='linear'))
-            #episodic_loss(state,action,self.memory)
-            model.compile(loss='mse',
-                      optimizer=Adam(lr=self.learning_rate))
-
         
-            return model
+    
+    def a2c_replay(self):
+        minibatch = random.sample(self.memory,self.batch_size)
+        #X = []
+        #y = []
+        #advantages = np.zeros(shape=(batch_size, action_size))
+        for cur_state, action, reward, next_state, done in minibatch:
+             
+            if done:
+                # If last state then advatage A(s, a) = reward_t - V(s_t)
+                advantage = reward - self.Critic.predict(cur_state)
+            else:
+                # If not last state the advantage A(s_t, a_t) = reward_t + DISCOUNT * V(s_(t+1)) - V(s_t)
+                next_reward = self.Critic.predict(next_state)
+                advantage = reward + self.gamma * next_reward - self.Critic.predict(cur_state)
+                # Updating reward to trian state value fuction V(s_t)
+                reward = reward + self.gamma * next_reward
 
-    def memorize(self, state, action, reward, next_state, done, q_):
+            self.Actor.policyupdate(cur_state, advantage)
+            self.Critic.fit(cur_state, reward, epochs=1, verbose=0)
 
-        TDerror = abs(reward-q_)
-        
-        self.memory.add(TDerror,[state, action, reward, next_state, done])
-        
- 
-    def act(self, state, actionlimit, epsilonmod):
+    
+    def act(self, state):
         #for q_ (PER)
-        act_values = self.model.predict(state)
-
-        if np.random.rand() <= self.epsilon:
-            action = randomact(actionlimit) #random.randrange(self.action_size)  
-  
-        elif epsilonmod>2:
-            
-            if np.random.rand() <= 0.5:
-                action = randomact(actionlimit) #random.randrange(self.action_size)
-            else: 
-                action = np.argmax(act_values[0])        
-               
-        else:
-                   
-            action = np.argmax(act_values[0])
+        action_probs = self.Actor.predict(state)
+        critic_v = self.Critic.predict(state)
         
-        q_= max(act_values[0])
-        return action , q_  # returns action and q value
+        action = np.random.choice(self.action_size, p=np.squeeze(action_probs))
+        
+        
+        return action, critic_v # returns action and critic value
 
-    def replay(self, stationary_model):
+    def replay(self):
         minibatch = self.memory.minibatch(self.batch_size) #random.sample(self.memory, self.batch_size)
         for state, action, reward, next_state, done in minibatch:
             q_target = reward
@@ -411,6 +278,70 @@ class DQNAgent:
 #        self.model.save_weights(name)
 
 
+
+
+class VCritic:
+
+    def __init__(self, state_size):
+        self.learning_rate=LR_critic
+
+    def build_Critic(self, state_size):
+
+            model = Sequential()
+            model.add(Conv3D(1, kernel_size=(1, 1, 1), activation='relu', kernel_initializer='he_uniform', input_shape=state_size, padding='valid'))
+            model.add(Flatten())    
+            model.add(Dense(64, activation='relu'))
+            model.add(Dropout(dropout))
+            model.add(Dense(1, activation='linear'))
+            model.compile(loss='mse',
+                      optimizer=Adam(lr=LR_critic))
+
+            return model    
+    
+class PActor:
+    
+    def __init__(self, action_size, state_size):
+        self.action_size = action_size
+        self.state_size = state_size
+        # setting the our created session as default session
+        self.model = self.create_model()
+
+    def build_Actor(self, state_size):
+        model=Sequential()
+        model.add(Conv3D(1, kernel_size=(1, 1, 1), activation='relu', kernel_initializer='he_uniform', input_shape=state_size, padding='valid'))
+        model.add(Flatten())    
+        model.add(Dense(64, activation='relu'))
+        model.add(Dropout(dropout))
+        model.add(Dense(1, activation='softmax'))
+        model.compile(loss='mse',
+                  optimizer=Adam(lr=LR_actor))
+        return model
+    
+    @tf.function
+    def policyupdate(self, cur_state, advantage):
+        
+        # Implementing 
+        # grad(J(actor_weights)) = sum_(t=1, T-1)[ grad(log(pi(at | st, actor_weights)) * Advantaged(st, at), actor_weights) ]
+        # Placeholder for advantage values.
+      
+        model_weights = self.model.trainable_weights
+        # Adding small number inside log to avoid log(0) = -infinity
+        log_prob = tf.math.log(self.output + 10e-10)
+        # Multiply log by -1 to convert the optimization problem as minimization problem.
+        # This step is essential because apply_gradients always do minimization.
+        neg_log_prob = tf.multiply(log_prob, -1)
+        # Calulate and update the weights of the model to optimize the actor
+        actor_gradients = tf.gradients(neg_log_prob, model_weights, advantage)
+        grads = zip(actor_gradients, model_weights)        
+        
+        tf.train.AdamOptimizer(LR_actor).apply_gradients(grads)
+        
+
+
+
+
+
+
 if __name__ == "__main__":
     env = environment()
     state_size = env.geo_array.shape#[0]
@@ -426,26 +357,26 @@ if __name__ == "__main__":
     output=list()
     e=0
     #
-    while time.time()<end:    
-    #for e in range(EPISODES):
+    #while time.time()<end:    
+    for e in range(EPISODES):
       #  e+=1
         agent.state = env.reset()
          
-        stationary_model=clone_model(agent.model)
+        #stationary_model=clone_model(agent.model)
 
 
         while True:
             
-            agent.action, q_ = agent.act(agent.state, env.actionlimit, env.epsilonmod[env.turncounter-1])
+            agent.action, critic_v = agent.act(agent.state) #, env.actionlimit
             next_state, reward, done = env.step(agent.action)
-            agent.memorize(agent.state, agent.action, reward, next_state, done, q_)
+            agent.memorize(agent.state, agent.action, reward, next_state, done)
             agent.state = next_state
-            if agent.memory.batchfull(agent.batch_size) == True:
-                agent.replay(stationary_model)
+            if len(agent.memory)>= agent.batch_size:
+                agent.a2c_replay()
             
             if done:
-                print("episode: {}/{}, score: {}, e: {:.2}, actions: {}, expmod: {}"
-                      .format(e, EPISODES, env.discountedmined, agent.epsilon, env.actionslist, env.epsilonmod))
+                print("episode: {}/{}, score: {}, e: {:.2}, actions: {}"
+                      .format(e, EPISODES, env.discountedmined, agent.epsilon, env.actionslist))
                     # replay compares against a stationary model
                 episodelist.append(e)
                 scorelist.append(env.discountedmined)
