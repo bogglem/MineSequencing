@@ -428,7 +428,7 @@ if __name__ == "__main__":
     #
     while time.time()<end:    
     #for e in range(EPISODES):
-      #  e+=1
+        e+=1
         agent.state = env.reset()
          
         stationary_model=clone_model(agent.model)
@@ -444,8 +444,8 @@ if __name__ == "__main__":
                 agent.replay(stationary_model)
             
             if done:
-                print("episode: {}/{}, score: {}, e: {:.2}, actions: {}, expmod: {}"
-                      .format(e, EPISODES, env.discountedmined, agent.epsilon, env.actionslist, env.epsilonmod))
+                #print("episode: {}/{}, score: {}, e: {:.2}, actions: {}, expmod: {}"
+                 #     .format(e, EPISODES, env.discountedmined, agent.epsilon, env.actionslist, env.epsilonmod))
                     # replay compares against a stationary model
                 episodelist.append(e)
                 scorelist.append(env.discountedmined)
