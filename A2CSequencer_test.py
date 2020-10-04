@@ -20,10 +20,10 @@ import random
 import matplotlib.pyplot as plt
 import numpy as np
 from collections import deque
-import tensorflow as tf
+#import tensorflow as tf
 from keras import Model
 from keras.models import Sequential, clone_model, load_model
-from keras.layers import Dense, Conv3D, MaxPooling3D, Flatten, Dropout
+from keras.layers import Dense, Conv3D, MaxPooling3D, Flatten, Dropout, Input
 from keras.optimizers import Adam
 from copy import deepcopy
 import keras.backend as K
@@ -47,9 +47,6 @@ end=start+11.5*60*60
 
 mined=-1
 
-#sess = tf.Session()
-#sess.run(tf.initialize_all_variables())
-
 class environment: 
 
     def __init__(self):
@@ -63,7 +60,7 @@ class environment:
         self.i=-1
         self.j=-1
         self.terminal=False
-        
+        self.gamma=gamma
         self.Imin=self.data._I.min()
         self.Imax=self.data._I.max()
         self.Jmin=self.data._J.min()
@@ -175,7 +172,7 @@ class environment:
                 self.termimal=True
            
         self.turnore=(H2O*Tonnes*State)
-        self.discountedmined+=self.turnore*self.gamma^(self.turncounter)
+        self.discountedmined+=self.turnore*self.gamma**(self.turncounter)
         
     def update(self):
     
@@ -217,13 +214,13 @@ class DQNAgent:
         self.memory = deque(maxlen=memcap)
         self.gamma = gamma   # discount rate
         self.batch_size = batch_size
-        self.VCritic = VCritic.build_Critic(state_size)
-        self.PActor= PActor.build_Actor(self.action_size, state_size)
+        self.VCritic = VCritic(state_size).model
+        self.PActor= PActor(self.action_size, state_size).model
 
 
     def memorize(self, state, action, reward, next_state, done):
      
-        self.memory.append(state, action, reward, next_state, done)
+        self.memory.append((state, action, reward, next_state, done))
         
         
     
@@ -236,40 +233,28 @@ class DQNAgent:
              
             if done:
                 # If last state then advatage A(s, a) = reward_t - V(s_t)
-                advantage = reward - self.Critic.predict(cur_state)
+                advantage = reward - self.VCritic.predict(cur_state)
             else:
                 # If not last state the advantage A(s_t, a_t) = reward_t + DISCOUNT * V(s_(t+1)) - V(s_t)
-                next_reward = self.Critic.predict(next_state)
-                advantage = reward + self.gamma * next_reward - self.Critic.predict(cur_state)
+                next_reward = self.VCritic.predict(next_state)
+                advantage = reward + self.gamma * next_reward - self.VCritic.predict(cur_state)
                 # Updating reward to trian state value fuction V(s_t)
                 reward = reward + self.gamma * next_reward
-
-            self.Actor.policyupdate(cur_state, advantage)
-            self.Critic.fit(cur_state, reward, epochs=1, verbose=0)
+                policyupdate=[action, advantage]
+                
+            self.PActor.fit(cur_state, [policyupdate])
+            self.VCritic.fit(cur_state, reward, epochs=1, verbose=0)
 
     
     def act(self, state):
         #for q_ (PER)
-        action_probs = self.Actor.predict(state)
-        critic_v = self.Critic.predict(state)
+        action_probs = self.PActor.predict(state)
+        critic_v = self.VCritic.predict(state)
         
         action = np.random.choice(self.action_size, p=np.squeeze(action_probs))
         
         
         return action, critic_v # returns action and critic value
-
-    def replay(self):
-        minibatch = self.memory.minibatch(self.batch_size) #random.sample(self.memory, self.batch_size)
-        for state, action, reward, next_state, done in minibatch:
-            q_target = reward
-            if not done:
-                q_target = (reward + self.gamma *
-                                  np.amax(self.model.predict(next_state)[0]))
-            q_values = self.model.predict(state)
-            q_values[0][action] = q_target
-            self.model.fit(state, q_values, epochs=1, verbose=0)
-        if self.epsilon > self.epsilon_min:
-            self.epsilon *= self.epsilon_decay
 
 #    def load(self, name):
 #        self.model.load_weights(name)
@@ -284,64 +269,58 @@ class VCritic:
 
     def __init__(self, state_size):
         self.learning_rate=LR_critic
+        self.state_size=state_size
+        self.model = self.build_Critic()
 
-    def build_Critic(self, state_size):
+    def build_Critic(self):
 
-            model = Sequential()
+            model=Sequential()
             model.add(Conv3D(1, kernel_size=(1, 1, 1), activation='relu', kernel_initializer='he_uniform', input_shape=state_size, padding='valid'))
             model.add(Flatten())    
             model.add(Dense(64, activation='relu'))
             model.add(Dropout(dropout))
             model.add(Dense(1, activation='linear'))
+            
+            #model = Model(input=[inputl], output=[output])
             model.compile(loss='mse',
                       optimizer=Adam(lr=LR_critic))
 
             return model    
-    
+
 class PActor:
     
     def __init__(self, action_size, state_size):
         self.action_size = action_size
         self.state_size = state_size
         # setting the our created session as default session
-        self.model = self.create_model()
+        self.model = self.build_Actor() 
+    
+    def build_Actor(self):
+       
+        def policy_update(y_true, y_pred):
+            action_true = y_true[0]
+            advantage=y_true[1]
+            aprob = K.clip(y_pred, 1e-8, 1-1e-8)
+            aprob_i=K.gather(aprob,action_true).numpy()
+            log_aprob = K.log(aprob_i)
+            loss=K.sum(-log_aprob*advantage)
+            return loss
 
-    def build_Actor(self, state_size):
         model=Sequential()
         model.add(Conv3D(1, kernel_size=(1, 1, 1), activation='relu', kernel_initializer='he_uniform', input_shape=state_size, padding='valid'))
-        model.add(Flatten())    
+        #Input(shape=[1])
+        model.add(Flatten())
         model.add(Dense(64, activation='relu'))
         model.add(Dropout(dropout))
-        model.add(Dense(1, activation='softmax'))
-        model.compile(loss='mse',
-                  optimizer=Adam(lr=LR_actor))
+        model.add(Dense(self.action_size, activation='softmax'))
+        #model = Model(inputs=state_input, outputs=output)
+        #model = Model(input=[state_input, advantage], output=[output])
+        model.compile(optimizer=Adam(lr=LR_actor), loss=policy_update)
+        
         return model
-    
-    @tf.function
-    def policyupdate(self, cur_state, advantage):
+
         
-        # Implementing 
-        # grad(J(actor_weights)) = sum_(t=1, T-1)[ grad(log(pi(at | st, actor_weights)) * Advantaged(st, at), actor_weights) ]
-        # Placeholder for advantage values.
-      
-        model_weights = self.model.trainable_weights
-        # Adding small number inside log to avoid log(0) = -infinity
-        log_prob = tf.math.log(self.output + 10e-10)
-        # Multiply log by -1 to convert the optimization problem as minimization problem.
-        # This step is essential because apply_gradients always do minimization.
-        neg_log_prob = tf.multiply(log_prob, -1)
-        # Calulate and update the weights of the model to optimize the actor
-        actor_gradients = tf.gradients(neg_log_prob, model_weights, advantage)
-        grads = zip(actor_gradients, model_weights)        
-        
-        tf.train.AdamOptimizer(LR_actor).apply_gradients(grads)
-        
-
-
-
-
-
-
+     
 if __name__ == "__main__":
     env = environment()
     state_size = env.geo_array.shape#[0]
@@ -371,6 +350,7 @@ if __name__ == "__main__":
             next_state, reward, done = env.step(agent.action)
             agent.memorize(agent.state, agent.action, reward, next_state, done)
             agent.state = next_state
+            
             if len(agent.memory)>= agent.batch_size:
                 agent.a2c_replay()
             
@@ -392,7 +372,7 @@ if __name__ == "__main__":
     plt.ylabel('Score')
     #plt.show()
     
-    scenario=str(f'{inputfile} test{test}, epsilon{epsilon_min}, lr{LR}, batch{batch_size}')
+    scenario=str(f'{inputfile} test{test}, epsilon{epsilon_min}, lr_a{LR_actor}, lr_a{LR_critic}, batch{batch_size}')
     agent.model.save(f'{scenario}_model.h5')
     plt.savefig(f'fig_{scenario}.png')
     outputdf=pd.DataFrame(output)
