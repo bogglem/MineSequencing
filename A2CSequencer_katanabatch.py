@@ -1,20 +1,15 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Aug 25 11:52:39 2020
+Created on Tue Oct  6 11:32:50 2020
 
-@author: Tim Pelech
+@author: z3333990
 """
 
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Aug 22 12:25:04 2020
-
-@author: Tim Pelech
-"""
 import pandas as pd
 
-
 # -*- coding: utf-8 -*-
+import sys
 import time
 import random
 import matplotlib.pyplot as plt
@@ -30,16 +25,28 @@ import keras.backend as K
 from sklearn.preprocessing import MinMaxScaler
 #from tensorflow import Print
 
-gamma=0.96
-LR_actor=0.0001
-LR_critic=0.00001
-batch_size=64
-EPSINIT=10.0
+idx=int(sys.argv[1])
+
+inputarray=pd.read_csv('A2C_job_input_array.csv')
+ 
+LR_critic=inputarray.loc[idx].LR_critic
+LR_actor=inputarray.loc[idx].LR_actor
+batch_size=inputarray.loc[idx].batch_size
+memcap=inputarray.loc[idx].memcap
+inputfile=inputarray.loc[idx].inputfile
+gamma=inputarray.loc[idx].gamma
+dropout=inputarray.loc[idx].dropout
+
+#gamma=0.96
+#LR_actor=0.0001
+#LR_critic=0.00001
+#batch_size=64
+
 inputfile="Ore blocks_sandbox4x4x3v2.xlsx"
-epsilon_min=0.01
-memcap=500
-EPISODES = 200
-dropout=0
+
+#memcap=500
+#EPISODES = 200
+#dropout=0
 test='A2C'
 
 start=time.time()
@@ -71,14 +78,13 @@ class environment:
         self.Jlen=self.Jmax-self.Jmin+1
         self.RLlen=self.RLmax-self.RLmin+1
         self.action_space=np.zeros((self.Ilen)*(self.Jlen))
-        self.actioncounter=np.zeros((self.Ilen)*(self.Jlen))
-        
+        self.actioncounter=np.zeros((self.Ilen)*(self.Jlen))   
         self.RL=self.RLlen-1
         self.channels = 3
         self.geo_array= np.zeros([self.Ilen, self.Jlen, self.RLlen, self.channels], dtype=float)
         self.actionlimit=np.ones([self.Ilen, self.Jlen])      
         self.turns=(self.RLlen*self.Ilen*self.Jlen)
-        #self.epsilonmod=np.zeros(self.turns)
+
         
       # normalising input space
         
@@ -106,8 +112,6 @@ class environment:
                
         self.norm=np.append(a, b, axis=4)
         self.norm=np.append(self.norm,c, axis=4)
-        #.reshape(1,self.Imax+1-self.Imin, self.Jmax+1-self.Jmin, self.RLmax+1-self.RLmin, self.channels)
-        #self.norm=normalize(np.reshape(self.geo_array,((1,self.Imax+1-self.Imin, self.Jmax+1-self.Jmin, self.RLmax+1-self.RLmin, self.channels))),4)
         self.ob_sample=deepcopy(self.norm)
 
 
@@ -136,9 +140,6 @@ class environment:
             self.actionslist.append(action)
             self.evaluate()
             self.update()     
-            #self.actioncounter[action]+=1
-            #if max(self.actioncounter)>self.RLlen:
-            #self.epsilonmod[self.turncounter]=round(max((self.actioncounter))/(self.RLlen),ndigits=2)
             self.turncounter+=1
             
         else: 
@@ -176,18 +177,13 @@ class environment:
         
     def update(self):
     
-        #self.ob_sample[0,self.i,self.j,self.RL,0]=-1
-        #self.ob_sample[0,self.i,self.j,self.RL,1]=-1
         self.ob_sample[0,self.i,self.j,self.RL,2]=mined #update State channel to mined "-1"
       
         
 
     def reset(self):
         
-        self.ob_sample=deepcopy(self.norm)
-
-        #self.actionlimit=np.ones([self.Ilen, self.Jlen]) 
-        
+        self.ob_sample=deepcopy(self.norm)       
         self.turnore=0
         self.discountedmined=0
         self.turncounter=0
@@ -195,7 +191,6 @@ class environment:
         self.i=-1
         self.j=-1
         self.actionslist=list()
-        #self.actioncounter=np.zeros((self.Ilen)*(self.Jlen))
         
         return self.ob_sample
 
@@ -203,8 +198,6 @@ class environment:
 #initialising
 state = list([1])
 action= list([1])
-#memory=list([1])
-
 
 class DQNAgent:  
         
@@ -227,17 +220,12 @@ class DQNAgent:
         self.Amodel = self.build_Actor() 
         self.Vmodel = self.build_Critic()        
         self.trainingbatch=list()
-        
-        #self.VCritic = VCritic(state_size).model
-        #self.PActor= PActor(self.action_size, state_size).model
-
 
     def memorize(self, state, action, reward, next_state, done):
      
         self.memory.append((state, action, reward, next_state, done))
         
-     
-    
+        
     def a2c_replay(self):
         minibatch = random.sample(self.memory,self.batch_size)
 
@@ -261,7 +249,7 @@ class DQNAgent:
                 
     
     def act(self, state):
-        #for q_ (PER)
+
         action_probs = self.Amodel.predict(state)
         critic_v = self.Vmodel.predict(state)[0][0]
         action = np.random.choice(self.action_size, p=np.squeeze(action_probs))
@@ -280,12 +268,10 @@ class DQNAgent:
 
             model=Sequential()
             model.add(Conv3D(1, kernel_size=(1, 1, 1), activation='relu', kernel_initializer='he_uniform', input_shape=state_size, padding='valid'))
-            model.add(Flatten())    
+            model.add(Flatten())
             model.add(Dense(64, activation='relu'))
             model.add(Dropout(dropout))
             model.add(Dense(1, activation='linear'))
-            
-            #model = Model(input=[inputl], output=[output])
             model.compile(loss='mse',
                       optimizer=Adam(lr=LR_critic))
 
@@ -296,13 +282,10 @@ class DQNAgent:
         
         model=Sequential()
         model.add(Conv3D(1, kernel_size=(1, 1, 1), activation='relu', kernel_initializer='he_uniform', input_shape=state_size, padding='valid'))
-        #Input(shape=[1])
         model.add(Flatten())
         model.add(Dense(64, activation='relu'))
         model.add(Dropout(dropout))
         model.add(Dense(self.action_size, activation='softmax'))
-        #model = Model(inputs=state_input, outputs=output)
-        #model = Model(input=[state_input, advantage], output=[output])
         model.compile(optimizer=Adam(lr=LR_actor), loss='categorical_crossentropy')
                 
         return model
@@ -324,13 +307,10 @@ if __name__ == "__main__":
     output=list()
     e=0
     #
-    #while time.time()<end:    
-    for e in range(EPISODES):
-      #  e+=1
+    while time.time()<end:    
+    #for e in range(EPISODES):
+        e+=1
         agent.state = env.reset()
-         
-        #stationary_model=clone_model(agent.model)
-
 
         while True:
             
@@ -343,24 +323,21 @@ if __name__ == "__main__":
                 agent.a2c_replay()
             
             if done:
-                print("episode: {}/{}, score: {}, actions: {}"
-                      .format(e, EPISODES, env.discountedmined, env.actionslist))
-                    # replay compares against a stationary model
+                #print("episode: {}/{}, score: {}, actions: {}"
+                #      .format(e, EPISODES, env.discountedmined, env.actionslist))
                 episodelist.append(e)
                 scorelist.append(env.discountedmined)
                 output.append([e,env.discountedmined, env.actionslist])
                 
                 break
-            #if len(agent.memory.minibatch()) > agent.batch_size:
-                
-    
-#    agent.model.save("model.h5")
+
+   
     plt.plot(episodelist,scorelist)
     plt.xlabel('Episodes')
     plt.ylabel('Score')
     #plt.show()
     
-    scenario=str(f'{inputfile} test{test}, lr_a{LR_actor}, lr_a{LR_critic}, batch{batch_size}')
+    scenario=str(f'{inputfile} t{test}, lr_a{LR_actor}, lr_a{LR_critic}, memory{memcap}, gamma{gamma}, batch{batch_size}')
     agent.model.save(f'{scenario}_model.h5')
     plt.savefig(f'fig_{scenario}.png')
     outputdf=pd.DataFrame(output)
