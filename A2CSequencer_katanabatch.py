@@ -31,11 +31,11 @@ inputarray=pd.read_csv('A2C_job_input_array.csv')
  
 LR_critic=inputarray.loc[idx].LR_critic
 LR_actor=inputarray.loc[idx].LR_actor
-batch_size=inputarray.loc[idx].batch_size
+batch_size=int(inputarray.loc[idx].batch_size)
 memcap=int(inputarray.loc[idx].memcap)
 inputfile=inputarray.loc[idx].inputfile
 gamma=inputarray.loc[idx].gamma
-dropout=inputarray.loc[idx].dropout
+dropout=float(inputarray.loc[idx].dropout)
 
 #gamma=0.96
 #LR_actor=0.0001
@@ -338,7 +338,7 @@ if __name__ == "__main__":
     #plt.show()
     
     scenario=str(f'{inputfile} t{test}, lr_a{LR_actor}, lr_a{LR_critic}, memory{memcap}, gamma{gamma}, batch{batch_size}')
-    agent.model.save(f'{scenario}_model.h5')
+    #agent.model.save(f'{scenario}_model.h5')
     plt.savefig(f'fig_{scenario}.png')
     outputdf=pd.DataFrame(output)
     outputdf.to_csv(f"output_{scenario}.csv")
