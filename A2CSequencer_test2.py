@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 """
+Created on Mon Oct  5 14:06:01 2020
+
+@author: Tim Pelech
+"""
+
+# -*- coding: utf-8 -*-
+"""
 Created on Tue Aug 25 11:52:39 2020
 
 @author: Tim Pelech
@@ -100,12 +107,12 @@ class environment:
         H2O_scaled=scaler.fit_transform(H2O_reshaped)
         Tonnes_scaled=scaler.fit_transform(Tonnes_reshaped)
         
-        a=H2O_scaled.reshape([1,self.Ilen, self.Jlen, self.RLlen,1])
-        b=Tonnes_scaled.reshape([1,self.Ilen, self.Jlen, self.RLlen,1])
-        c=State_reshaped.reshape([1,self.Ilen, self.Jlen, self.RLlen,1])
+        a=H2O_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
+        b=Tonnes_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
+        c=State_reshaped.reshape([self.Ilen, self.Jlen, self.RLlen,1])
                
-        self.norm=np.append(a, b, axis=4)
-        self.norm=np.append(self.norm,c, axis=4)
+        self.norm=np.append(a, b, axis=3)
+        self.norm=np.append(self.norm,c, axis=3)
         #.reshape(1,self.Imax+1-self.Imin, self.Jmax+1-self.Jmin, self.RLmax+1-self.RLmin, self.channels)
         #self.norm=normalize(np.reshape(self.geo_array,((1,self.Imax+1-self.Imin, self.Jmax+1-self.Jmin, self.RLmax+1-self.RLmin, self.channels))),4)
         self.ob_sample=deepcopy(self.norm)
@@ -153,14 +160,14 @@ class environment:
         State=1
         for RLidx in reversed(range(self.RLlen)):
             
-            if self.ob_sample[0,self.i,self.j,RLidx,2]!=mined: #if State unmined
+            if self.ob_sample[self.i,self.j,RLidx,2]!=mined: #if State unmined
                 self.RL=RLidx
                 H2O=self.geo_array[self.i,self.j,self.RL,0]
                 Tonnes=self.geo_array[self.i, self.j,self.RL,1]
                 #State=self.ob_sample[0,self.i, self.j,self.RL,2]              
                 break
         
-        if self.ob_sample[0,self.i,self.j,RLidx,2]==mined: #if all mined in i,j column
+        if self.ob_sample[self.i,self.j,RLidx,2]==mined: #if all mined in i,j column
             #self.terminal=True
             self.actionlimit[self.i,self.j]=0
             #penalising repetetive useless actions
@@ -178,7 +185,7 @@ class environment:
     
         #self.ob_sample[0,self.i,self.j,self.RL,0]=-1
         #self.ob_sample[0,self.i,self.j,self.RL,1]=-1
-        self.ob_sample[0,self.i,self.j,self.RL,2]=mined #update State channel to mined "-1"
+        self.ob_sample[self.i,self.j,self.RL,2]=mined #update State channel to mined "-1"
       
         
 
@@ -221,7 +228,7 @@ class DQNAgent:
         self.rewardbatch=list()
         self.advantagebatch=list()
         self.action_prbatch=list()
-        self.advantage=float()
+        
         self.action_size = action_size
         # setting the our created session as default session
         self.Amodel = self.build_Actor() 
@@ -240,52 +247,46 @@ class DQNAgent:
     
     def a2c_replay(self):
         minibatch = random.sample(self.memory,self.batch_size)
-        #self.policybatch=list()
-        #self.statebatch=deque(maxlen=batch_size)
-        #self.rewardbatch=list()
-        #self.advantagebatch=deque(maxlen=batch_size)
-        #self.action_pr=list()
-        #i=0
+        self.policybatch=list()
+        self.statebatch=deque(maxlen=batch_size)
+        self.rewardbatch=list()
+        self.advantagebatch=list()
+        self.action_pr=list()
+        i=0
         #X = []
         #y = []
         #advantages = np.zeros(shape=(batch_size, action_size))
         for cur_state, action, reward, next_state, done in minibatch:
-            self.advantage=float() 
+             
             if done:
                 # If last state then advatage A(s, a) = reward_t - V(s_t)
-                self.advantage = reward - self.Vmodel.predict(cur_state)[0][0]
+                advantage = reward - self.Vmodel.predict(cur_state)[0][0]
             else:
                 # If not last state the advantage A(s_t, a_t) = reward_t + DISCOUNT * V(s_(t+1)) - V(s_t)
                 next_reward = self.Vmodel.predict(next_state)[0][0]
-                self.advantage = reward + self.gamma * next_reward - self.Vmodel.predict(cur_state)[0][0]
+                advantage = reward + self.gamma * next_reward - self.Vmodel.predict(cur_state)[0][0]
                 # Updating reward to trian state value fuction V(s_t)
                 reward = reward + self.gamma * next_reward
             
-            #action_pr=self.Amodel.predict(cur_state)[0][action]
-            #self.statebatch.append(cur_state[0])
-            #self.advantagebatch.append(advantage)
-            #self.action_batch.append(action1hot)
-            #self.rewardbatch.append(reward)
-            #i+=1
-            #advantagebatch=np.array(self.advantagebatch, dtype=float32)
-            #statebatch=np.array(self.statebatch)
-            #rewardbatch=np.array(self.rewardbatch)
-            #action_batch=np.array(self.action_batch, dtype=float32)
-            #policyupdate=np.array([action_batch, advantagebatch])
+            action_pr=self.Amodel.predict(cur_state)[0][action]
+            self.statebatch.append(cur_state)
+            self.advantagebatch.append(advantage)
+            self.action_prbatch.append(action_pr)
+            self.rewardbatch.append(reward)
+            i+=1
+            statebatch=np.array(self.statebatch)
             
-            self.Amodel.fit(cur_state, action, epochs=1,verbose=0)
-            self.Vmodel.fit(cur_state, reward, epochs=1, verbose=0)
+        self.Amodel.fit(statebatch, self.action_prbatch, batch_size=self.batch_size, epochs=1,verbose=0)
+        self.Vmodel.fit(statebatch, self.rewardbatch, batch_size=self.batch_size, epochs=1, verbose=0)
 
     
     def act(self, state):
         #for q_ (PER)
-        action_probs = self.Amodel.predict(state)
-        critic_v = self.Vmodel.predict(state)[0][0]
+        action_probs = self.Amodel.predict([0, state])
+        critic_v = self.Vmodel.predict([0, state])[0][0]
         action = np.random.choice(self.action_size, p=np.squeeze(action_probs))
-        action_onehot=np.zeros(self.action_size, dtype=float)
-        action_onehot[action]=1
            
-        return action, critic_v, action_onehot # returns action and critic value
+        return action, critic_v # returns action and critic value
 
 #    def load(self, name):
 #        self.model.load_weights(name)
@@ -311,17 +312,14 @@ class DQNAgent:
  
     def build_Actor(self):
         
-        def policy_update(self):        
-                                 
+        def policy_update(self):
+          
             def customloss(y_true, y_pred):
-                #y_true=policyupdate[0]
-                #advantage=policyupdate[1]
-                #advantage=self.advantagebatch
-                aprob=y_pred[0][0]
-                aprob_c=K.clip(aprob,1e-8,1-1e-8)
-                log_prob = K.log(aprob_c)
-                return -log_prob * self.advantage
-        
+                advantage=self.advantagebatch
+                y_true=self.action_prbatch
+                
+                return K.sum(-K.log(y_true)*advantage)
+                
             return customloss 
             
         
@@ -365,7 +363,7 @@ if __name__ == "__main__":
 
         while True:
             
-            agent.action, critic_v, agent.act1hot = agent.act(agent.state) #, env.actionlimit
+            agent.action, critic_v = agent.act(agent.state) #, env.actionlimit
             next_state, reward, done = env.step(agent.action)
             agent.memorize(agent.state, agent.action, reward, next_state, done)
             agent.state = next_state
