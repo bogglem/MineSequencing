@@ -361,7 +361,7 @@ if __name__ == "__main__":
     #plt.show()
     
     scenario=str(f'{inputfile} test{test}, lr_a{LR_actor}, lr_a{LR_critic}, batch{batch_size}')
-    agent.model.save(f'{scenario}_model.h5')
+    #agent.model.save(f'{scenario}_model.h5')
     plt.savefig(f'fig_{scenario}.png')
     outputdf=pd.DataFrame(output)
     outputdf.to_csv(f"output_{scenario}.csv")
