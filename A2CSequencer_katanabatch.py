@@ -42,7 +42,7 @@ dropout=inputarray.loc[idx].dropout
 #LR_critic=0.00001
 #batch_size=64
 
-inputfile="Ore blocks_sandbox4x4x3v2.xlsx"
+#inputfile="Ore blocks_sandbox4x4x3v2.xlsx"
 
 #memcap=500
 #EPISODES = 200
