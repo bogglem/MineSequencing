@@ -42,7 +42,7 @@ test='no-expmod'
 gamma=0.97
 
 start=time.time()
-end=start+60.5*60*60
+end=start+11.5*60*60
 
 mined=-1
 
@@ -445,7 +445,7 @@ if __name__ == "__main__":
             
             if done:
                 #print("episode: {}/{}, score: {}, e: {:.2}, actions: {}, expmod: {}"
-                 #     .format(e, EPISODES, env.discountedmined, agent.epsilon, env.actionslist, env.epsilonmod))
+                #      .format(e, EPISODES, env.discountedmined, agent.epsilon, env.actionslist, env.epsilonmod))
                     # replay compares against a stationary model
                 episodelist.append(e)
                 scorelist.append(env.discountedmined)
