@@ -47,7 +47,7 @@ dropout=float(inputarray.loc[idx].dropout)
 #memcap=500
 #EPISODES = 200
 #dropout=0
-test='A2C'
+test='DA2C'
 
 start=time.time()
 end=start+11.5*60*60
@@ -271,6 +271,8 @@ class DQNAgent:
         model.add(Flatten())
         model.add(Dense(64, activation='relu'))
         model.add(Dropout(dropout))
+        model.add(Dense(64, activation='relu'))
+        model.add(Dropout(dropout))
         model.add(Dense(1, activation='linear'))
         model.compile(loss='mse',
                   optimizer=Adam(lr=LR_critic))
@@ -283,6 +285,8 @@ class DQNAgent:
         model=Sequential()
         model.add(Conv3D(1, kernel_size=(1, 1, 1), activation='relu', kernel_initializer='he_uniform', input_shape=state_size, padding='valid'))
         model.add(Flatten())
+        model.add(Dense(64, activation='relu'))
+        model.add(Dropout(dropout))
         model.add(Dense(64, activation='relu'))
         model.add(Dropout(dropout))
         model.add(Dense(self.action_size, activation='softmax'))
