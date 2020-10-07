@@ -85,7 +85,7 @@ class orebody():
                 for k in range(self.RLlen):
                     
                     block=str(i)+str('_')+str(j)+str('_')+str(k)
-                    self.block_dic["id_%s"% block]=1
+                    self.block_dic["%s"% block]=1
 
         #construct_dependencies
         
@@ -97,7 +97,7 @@ class orebody():
                     if k==0: #if block is surface layer, then no dependency exists
                         
                         dep=list(['','','','','','','','',''])
-                        self.dep_dic["id_%s_dep"% block]=dep
+                        self.dep_dic["%s"% block]=dep
                         
                     else:
                         dep0=str(i-1)+str('_')+str(j+1)+str('_')+str(k-1)
@@ -111,7 +111,7 @@ class orebody():
                         dep8=str(i+1)+str('_')+str(j-1)+str('_')+str(k-1)
                         
                         dep=list([dep0,dep1,dep2,dep3,dep4,dep5,dep6,dep7,dep8])
-                        self.dep_dic["id_%s_dep"% block]=dep
+                        self.dep_dic["%s"% block]=dep
                
 
     def actcoords(self, action):
@@ -131,7 +131,7 @@ class orebody():
         for k in reversed(range(self.RLlen)): #iterate through orebody at action location to find highest unmined block (reversed -top to bottom)
             check_block=str(self.i)+str('_')+str(self.j)+str('_')+str(k)
             
-            if self.block_dic["id_%s"% check_block]==1:
+            if self.block_dic["%s"% check_block]==1:
                 selected_block = check_block
                 self.RL = k
                 break
@@ -144,13 +144,13 @@ class orebody():
     
     def isMinable(self, selected_block):
         
-        available = self.block_dic["id_%s"% selected_block] #identifies if block is already mined.
-        deplist = self.dep_dic["id_%s"% selected_block]
+        available = self.block_dic["%s"% selected_block] #identifies if block is already mined.
+        deplist = self.dep_dic["%s"% selected_block]
         minablelogic=np.zeros(len(deplist))            
                
         for d in range(len(deplist)):
             depstr=deplist[d]
-            minablelogic[d]=self.block_dic["id_%s"% depstr]
+            minablelogic[d]=self.block_dic["%s"% depstr]
             isMinable=available*np.prod(minablelogic)
             
         return isMinable
@@ -165,7 +165,7 @@ class orebody():
         if (self.turncounter<self.turns):
             
             self.evaluate(selected_block, minable)
-            self.update() 
+            self.update(selected_block) 
             self.turncounter+=1
             
         else: 
@@ -194,7 +194,7 @@ class orebody():
     def update(self, selected_block):
 
         self.ob_sample[0,self.i,self.j,self.RL,:]=self.mined #update State channel to mined "-1"
-        self.block_dic["id_%s"% selected_block]=0 #set to zero for logic multiplication
+        self.block_dic["%s"% selected_block]=0 #set to zero for logic multiplication
         
 
     def reset(self):
