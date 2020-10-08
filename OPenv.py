@@ -9,7 +9,7 @@ import pandas as pd
 from copy import deepcopy
 from sklearn.preprocessing import MinMaxScaler
 
-class orebody():
+class environment():
 
     def __init__(self,inputfile,gamma):
         
@@ -36,6 +36,7 @@ class orebody():
         self.orebody=np.array([self.Ilen,self.Jlen,self.RLlen])
         self.idxbody=np.array([self.Ilen,self.Jlen,self.RLlen])
         self.block_dic={}
+        self.block_dic_init={}
         self.dep_dic={}
         
         self.action_space=np.zeros((self.Ilen)*(self.Jlen))
@@ -77,17 +78,22 @@ class orebody():
         #.reshape(1,self.Imax+1-self.Imin, self.Jmax+1-self.Jmin, self.RLmax+1-self.RLmin, self.channels)
         #self.norm=normalize(np.reshape(self.geo_array,((1,self.Imax+1-self.Imin, self.Jmax+1-self.Jmin, self.RLmax+1-self.RLmin, self.channels))),4)
         self.ob_sample=deepcopy(self.norm)
-        
+        self.construct_dep_dic()
         #construct_dependencies blocks with padding
+        self.construct_block_dic()
+        self.block_dic=deepcopy(self.block_dic_init)
+
+    def construct_block_dic(self):
        
-        for i in range(-1,self.Ilen):
-            for j in range(-1,self.Jlen):
+        for i in range(-1,self.Ilen+1):
+            for j in range(-1,self.Jlen+1):
                 for k in range(self.RLlen):
                     
                     block=str(i)+str('_')+str(j)+str('_')+str(k)
-                    self.block_dic["%s"% block]=1
+                    self.block_dic_init["%s"% block]=1
 
-        #construct_dependencies
+    def construct_dep_dic(self):    
+    #construct_dependencies
         
         for i in range(self.Ilen):
             for j in range(self.Jlen):
@@ -128,7 +134,7 @@ class orebody():
     
     def select_block(self):
     
-        for k in reversed(range(self.RLlen)): #iterate through orebody at action location to find highest unmined block (reversed -top to bottom)
+        for k in range(self.RLlen): #iterate through orebody at action location to find highest unmined block (reversed -top to bottom)
             check_block=str(self.i)+str('_')+str(self.j)+str('_')+str(k)
             
             if self.block_dic["%s"% check_block]==1:
@@ -136,7 +142,7 @@ class orebody():
                 self.RL = k
                 break
             
-            if k==0:
+            if k==self.RLlen-1:
                 selected_block = check_block            
             
         return selected_block #return string name of selected block to mine
@@ -182,9 +188,10 @@ class orebody():
     def evaluate(self, selected_block, isMinable):
         
         if isMinable==0:             #penalising repetetive useless actions
-
-            H2O=-1
-            Tonnes=1
+            
+            self.turnore=-1#/(self.gamma**(self.turncounter))
+            #H2O=-1
+            #Tonnes=1
             #State=-1
             
         else:
@@ -192,8 +199,8 @@ class orebody():
             H2O=self.geo_array[self.i,self.j,self.RL,0]
             Tonnes=self.geo_array[self.i, self.j,self.RL,1] 
             #State=self.mined
+            self.turnore=(H2O*Tonnes)
 
-        self.turnore=(H2O*Tonnes)
         self.discountedmined+=self.turnore*self.gamma**(self.turncounter)
         
     def update(self, selected_block):
@@ -204,6 +211,7 @@ class orebody():
 
     def reset(self):
         
+        self.block_dic=deepcopy(self.block_dic_init)
         self.ob_sample=deepcopy(self.norm)
         self.turnore=0
         self.discountedmined=0
