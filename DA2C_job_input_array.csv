@@ -1,0 +1,25 @@
+LR_critic,LR_actor,batch_size,memcap,gamma,dropout,inputfile
+1E-05,1E-05,128,1000,0.98,0,Ore blocks_small2478v3.xlsx
+1E-05,1E-05,128,1000,0.985,0,Ore blocks_small2478v3.xlsx
+1E-05,1E-05,128,1000,0.99,0,Ore blocks_small2478v3.xlsx
+1E-05,1E-05,256,1000,0.98,0,Ore blocks_small2478v3.xlsx
+1E-05,1E-05,256,1000,0.985,0,Ore blocks_small2478v3.xlsx
+1E-05,1E-05,256,1000,0.99,0,Ore blocks_small2478v3.xlsx
+1E-05,1E-05,128,100000,0.98,0,Ore blocks_small2478v3.xlsx
+1E-05,1E-05,128,100000,0.985,0,Ore blocks_small2478v3.xlsx
+1E-05,1E-05,128,100000,0.99,0,Ore blocks_small2478v3.xlsx
+1E-05,1E-05,256,100000,0.98,0,Ore blocks_small2478v3.xlsx
+1E-05,1E-05,256,100000,0.985,0,Ore blocks_small2478v3.xlsx
+1E-05,1E-05,256,100000,0.99,0,Ore blocks_small2478v3.xlsx
+1E-05,1E-05,128,1000,0.98,0,Ore blocks_easy10x10x8.xlsx
+1E-05,1E-05,128,1000,0.985,0,Ore blocks_easy10x10x8.xlsx
+1E-05,1E-05,128,1000,0.99,0,Ore blocks_easy10x10x8.xlsx
+1E-05,1E-05,256,1000,0.98,0,Ore blocks_easy10x10x8.xlsx
+1E-05,1E-05,256,1000,0.985,0,Ore blocks_easy10x10x8.xlsx
+1E-05,1E-05,256,1000,0.99,0,Ore blocks_easy10x10x8.xlsx
+1E-05,1E-05,128,100000,0.98,0,Ore blocks_easy10x10x8.xlsx
+1E-05,1E-05,128,100000,0.985,0,Ore blocks_easy10x10x8.xlsx
+1E-05,1E-05,128,100000,0.99,0,Ore blocks_easy10x10x8.xlsx
+1E-05,1E-05,256,100000,0.98,0,Ore blocks_easy10x10x8.xlsx
+1E-05,1E-05,256,100000,0.985,0,Ore blocks_easy10x10x8.xlsx
+1E-05,1E-05,256,100000,0.99,0,Ore blocks_easy10x10x8.xlsx

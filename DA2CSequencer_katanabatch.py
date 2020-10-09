@@ -27,7 +27,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 idx=int(sys.argv[1])
 
-inputarray=pd.read_csv('A2C_job_input_array.csv')
+inputarray=pd.read_csv('DA2C_job_input_array.csv')
  
 LR_critic=inputarray.loc[idx].LR_critic
 LR_actor=inputarray.loc[idx].LR_actor
@@ -272,6 +272,7 @@ class DQNAgent:
         model.add(Dense(64, activation='relu'))
         model.add(Dropout(dropout))
         model.add(Dense(64, activation='relu'))
+        model.add(Dense(64, activation='relu'))
         model.add(Dropout(dropout))
         model.add(Dense(1, activation='linear'))
         model.compile(loss='mse',
@@ -287,6 +288,7 @@ class DQNAgent:
         model.add(Flatten())
         model.add(Dense(64, activation='relu'))
         model.add(Dropout(dropout))
+        model.add(Dense(64, activation='relu'))
         model.add(Dense(64, activation='relu'))
         model.add(Dropout(dropout))
         model.add(Dense(self.action_size, activation='softmax'))

@@ -18,7 +18,7 @@ class environment():
         self.actionslist = list()
         self.turnore=0     
         self.discountedmined=0
-        self.turncounter=0
+        self.turncounter=1
         self.i=-1
         self.j=-1
         self.terminal=False
@@ -46,7 +46,7 @@ class environment():
         self.geo_array= np.zeros([self.Ilen, self.Jlen, self.RLlen, self.channels], dtype=float)
         self.state_size = self.geo_array.shape
 
-        self.turns=(self.RLlen*self.Ilen*self.Jlen)
+        
         self.mined=-1
 
       # normalising input space
@@ -82,6 +82,8 @@ class environment():
         #construct_dependencies blocks with padding
         self.construct_block_dic()
         self.block_dic=deepcopy(self.block_dic_init)
+        
+        self.turns=len(self.dep_dic)
 
     def construct_block_dic(self):
        

@@ -7,11 +7,11 @@
 #PBS -j oe
 #PBS -M t.pelech@unsw.edu.au
 #PBS -m ae
-#PBS -J 0-23
+#PBS -J 0-12
 #PBS -o /home/z3333990/Output
 
  
 cd $PBS_O_WORKDIR
 
 source py3env/bin/activate 
-python3 DA2CSequencer_katanabatch.py ${PBS_ARRAY_INDEX}
+python3 DA2C-OPEnv_katanabatch.py ${PBS_ARRAY_INDEX}
