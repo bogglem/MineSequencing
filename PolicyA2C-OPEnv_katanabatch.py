@@ -20,7 +20,7 @@ import random
 import matplotlib.pyplot as plt
 import numpy as np
 from collections import deque
-#import tensorflow as tf
+import sys
 from keras import Model
 from keras.models import Sequential, clone_model, load_model
 from keras.layers import Dense, Conv3D, MaxPooling3D, Flatten, Dropout, Input
@@ -31,16 +31,17 @@ from sklearn.preprocessing import MinMaxScaler
 from OPenv import environment
 #from tensorflow import Print
 
-gamma=0.995
-LR_actor=0.00001
-LR_critic=0.00001
-batch_size=64
-EPSINIT=10.0
-inputfile="Ore blocks_easy6x6x4.xlsx"
-epsilon_min=0.01
-memcap=500
-EPISODES = 400
-dropout=0
+idx=int(sys.argv[1])
+
+inputarray=pd.read_csv('A2C_job_input_array.csv')
+ 
+LR_critic=inputarray.loc[idx].LR_critic
+LR_actor=inputarray.loc[idx].LR_actor
+batch_size=int(inputarray.loc[idx].batch_size)
+memcap=int(inputarray.loc[idx].memcap)
+inputfile=inputarray.loc[idx].inputfile
+gamma=inputarray.loc[idx].gamma
+dropout=float(inputarray.loc[idx].dropout)
 test='policyA2C'
 
 start=time.time()
@@ -194,18 +195,19 @@ class DQNAgent:
 
     def build_Critic(self):
 
-            model=Sequential()
-            model.add(Conv3D(1, kernel_size=(1, 1, 1), activation='relu', kernel_initializer='he_uniform', input_shape=state_size, padding='valid'))
-            model.add(Flatten())    
-            model.add(Dense(64, activation='relu'))
-            model.add(Dropout(dropout))
-            model.add(Dense(1, activation='linear'))
-            
-            #model = Model(input=[inputl], output=[output])
-            model.compile(loss='mse',
-                      optimizer=Adam(lr=LR_critic))
+        model=Sequential()
+        model.add(Conv3D(1, kernel_size=(1, 1, 1), activation='relu', kernel_initializer='he_uniform', input_shape=state_size, padding='valid'))
+        model.add(Flatten())    
+        model.add(Dense(64, activation='relu'))
+        model.add(Dense(64, activation='relu'))
+        model.add(Dropout(dropout))
+        model.add(Dense(1, activation='linear'))
+        
+        #model = Model(input=[inputl], output=[output])
+        model.compile(loss='mse',
+                  optimizer=Adam(lr=LR_critic))
 
-            return model    
+        return model    
 
  
     def build_Actor(self):
@@ -214,6 +216,7 @@ class DQNAgent:
         model.add(Conv3D(1, kernel_size=(1, 1, 1), activation='relu', kernel_initializer='he_uniform', input_shape=state_size, padding='valid'))
         #Input(shape=[1])
         model.add(Flatten())
+        model.add(Dense(64, activation='relu'))
         model.add(Dense(64, activation='relu'))
         model.add(Dropout(dropout))
         model.add(Dense(self.action_size, activation='softmax'))
@@ -241,9 +244,9 @@ if __name__ == "__main__":
     output=list()
     e=0
     #
-    #while time.time()<end:    
-    for e in range(EPISODES):
-      #  e+=1
+    while time.time()<end:    
+    #for e in range(EPISODES):
+        e+=1
         agent.state = env.reset()
         actionslist=list()
 
@@ -261,13 +264,13 @@ if __name__ == "__main__":
             agent.a2c_train(agent.state, agent.action, reward, next_state, done)   
             if done:
                 #agent.buffer_train()
-                print("episode: {}/{}, score: {}, actions: {}"
-                      .format(e, EPISODES, env.discountedmined, actionslist))
+                #print("episode: {}/{}, score: {}, actions: {}"
+                 #     .format(e, EPISODES, env.discountedmined, actionslist))
                     # replay compares against a stationary model
                 episodelist.append(e)
                 scorelist.append(env.discountedmined)
                 output.append([e,env.discountedmined, actionslist])
-                agent.buffer_reset() #clear memory for on policy methods
+                #agent.buffer_reset() #clear memory for on policy methods
                 break
             #if len(agent.memory.minibatch()) > agent.batch_size:
                 
@@ -278,9 +281,8 @@ if __name__ == "__main__":
     plt.ylabel('Score')
     #plt.show()
     
-    scenario=str(f'{inputfile} test{test}, lr_a{LR_actor}, lr_c{LR_critic}, batch{batch_size}')
+    scenario=str(f'{inputfile} t{test}, lr_a{LR_actor}, lr_c{LR_critic}, gamma{gamma}, batch{batch_size}')
     #agent.model.save(f'{scenario}_model.h5')
-    #plt.savefig(f'fig_{scenario}.png')
+    plt.savefig(f'fig_{scenario}.png')
     outputdf=pd.DataFrame(output)
-   #outputdf.to_csv(f"output_{scenario}.csv")
-    
+    outputdf.to_csv(f"output_{scenario}.csv")
