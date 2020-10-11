@@ -278,18 +278,18 @@ class DQNAgent:
 
     def build_Critic(self):
 
-            model=Sequential()
-            model.add(Conv3D(1, kernel_size=(1, 1, 1), activation='relu', kernel_initializer='he_uniform', input_shape=state_size, padding='valid'))
-            model.add(Flatten())    
-            model.add(Dense(64, activation='relu'))
-            model.add(Dropout(dropout))
-            model.add(Dense(1, activation='linear'))
-            
-            #model = Model(input=[inputl], output=[output])
-            model.compile(loss='mse',
-                      optimizer=Adam(lr=LR_critic))
+        model=Sequential()
+        model.add(Conv3D(1, kernel_size=(1, 1, 1), activation='relu', kernel_initializer='he_uniform', input_shape=state_size, padding='valid'))
+        model.add(Flatten())    
+        model.add(Dense(64, activation='relu'))
+        model.add(Dropout(dropout))
+        model.add(Dense(1, activation='linear'))
+        
+        #model = Model(input=[inputl], output=[output])
+        model.compile(loss='mse',
+                  optimizer=Adam(lr=LR_critic))
 
-            return model    
+        return model    
 
  
     def build_Actor(self):

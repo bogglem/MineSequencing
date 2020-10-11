@@ -83,7 +83,7 @@ class environment():
         self.construct_block_dic()
         self.block_dic=deepcopy(self.block_dic_init)
         
-        self.turns=len(self.dep_dic)
+        self.turns=round(len(self.dep_dic)*0.5,0)
 
     def construct_block_dic(self):
        

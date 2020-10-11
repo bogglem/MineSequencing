@@ -1,13 +1,13 @@
 LR_critic,LR_actor,batch_size,memcap,gamma,dropout,inputfile
-1.00E-05,0.0001,1,1,0.97,0,Ore blocks_small2478v3.xlsx
-1.00E-05,0.0001,1,1,0.98,0,Ore blocks_small2478v3.xlsx
-1.00E-05,0.0001,1,1,0.99,0,Ore blocks_small2478v3.xlsx
-1.00E-05,0.0001,1,1,0.995,0,Ore blocks_small2478v3.xlsx
+1.00E-05,1.00E-05,1,1,0.95,0,Ore blocks_small2478v3.xlsx
+1.00E-05,1.00E-05,1,1,0.96,0,Ore blocks_small2478v3.xlsx
 1.00E-05,1.00E-05,1,1,0.97,0,Ore blocks_small2478v3.xlsx
 1.00E-05,1.00E-05,1,1,0.98,0,Ore blocks_small2478v3.xlsx
 1.00E-05,1.00E-05,1,1,0.99,0,Ore blocks_small2478v3.xlsx
-1.00E-05,1.00E-05,1,1,0.995,0,Ore blocks_small2478v3.xlsx
+1.00E-06,1.00E-05,1,1,0.95,0,Ore blocks_small2478v3.xlsx
+1.00E-06,1.00E-05,1,1,0.96,0,Ore blocks_small2478v3.xlsx
 1.00E-06,1.00E-05,1,1,0.97,0,Ore blocks_small2478v3.xlsx
 1.00E-06,1.00E-05,1,1,0.98,0,Ore blocks_small2478v3.xlsx
 1.00E-06,1.00E-05,1,1,0.99,0,Ore blocks_small2478v3.xlsx
-1.00E-06,1.00E-05,1,1,0.995,0,Ore blocks_small2478v3.xlsx
+1.00E-06,1.00E-04,1,1,0.96,0,Ore blocks_small2478v3.xlsx
+1.00E-06,1.00E-04,1,1,0.99,0,Ore blocks_small2478v3.xlsx

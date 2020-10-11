@@ -42,7 +42,7 @@ memcap=int(inputarray.loc[idx].memcap)
 inputfile=inputarray.loc[idx].inputfile
 gamma=inputarray.loc[idx].gamma
 dropout=float(inputarray.loc[idx].dropout)
-test='policyA2C'
+test='policyDA2C'
 
 start=time.time()
 end=start+11.5*60*60
@@ -198,8 +198,9 @@ class DQNAgent:
         model=Sequential()
         model.add(Conv3D(1, kernel_size=(1, 1, 1), activation='relu', kernel_initializer='he_uniform', input_shape=state_size, padding='valid'))
         model.add(Flatten())    
-        model.add(Dense(64, activation='relu'))
-        model.add(Dense(64, activation='relu'))
+        model.add(Dense(128, activation='relu'))
+        model.add(Dense(128, activation='relu'))
+        model.add(Dense(128, activation='relu'))
         model.add(Dropout(dropout))
         model.add(Dense(1, activation='linear'))
         
@@ -216,8 +217,9 @@ class DQNAgent:
         model.add(Conv3D(1, kernel_size=(1, 1, 1), activation='relu', kernel_initializer='he_uniform', input_shape=state_size, padding='valid'))
         #Input(shape=[1])
         model.add(Flatten())
-        model.add(Dense(64, activation='relu'))
-        model.add(Dense(64, activation='relu'))
+        model.add(Dense(128, activation='relu'))
+        model.add(Dense(128, activation='relu'))
+        model.add(Dense(128, activation='relu'))
         model.add(Dropout(dropout))
         model.add(Dense(self.action_size, activation='softmax'))
         #model = Model(inputs=state_input, outputs=output)
@@ -261,12 +263,13 @@ if __name__ == "__main__":
             actionslist.append(agent.action)
             #if len(agent.memory)>= agent.batch_size:
                  #agent.a2c_replay()   
-            agent.a2c_train(agent.state, agent.action, reward, next_state, done)   
+               
             if done:
                 #agent.buffer_train()
                 #print("episode: {}/{}, score: {}, actions: {}"
                  #     .format(e, EPISODES, env.discountedmined, actionslist))
                     # replay compares against a stationary model
+                agent.a2c_train(agent.state, agent.action, reward, next_state, done)
                 episodelist.append(e)
                 scorelist.append(env.discountedmined)
                 output.append([e,env.discountedmined, actionslist])
