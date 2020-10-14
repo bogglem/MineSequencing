@@ -52,8 +52,8 @@ test='A2C'
 
 
 start=time.time()
-end=start+11.5*60*60
-inputfile="BM_easy10x10x8.xlsx"
+end=start+600
+inputfile="BM_easy6x6x4.xlsx"
 LR=0.00001
 gamma=0.995
 batch_size=64
@@ -112,7 +112,7 @@ def make_env(inputfile, rank, seed=0):
 
 if __name__ == '__main__':
 
-    num_cpu = 4  # Number of processes to use
+    num_cpu = 12  # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(inputfile, i) for i in range(num_cpu)])
     eval_env=environment(inputfile,gamma)
