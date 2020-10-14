@@ -52,8 +52,8 @@ test='A2C'
 
 
 start=time.time()
-end=start+600
-inputfile="BM_easy6x6x4.xlsx"
+end=start+11.5*60*60
+inputfile="BM_easy10x10x8.xlsx"
 LR=0.00001
 gamma=0.995
 batch_size=64
@@ -108,8 +108,6 @@ def make_env(inputfile, rank, seed=0):
     return _init
 
 
-
-
 if __name__ == '__main__':
 
     num_cpu = 12  # Number of processes to use
@@ -125,4 +123,4 @@ if __name__ == '__main__':
 
         
     model = A2C(MlpPolicy, env, gamma=gamma, n_steps=batch_size, learning_rate=LR,  verbose=1)#, tensorboard_log=scenario)
-    model.learn(total_timesteps=episodetimesteps**999, callback=callbacklist)
+    model.learn(total_timesteps=episodetimesteps**99, callback=callbacklist)
