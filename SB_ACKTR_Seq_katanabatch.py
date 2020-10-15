@@ -33,11 +33,11 @@ import gym
 import numpy as np
 import sys
 import pandas as pd
-
+import matplotlib.pyplot as plt
 from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
-from stable_baselines.common.callbacks import BaseCallback
+from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import ACKTR
 from OPenv_gym import environment
 
@@ -58,7 +58,7 @@ gamma=inputarray.loc[idx].gamma
 
 
 start=time.time()
-end=start+11.5*60*60
+end=start+5.5*60*60
 #inputfile="BM_easy6x6x4.xlsx"
 #LR=0.000001
 #gamma=0.995
@@ -68,6 +68,8 @@ inspectenv = environment(inputfile, gamma)
 
 episodetimesteps=int(inspectenv.turns)
 
+inputfile_s=inputfile.split('.')[0]
+gamma_s=str(gamma).split('.')[1]
 
 class TimeLimit(BaseCallback):
     """
@@ -90,8 +92,11 @@ class TimeLimit(BaseCallback):
                 self.incomplete = True
             else:
                 self.incomplete = False
-
+                 
+        
         return self.incomplete
+    
+    
 
 def make_env(inputfile, rank, seed=0):
     """
@@ -115,17 +120,33 @@ if __name__ == '__main__':
     num_cpu = 12  # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(inputfile, i) for i in range(num_cpu)])
-
+    eval_env=environment(inputfile,gamma)
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
+    scenario=str(f'{inputfile_s}_t{test}_lr{LR}_gamma{gamma_s}_batch{batch_size}')    
+    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=scenario, n_eval_episodes=1)])
     
-    timelimit=TimeLimit(episodetimesteps)
-    
-    scenario=str(f'{inputfile}_t{test}_lr{LR}_gamma{gamma}_batch{batch_size}')
+
         
-    model = ACKTR(MlpPolicy, env, gamma=gamma, n_steps=batch_size, learning_rate=LR, lr_schedule='constant', verbose=1, tensorboard_log=scenario)
-    model.learn(total_timesteps=episodetimesteps**99, callback=timelimit)
+    model = ACKTR(MlpPolicy, env, gamma=gamma, n_steps=batch_size, learning_rate=LR,  verbose=1)#, tensorboard_log=scenario)
+    model.learn(total_timesteps=episodetimesteps**99, callback=callbacklist)
+    
+    
+    filename= './%s/evaluations.npz' % scenario
+    
+    data=np.load(filename)
+    results=data['results']
+    y=results[:,0]
+    timesteps=data['timesteps']
+    plt.plot(timesteps,y)
+    
+    plt.xlabel('Timesteps')
+    plt.ylabel('Score')
+    #plt.show()
+    
+    savepath='./%s/fig_%s' % (scenario, scenario)
+    plt.savefig(savepath)
     
     
     
