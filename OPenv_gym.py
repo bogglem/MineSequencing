@@ -10,12 +10,14 @@ from copy import deepcopy
 from sklearn.preprocessing import MinMaxScaler
 import gym
 from gym import spaces
+from render import blockmodel
 
 
 class environment(gym.Env):
     
-    def __init__(self,inputfile,gamma):
+    def __init__(self,inputfile,gamma, rendermode='off'):
         
+        self.rendermode=rendermode
         self.inputdata=pd.read_excel(inputfile)
         self.data=self.inputdata
         self.actionslist = list()
@@ -82,7 +84,7 @@ class environment(gym.Env):
         #construct_dependencies blocks with padding
         self.construct_block_dic()
         self.block_dic=deepcopy(self.block_dic_init)
-        
+        self.render_update = self.geo_array[:,:,:,0]
         self.turns=round(len(self.dep_dic)*0.5,0)
         
         
@@ -104,7 +106,12 @@ class environment(gym.Env):
                 for k in range(self.RLlen):
                     
                     block=str(i)+str('_')+str(j)+str('_')+str(k)
-                    self.block_dic_init["%s"% block]=1
+                    
+                    if (i>=0 & i<self.Ilen)&(j>=0 & j<self.Jlen)&(k>=0 & k<self.RLlen): 
+                        self.block_dic_init["%s"% block]=0 # not mined yet
+                    else:
+                        self.block_dic_init["%s"% block]=1 # mined or doesnt exist
+                        
     
     def construct_dep_dic(self):    
     #construct_dependencies
@@ -151,7 +158,7 @@ class environment(gym.Env):
         for k in range(self.RLlen): #iterate through orebody at action location to find highest unmined block (reversed -top to bottom)
             check_block=str(self.i)+str('_')+str(self.j)+str('_')+str(k)
             
-            if self.block_dic["%s"% check_block]==1:
+            if self.block_dic["%s"% check_block]==0:
                 selected_block = check_block
                 self.RL = k
                 break
@@ -164,7 +171,6 @@ class environment(gym.Env):
     
     def isMinable(self, selected_block):
         
-        available = self.block_dic["%s"% selected_block] #identifies if block is already mined.
         deplist = self.dep_dic["%s"% selected_block]
         minablelogic=np.zeros(len(deplist))
         
@@ -172,11 +178,17 @@ class environment(gym.Env):
             depstr=deplist[d]
             
             if depstr=='':
-               isMinable=1
-               break
+               minablelogic[d]=0
+               
             else: #if not surface then check dependencies
                minablelogic[d]=self.block_dic["%s"% depstr]
-               isMinable=available*np.prod(minablelogic)
+        
+        notMinable=int(np.prod(minablelogic))
+        
+        if notMinable == 0:
+            isMinable=1
+        else:
+            isMinable=0
             
         return isMinable
       
@@ -192,7 +204,7 @@ class environment(gym.Env):
             self.evaluate(selected_block, minable)
             self.update(selected_block)
             self.turncounter+=1
-            
+            self.render(self.rendermode)
         else: 
             self.terminal =True
         
@@ -203,26 +215,23 @@ class environment(gym.Env):
                  
     def evaluate(self, selected_block, isMinable):
         
-        if isMinable==0:             #penalising repetetive useless actions
+        if isMinable==1:             #penalising repetetive useless actions
             
             self.turnore=-1#/(self.gamma**(self.turncounter))
-            #H2O=-1
-            #Tonnes=1
-            #State=-1
+
             
         else:
             
             H2O=self.geo_array[self.i,self.j,self.RL,0]
             Tonnes=self.geo_array[self.i, self.j,self.RL,1] 
-            #State=self.mined
+
             self.turnore=(H2O*Tonnes)
     
         self.discountedmined+=self.turnore*self.gamma**(self.turncounter)
         
     def update(self, selected_block):
     
-        #self.ob_sample[self.i,self.j,self.RL,:]=self.mined #update State channel to mined "-1"
-        self.block_dic["%s"% selected_block]=0 #set to zero for logic multiplication
+        self.block_dic["%s"% selected_block]=1 #set to one (mined) for dependency logic multiplication
         
     
     def reset(self):
@@ -237,12 +246,22 @@ class environment(gym.Env):
         self.j=-1
         self.RL=-1
         self.actionslist=list()
-        
+        self.render_update=deepcopy(self.geo_array[:,:,:,0])
         
         
         return np.ndarray.flatten(self.ob_sample)
                     
-   # def render(self, mode='human'):      
+    def render(self, mode):      
+        
+        if mode=='on':
+             
+             self.render_update[self.i, self.j, self.RL]=0
+             bm=blockmodel(self.render_update)
+             bm.plot()
+            
+        pass
+    
+        
         
     #def close(self):
         
