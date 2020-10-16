@@ -200,7 +200,11 @@ class environment(gym.Env):
             self.update(selected_block)
             self.turncounter+=1
             self.render(self.rendermode)
-        else: 
+        else:
+            self.evaluate(selected_block, minable)
+            self.update(selected_block)
+            self.turncounter+=1
+            self.render(self.rendermode)
             self.terminal =True
         
         flatob=np.ndarray.flatten(self.ob_sample)
