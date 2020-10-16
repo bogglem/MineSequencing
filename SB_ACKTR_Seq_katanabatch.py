@@ -126,7 +126,7 @@ if __name__ == '__main__':
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
     scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_gamma{gamma_s}_batch{batch_size}')    
-    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=scenario, n_eval_episodes=1)])
+    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=scenario, n_eval_episodes=5)])
     
 
         
@@ -137,7 +137,7 @@ if __name__ == '__main__':
     filename= './%s/evaluations.npz' % scenario
     
     data=np.load(filename)
-    results=data['results']
+    y=np.average(results, axis=1)
     y=results[:,0]
     timesteps=data['timesteps']
     plt.plot(timesteps,y)
