@@ -106,11 +106,11 @@ class environment(gym.Env):
                 for k in range(self.RLlen):
                     
                     block=str(i)+str('_')+str(j)+str('_')+str(k)
-                    
-                    if (i>=0 & i<self.Ilen)&(j>=0 & j<self.Jlen)&(k>=0 & k<self.RLlen): 
-                        self.block_dic_init["%s"% block]=0 # not mined yet
-                    else:
-                        self.block_dic_init["%s"% block]=1 # mined or doesnt exist
+                    self.block_dic_init["%s"% block]=0 
+                    #if (i>=0 & i<self.Ilen)&(j>=0 & j<self.Jlen)&(k>=0 & k<self.RLlen): 
+                        #self.block_dic_init["%s"% block]=0 # not mined yet
+                    #else:
+                    #    self.block_dic_init["%s"% block]=1 # mined or doesnt exist
                         
     
     def construct_dep_dic(self):    
@@ -178,18 +178,13 @@ class environment(gym.Env):
             depstr=deplist[d]
             
             if depstr=='':
-               minablelogic[d]=0
+               minablelogic[d]=1
                
             else: #if not surface then check dependencies
                minablelogic[d]=self.block_dic["%s"% depstr]
         
-        notMinable=int(np.prod(minablelogic))
-        
-        if notMinable == 0:
-            isMinable=1
-        else:
-            isMinable=0
-            
+        isMinable=int(np.prod(minablelogic))
+                   
         return isMinable
       
     
@@ -215,7 +210,7 @@ class environment(gym.Env):
                  
     def evaluate(self, selected_block, isMinable):
         
-        if isMinable==1:             #penalising repetetive useless actions
+        if isMinable==0:             #penalising repetetive useless actions
             
             self.turnore=-1#/(self.gamma**(self.turncounter))
 

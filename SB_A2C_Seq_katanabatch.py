@@ -51,7 +51,7 @@ gamma=inputarray.loc[idx].gamma
 
 
 start=time.time()
-end=start+5.5*60*60
+end=start+11.5*60*60
 #inputfile="BM_easy6x6x4.xlsx"
 #LR=0.000001
 #gamma=0.995

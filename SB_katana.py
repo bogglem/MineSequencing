@@ -52,16 +52,17 @@ test='A2C'
 
 
 start=time.time()
-end=start+120
-inputfile="BM_easy10x10x8.xlsx"
-LR=0.00001
-gamma=0.995
+end=start+20*60
+inputfile="BM_parametric15x15x5.xlsx"
+LR=0.0001
+gamma=0.96
 batch_size=64
 #n_steps=5
 inspectenv = environment(inputfile, gamma)
 
 episodetimesteps=int(inspectenv.turns)
 
+LR_s=str(LR).split('.')[1]
 inputfile_s=inputfile.split('.')[0]
 gamma_s=str(gamma).split('.')[1]
 
@@ -118,8 +119,8 @@ if __name__ == '__main__':
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
-    scenario=str(f'{inputfile_s}_t{test}_lr{LR}_gamma{gamma_s}_batch{batch_size}')    
-    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=scenario, n_eval_episodes=1)])
+    scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_gamma{gamma_s}_batch{batch_size}')    
+    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=scenario, n_eval_episodes=1, deterministic=False)])
     
 
         
