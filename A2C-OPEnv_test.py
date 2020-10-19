@@ -28,7 +28,7 @@ from keras.optimizers import Adam
 from copy import deepcopy
 import keras.backend as K
 from sklearn.preprocessing import MinMaxScaler
-from OPenv import environment
+from OPenv_gym import environment
 #from tensorflow import Print
 
 gamma=0.995
@@ -36,7 +36,7 @@ LR_actor=0.00001
 LR_critic=0.00001
 batch_size=64
 EPSINIT=10.0
-inputfile="Ore blocks_easy6x6x4.xlsx"
+inputfile="BM_easy6x6x4.xlsx"
 epsilon_min=0.01
 memcap=500
 EPISODES = 400
@@ -179,12 +179,12 @@ class DQNAgent:
     def act(self, state):
         #for q_ (PER)
         action_probs = self.Amodel.predict(state)
-        critic_v = self.Vmodel.predict(state)[0][0]
+        #critic_v = self.Vmodel.predict(state)[0][0]
         action = np.random.choice(self.action_size, p=np.squeeze(action_probs))
-        action_onehot=np.zeros(self.action_size, dtype=float)
-        action_onehot[action]=1
+        #action_onehot=np.zeros(self.action_size, dtype=float)
+        #action_onehot[action]=1
            
-        return action, critic_v, action_onehot # returns action and critic value
+        return action # returns action and critic value
 
 #    def load(self, name):
 #        self.model.load_weights(name)
@@ -195,9 +195,9 @@ class DQNAgent:
     def build_Critic(self):
 
             model=Sequential()
-            model.add(Conv3D(1, kernel_size=(1, 1, 1), activation='relu', kernel_initializer='he_uniform', input_shape=state_size, padding='valid'))
-            model.add(Flatten())    
-            model.add(Dense(64, activation='relu'))
+            #model.add(Conv3D(1, kernel_size=(1, 1, 1), activation='relu', kernel_initializer='he_uniform', input_shape=state_size, padding='valid'))
+            #model.add(Flatten())
+            model.add(Dense(64, input_dim=state_size, activation='relu', kernel_initializer='he_uniform'))
             model.add(Dropout(dropout))
             model.add(Dense(1, activation='linear'))
             
@@ -211,10 +211,11 @@ class DQNAgent:
     def build_Actor(self):
         
         model=Sequential()
-        model.add(Conv3D(1, kernel_size=(1, 1, 1), activation='relu', kernel_initializer='he_uniform', input_shape=state_size, padding='valid'))
+        #model.add(Conv3D(1, kernel_size=(1, 1, 1), activation='relu', kernel_initializer='he_uniform', input_shape=state_size, padding='valid'))
         #Input(shape=[1])
-        model.add(Flatten())
-        model.add(Dense(64, activation='relu'))
+        #model.add(Flatten())
+        model.add(Dense(64, input_dim=state_size, activation='relu',
+                        kernel_initializer='he_uniform'))
         model.add(Dropout(dropout))
         model.add(Dense(self.action_size, activation='softmax'))
         #model = Model(inputs=state_input, outputs=output)
@@ -227,9 +228,9 @@ class DQNAgent:
      
 if __name__ == "__main__":
     env = environment(inputfile, gamma)
-    state_size = env.geo_array.shape#[0]
+    state_size = env.flatlen#[0]
     
-    action_size = len(env.action_space)    #.n
+    action_size = env.Ilen*env.Jlen    #.n
     agent = DQNAgent(state_size, action_size)
     agent.batch_size=env.turns #for one pass on policy algorithms
     
@@ -249,8 +250,8 @@ if __name__ == "__main__":
 
         while True:
             
-            agent.action, critic_v, agent.act1hot = agent.act(agent.state) #, env.actionlimit
-            next_state, reward, done = env.step(agent.action)
+            agent.action = agent.act(agent.state) #, env.actionlimit
+            next_state, reward, done, _  = env.step(agent.action)
             #agent.buffer_add(agent.state, agent.action, reward, next_state, done)
             
             #agent.memorize(agent.state, agent.action, reward, next_state, done)

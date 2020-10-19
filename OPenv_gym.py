@@ -207,9 +207,10 @@ class environment(gym.Env):
             self.render(self.rendermode)
             self.terminal =True
         
-        flatob=np.ndarray.flatten(self.ob_sample)
+        arr=np.ndarray.flatten(self.ob_sample)
+        #out=arr.reshape([1,len(arr)])
                     
-        return flatob, self.turnore, self.terminal, info    
+        return arr, self.turnore, self.terminal, info    
     
                  
     def evaluate(self, selected_block, isMinable):
@@ -247,8 +248,9 @@ class environment(gym.Env):
         self.actionslist=list()
         self.render_update=deepcopy(self.geo_array[:,:,:,0])
         
-        
-        return np.ndarray.flatten(self.ob_sample)
+        arr=np.ndarray.flatten(self.ob_sample)
+        #out=arr.reshape([1,len(arr)])
+        return arr
                     
     def render(self, mode):      
         
