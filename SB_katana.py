@@ -32,10 +32,10 @@ from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, EvalCallback, CallbackList
-from stable_baselines import A2C
+from stable_baselines import ACKTR
 from OPenv_gym import environment
 
-test='A2C'
+test='ACKTR'
 
 
 #idx=int(sys.argv[1])
@@ -52,9 +52,9 @@ test='A2C'
 
 
 start=time.time()
-end=start+2*60
+end=start+11.5*60
 inputfile="BM_parametric15x15x5.xlsx"
-LR=0.0001
+LR=0.00001
 gamma=0.96
 batch_size=64
 #n_steps=5
@@ -112,7 +112,7 @@ def make_env(inputfile, rank, seed=0):
 
 if __name__ == '__main__':
 
-    num_cpu = 1  # Number of processes to use
+    num_cpu = 63  # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(inputfile, i) for i in range(num_cpu)])
     eval_env=environment(inputfile,gamma)
@@ -120,11 +120,12 @@ if __name__ == '__main__':
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
     scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_gamma{gamma_s}_batch{batch_size}')    
-    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=scenario, n_eval_episodes=5, deterministic=False)])
+    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=scenario, n_eval_episodes=10
+                                                                         , deterministic=False, best_model_save_path=scenario)])
     
 
         
-    model = A2C(MlpPolicy, env, gamma=gamma, n_steps=batch_size, learning_rate=LR,  verbose=1)#, tensorboard_log=scenario)
+    model = ACKTR(MlpPolicy, env, gamma=gamma, n_steps=batch_size, learning_rate=LR,  verbose=1, lr_schedule='constant')#, tensorboard_log=scenario)
     model.learn(total_timesteps=episodetimesteps**99, callback=callbacklist)
     
     

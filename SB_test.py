@@ -36,7 +36,7 @@ from stable_baselines.common.schedules import PiecewiseSchedule
 from stable_baselines import ACKTR
 from OPenv_gym import environment
 
-test='ACKTR'
+test='A2C'
 
 
 #idx=int(sys.argv[1])
@@ -109,6 +109,7 @@ def make_env(inputfile, rank, seed=0):
     set_global_seeds(seed)
     return _init
 
+
 #points_values=list([[0,LR1],[1000000,LR2]])
 
 #Sched=PiecewiseSchedule(points_values, outside_value=LR2)
@@ -122,10 +123,10 @@ if __name__ == '__main__':
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
-    scenario=str(f'{inputfile}_t{test}_lr{LR}_gamma{gamma}_batch{batch_size}')    
+    scenario=str(f'{inputfile}_t{test}_lr{LR1}_{LR2}_gamma{gamma}_batch{batch_size}')    
     callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=scenario, deterministic=False)])
     
 
         
-    model = ACKTR(MlpPolicy, env, gamma=gamma, n_steps=batch_size, learning_rate=LR,  verbose=1)#, tensorboard_log=scenario)
+    model = A2C(MlpPolicy, env, gamma=gamma, n_steps=batch_size, learning_rate=LR,  verbose=1)#, tensorboard_log=scenario)
     model.learn(total_timesteps=episodetimesteps**99, callback=callbacklist)

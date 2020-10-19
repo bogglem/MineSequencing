@@ -48,10 +48,10 @@ batch_size=int(inputarray.loc[idx].batch_size)
 inputfile=inputarray.loc[idx].inputfile
 gamma=inputarray.loc[idx].gamma
 #dropout=float(inputarray.loc[idx].dropout)
-
+runtime=inputarray.loc[idx].runtime
 
 start=time.time()
-end=start+11.5*60*60
+end=start+runtime
 #inputfile="BM_easy6x6x4.xlsx"
 #LR=0.000001
 #gamma=0.995
