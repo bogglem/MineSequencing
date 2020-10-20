@@ -52,8 +52,8 @@ test='ACER'
 
 
 start=time.time()
-end=start+4.5*60*60
-inputfile="BM_parametric15x15x5.xlsx"
+end=start+11.5*60*60
+inputfile="BM_central15x15x5.xlsx"
 LR=0.00001
 LR_s=format(LR,"e")
 gamma=0.96
@@ -121,12 +121,12 @@ if __name__ == '__main__':
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
     scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_gamma{gamma_s}_batch{batch_size}')    
-    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=scenario, n_eval_episodes=5
+    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=scenario, n_eval_episodes=10
                                                                          , deterministic=False, best_model_save_path=scenario)])
     
 
         
-    model = ACER(MlpPolicy, env, gamma=gamma, n_steps=batch_size, learning_rate=LR,  verbose=1, lr_schedule='constant')#, tensorboard_log=scenario)
+    model = ACER(MlpPolicy, env, gamma=gamma, n_steps=batch_size, learning_rate=LR,  verbose=1, lr_schedule='constant', tensorboard_log=scenario)
     model.learn(total_timesteps=episodetimesteps**99, callback=callbacklist)
     
 

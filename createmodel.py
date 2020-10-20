@@ -18,9 +18,9 @@ names=np.array(['_I','_J','RL','H2O','Tonnes'])
 
 data=pd.DataFrame(columns=names)
 
-for i in range(_I-1):
-    for j in range(_J-1):
-        for k in range(RL-1):
+for i in range(_I):
+    for j in range(_J):
+        for k in range(RL):
             dic={}
             
             if (10>i>5)&(10>j>5):
