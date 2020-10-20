@@ -18,9 +18,9 @@ names=np.array(['_I','_J','RL','H2O','Tonnes'])
 
 data=pd.DataFrame(columns=names)
 
-for i in range(_I):
-    for j in range(_J):
-        for k in range(RL):
+for i in range(_I-1):
+    for j in range(_J-1):
+        for k in range(RL-1):
             dic={}
             
             if (10>i>5)&(10>j>5):
@@ -31,7 +31,7 @@ for i in range(_I):
                 H2O=(random.randrange(1,10)/100)*0.5*(RL+0.001)
             
                 
-            dic={'_I':i,'_J':j,'RL':k,'H2O':H2O,'Tonnes':10}
+            dic={'_I':i+1,'_J':j+1,'RL':k+1,'H2O':H2O,'Tonnes':10}
             data = data.append(dic, True)
             
             
