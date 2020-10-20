@@ -75,21 +75,21 @@ class blockmodel():
         
         exparr=self.explode(self.bm)
         normarr = self.normalize(exparr)     
-        facecolours = cm.viridis(normarr)
+        facecolours = cm.cividis(normarr)
         ceilarr=np.ceil(normarr)
         facecolours[:,:,:,-1] = ceilarr
                 
         filled = facecolours[:,:,:,-1] != 0
         
-        
+        eqscale=max(self.Imax,self.Jmax,self.RLmax)
         x, y, z = self.expand_coordinates(np.indices(np.array(filled.shape) + 1))
     
         fig = plt.figure(figsize=(30/2.54, 30/2.54))
         ax = fig.gca(projection='3d')
         ax.view_init(30, angle)
-        ax.set_xlim(right=self.Imax*2)
-        ax.set_ylim(top=self.Jmax*2)
-        ax.set_zlim(top=self.RLmax*2)
+        ax.set_xlim(right=eqscale*2)
+        ax.set_ylim(top=eqscale*2)
+        ax.set_zlim(top=eqscale*2)
         ax.invert_zaxis()
-        ax.voxels(x, y, z, filled, facecolors=facecolours, shade=False)
+        ax.voxels(x, y, z, filled, facecolors=facecolours, edgecolors='gray', shade=False)
         plt.show()
