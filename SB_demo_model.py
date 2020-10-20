@@ -3,7 +3,23 @@
 Created on Mon Oct 19 18:45:45 2020
 
 @author: Tim Pelech
+
 """
+
+# Filter tensorflow version warnings
+import os
+# https://stackoverflow.com/questions/40426502/is-there-a-way-to-suppress-the-messages-tensorflow-prints/40426709
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
+import warnings
+# https://stackoverflow.com/questions/15777951/how-to-suppress-pandas-future-warning
+warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.simplefilter(action='ignore', category=Warning)
+import tensorflow as tf
+tf.get_logger().setLevel('INFO')
+tf.autograph.set_verbosity(0)
+import logging
+tf.get_logger().setLevel(logging.ERROR)
+
 
 import time
 import gym
@@ -20,7 +36,7 @@ from OPenv_gym import environment
 
 start=time.time()
 end=start+2*60*60
-inputfile="BM_parametric15x15x5.xlsx"
+inputfile="BM_central15x15x5.xlsx"
 LR=0.001
 LR2=0.000001
 gamma=0.95

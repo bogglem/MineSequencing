@@ -32,10 +32,10 @@ from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, EvalCallback, CallbackList
-from stable_baselines import ACKTR
+from stable_baselines import ACER
 from OPenv_gym import environment
 
-test='ACKTR'
+test='ACER'
 
 
 #idx=int(sys.argv[1])
@@ -52,9 +52,10 @@ test='ACKTR'
 
 
 start=time.time()
-end=start+11.5*60
+end=start+4.5*60*60
 inputfile="BM_parametric15x15x5.xlsx"
 LR=0.00001
+LR_s=format(LR,"e")
 gamma=0.96
 batch_size=64
 #n_steps=5
@@ -62,7 +63,7 @@ inspectenv = environment(inputfile, gamma)
 
 episodetimesteps=int(inspectenv.turns)
 
-LR_s=str(LR).split('.')[1]
+LR_s=LR_s.split('-')[1]
 inputfile_s=inputfile.split('.')[0]
 gamma_s=str(gamma).split('.')[1]
 
@@ -112,7 +113,7 @@ def make_env(inputfile, rank, seed=0):
 
 if __name__ == '__main__':
 
-    num_cpu = 63  # Number of processes to use
+    num_cpu = 15 # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(inputfile, i) for i in range(num_cpu)])
     eval_env=environment(inputfile,gamma)
@@ -120,27 +121,27 @@ if __name__ == '__main__':
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
     scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_gamma{gamma_s}_batch{batch_size}')    
-    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=scenario, n_eval_episodes=10
+    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=scenario, n_eval_episodes=5
                                                                          , deterministic=False, best_model_save_path=scenario)])
     
 
         
-    model = ACKTR(MlpPolicy, env, gamma=gamma, n_steps=batch_size, learning_rate=LR,  verbose=1, lr_schedule='constant')#, tensorboard_log=scenario)
+    model = ACER(MlpPolicy, env, gamma=gamma, n_steps=batch_size, learning_rate=LR,  verbose=1, lr_schedule='constant')#, tensorboard_log=scenario)
     model.learn(total_timesteps=episodetimesteps**99, callback=callbacklist)
     
-    
+
     filename= './%s/evaluations.npz' % scenario
-    
+
     data=np.load(filename)
     results=data['results']
     y=np.average(results, axis=1)
     timesteps=data['timesteps']
     plt.plot(timesteps,y)
-    
+
     plt.xlabel('Timesteps')
     plt.ylabel('Score')
     #plt.show()
-    
+
     savepath='./%s/fig_%s' % (scenario, scenario)
     plt.savefig(savepath)
-    
+

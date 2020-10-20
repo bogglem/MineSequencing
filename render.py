@@ -80,6 +80,8 @@ class blockmodel():
         facecolours[:,:,:,-1] = ceilarr
                 
         filled = facecolours[:,:,:,-1] != 0
+        
+        
         x, y, z = self.expand_coordinates(np.indices(np.array(filled.shape) + 1))
     
         fig = plt.figure(figsize=(30/2.54, 30/2.54))
