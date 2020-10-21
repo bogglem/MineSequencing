@@ -50,7 +50,7 @@ episodetimesteps=int(inspectenv.turns)
 
 eval_env=environment(inputfile,gamma, rendermode="on")
 
-loaded_model=A2C.load("best_model")
+loaded_model=A2C.load("best_model2")
 ob=eval_env.reset()
 cum_reward=0
 
