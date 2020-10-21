@@ -10,16 +10,16 @@ from copy import deepcopy
 from sklearn.preprocessing import MinMaxScaler
 import gym
 from gym import spaces
-from render import blockmodel
-
+from render import renderbm
+from createmodel import automodel
 
 class environment(gym.Env):
     
-    def __init__(self,inputfile,gamma, rendermode='off'):
+    def __init__(self, x,y,z ,gamma, rendermode='off'):
         
         self.rendermode=rendermode
-        self.inputdata=pd.read_excel(inputfile)
-        self.data=self.inputdata
+
+        #self.data=self.inputdata
         self.actionslist = list()
         self.turnore=0     
         self.discountedmined=0
@@ -28,34 +28,39 @@ class environment(gym.Env):
         self.j=-1
         self.terminal=False
         self.gamma=gamma
-        self.Imin=self.data._I.min()
-        self.Imax=self.data._I.max()
-        self.Jmin=self.data._J.min()
-        self.Jmax=self.data._J.max()
-        self.RLmin=self.data.RL.min()
-        self.RLmax=self.data.RL.max()
+        self.Imin=0
+        self.Imax=x
+        self.Jmin=0
+        self.Jmax=y
+        self.RLmin=0
+        self.RLmax=z
         self.Ilen=self.Imax-self.Imin+1
         self.Jlen=self.Jmax-self.Jmin+1
         self.RLlen=self.RLmax-self.RLmin+1 #RL counts up as depth increases
         
-        self.orebody=np.array([self.Ilen,self.Jlen,self.RLlen])
-        self.idxbody=np.array([self.Ilen,self.Jlen,self.RLlen])
+        #self.orebody=np.array([self.Ilen,self.Jlen,self.RLlen])
+        #self.idxbody=np.array([self.Ilen,self.Jlen,self.RLlen])
         self.block_dic={}
         self.block_dic_init={}
         self.dep_dic={}
     
-        self.RL=self.RLlen-1
+        #self.RL=self.RLlen-1
         self.channels = 2
-        self.geo_array= np.zeros([self.Ilen, self.Jlen, self.RLlen, self.channels], dtype=float)
+        #self.geo_array= np.zeros([self.Ilen, self.Jlen, self.RLlen, self.channels], dtype=float)
         #self.state_size = self.geo_array.shape
         self.flatlen=self.Ilen*self.Jlen*self.RLlen*self.channels
         self.mined=-1
         
+        self.callnumber=1
+        
+        a=automodel()
+        self.geo_array=a.buildmodel(self.Ilen,self.Jlen,self.RLlen)
+        
       # normalising input space
         
-        for i in self.data.index:
-            self.geo_array[self.data._I[i]-1,self.data._J[i]-1,self.data.RL[i]-1,0]=self.data.H2O[i]
-            self.geo_array[self.data._I[i]-1,self.data._J[i]-1,self.data.RL[i]-1,1]=self.data.Tonnes[i]
+     #   for i in self.data.index:
+      #      self.geo_array[self.data._I[i]-1,self.data._J[i]-1,self.data.RL[i]-1,0]=self.data.H2O[i]
+       #     self.geo_array[self.data._I[i]-1,self.data._J[i]-1,self.data.RL[i]-1,1]=self.data.Tonnes[i]
             #state space (mined/notmined)
             #self.geo_array[self.data._I[i]-1,self.data._J[i]-1,self.data.RL[i]-1,2]=1
             
@@ -258,7 +263,7 @@ class environment(gym.Env):
         if mode=='on':
              
              self.render_update[self.i, self.j, self.RL]=0
-             bm=blockmodel(self.render_update)
+             bm=renderbm(self.render_update)
              bm.plot()
             
         pass

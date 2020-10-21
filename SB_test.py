@@ -33,10 +33,10 @@ from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, EvalCallback, CallbackList
 from stable_baselines.common.schedules import PiecewiseSchedule
-from stable_baselines import ACKTR
+from stable_baselines import SAC, A2C
 from OPenv_gym import environment
 
-test='ACKTR'
+test='test'
 
 
 #idx=int(sys.argv[1])
@@ -55,7 +55,7 @@ test='ACKTR'
 start=time.time()
 end=start+2*60*60
 inputfile="BM_easy10x10x8.xlsx"
-LR=0.001
+LR=0.00001
 LR2=0.000001
 gamma=0.95
 batch_size=64
@@ -128,5 +128,5 @@ if __name__ == '__main__':
     
 
         
-    model = ACKTR(MlpPolicy, env, gamma=gamma, n_steps=batch_size, learning_rate=LR,  verbose=1)#, tensorboard_log=scenario)
+    model = A2C(MlpPolicy, env, gamma=gamma, verbose=1)#, tensorboard_log=scenario)
     model.learn(total_timesteps=episodetimesteps**99, callback=callbacklist)
