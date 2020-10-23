@@ -77,7 +77,7 @@ class renderbm():
         normarr = self.normalize(exparr)     
         facecolours = cm.cividis(normarr)
         ceilarr=np.ceil(normarr)
-        facecolours[:,:,:,-1] = ceilarr
+        facecolours[:,:,:,-1] = normarr
                 
         filled = facecolours[:,:,:,-1] != 0
         

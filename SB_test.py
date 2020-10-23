@@ -34,7 +34,7 @@ from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, EvalCallback, CallbackList
 from stable_baselines.common.schedules import PiecewiseSchedule
 from stable_baselines import SAC, A2C
-from OPenv_gym import environment
+from OPRGenv_gym import environment
 
 test='test'
 
@@ -54,15 +54,19 @@ test='test'
 
 start=time.time()
 end=start+2*60*60
-inputfile="BM_easy10x10x8.xlsx"
+#inputfile="BM_easy10x10x8.xlsx"
 LR=0.00001
 LR2=0.000001
 gamma=0.95
-batch_size=64
+batch_size=1
 #n_steps=5
-inspectenv = environment(inputfile, gamma)
+x=15
+y=15
+z=5
 
-episodetimesteps=int(inspectenv.turns)
+#inspectenv = environment(x,y,z, gamma)
+
+episodetimesteps=x*y*z#int(inspectenv.turns)
 
 
 
@@ -93,7 +97,7 @@ class TimeLimit(BaseCallback):
     
     
 
-def make_env(inputfile, rank, seed=0):
+def make_env(x,y,z, rank, seed=0):
     """
     Utility function for multiprocessed env.
 
@@ -103,7 +107,7 @@ def make_env(inputfile, rank, seed=0):
     :param rank: (int) index of the subprocess
     """
     def _init():
-        env = environment(inputfile,gamma)
+        env = environment(x,y,z, gamma)
         env.seed(seed + rank)
         return env
     set_global_seeds(seed)
@@ -118,12 +122,12 @@ if __name__ == '__main__':
 
     num_cpu = 1  # Number of processes to use
     # Create the vectorized environment
-    env = SubprocVecEnv([make_env(inputfile, i) for i in range(num_cpu)])
-    eval_env=environment(inputfile,gamma)
+    env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
+    eval_env=environment(x,y,z, gamma)
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
-    scenario=str(f'{inputfile}_t{test}_lr{LR}_gamma{gamma}_batch{batch_size}')    
+    scenario=str(f'RG_t{test}_lr{LR}_gamma{gamma}_batch{batch_size}')    
     callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=scenario, deterministic=False)])
     
 

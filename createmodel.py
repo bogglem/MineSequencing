@@ -63,8 +63,8 @@ class automodel():
         
         for s in range(numseedlocations):
             
-            i = random.randint(0, self._I)
-            j = random.randint(0, self._J)
+            i = random.randint(0, self._I-2)
+            j = random.randint(0, self._J-2)
             RL = random.randint(1, self.RL)
             H2O= random.vonmisesvariate(mu, kappa)/alpha
             #dic={'_I':i,'_J':j,'RL':RL,'H2O':H2O,'Tonnes':10}
@@ -151,8 +151,8 @@ class automodel():
         self._I=ilen
         self._J=jlen
         self.RL=depth
-        maxseeds=round(ilen*jlen*depth/50)
-        self.seedlocations(random.randint(8,maxseeds))
+        maxseeds=1#round(ilen*jlen*depth/50)
+        self.seedlocations(random.randint(1,maxseeds))
         geo_array=self.interpolate()        
         
         return geo_array

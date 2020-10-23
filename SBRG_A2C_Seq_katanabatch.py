@@ -64,7 +64,7 @@ z=5
 #n_steps=5
 #inspectenv = environment(inputfile, gamma)
 
-episodetimesteps=round(x*y*z*0.5)
+episodetimesteps=round(x*y*z)
 
 LR_s=str(LR).split('.')[1]
 inputfile_s='RG_%s_%s_%s' % (x,y,z)
