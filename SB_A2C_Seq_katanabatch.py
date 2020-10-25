@@ -61,7 +61,8 @@ inspectenv = environment(inputfile, gamma)
 
 episodetimesteps=int(inspectenv.turns)
 
-LR_s=str(LR).split('.')[1]
+LR_s=format(LR,"e")
+LR_s=str(LR_s).split('-')[1]
 inputfile_s=inputfile.split('.')[0]
 gamma_s=str(gamma).split('.')[1]
 

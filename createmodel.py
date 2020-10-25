@@ -118,7 +118,7 @@ class automodel():
         
         #names=np.array(['_I','_J','RL','H2O','Tonnes'])
         #data=pd.DataFrame(columns=names)
-        geo_array=np.zeros([self._I,self._J,self.RL,2])
+        geo_array=np.zeros([self._I,self._J,self.RL,3])
         
         for i in range(self._I):
             for j in range(self._J):

@@ -45,7 +45,7 @@ class environment(gym.Env):
         self.dep_dic={}
     
         #self.RL=self.RLlen-1
-        self.channels = 2
+        self.channels = 3
         #self.geo_array= np.zeros([self.Ilen, self.Jlen, self.RLlen, self.channels], dtype=float)
         #self.state_size = self.geo_array.shape
         self.flatlen=self.Ilen*self.Jlen*self.RLlen*self.channels
@@ -67,21 +67,21 @@ class environment(gym.Env):
         scaler=MinMaxScaler()
         H2O_init=self.geo_array[:,:,:,0]
         Tonnes_init=self.geo_array[:,:,:,1]
-        #State_init=self.geo_array[:,:,:,2]
+        State_init=self.geo_array[:,:,:,2]
         
         H2O_reshaped=H2O_init.reshape([-1,1])
         Tonnes_reshaped=Tonnes_init.reshape([-1,1])
-        #State_reshaped=State_init.reshape([-1,1])
+        State_reshaped=State_init.reshape([-1,1])
         
         H2O_scaled=scaler.fit_transform(H2O_reshaped)
         Tonnes_scaled=scaler.fit_transform(Tonnes_reshaped)
         
         a=H2O_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
         b=Tonnes_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
-        #c=State_reshaped.reshape([1,self.Ilen, self.Jlen, self.RLlen,1])
+        c=State_reshaped.reshape([self.Ilen, self.Jlen, self.RLlen,1])
                
         self.norm=np.append(a, b, axis=3)
-        #self.norm=np.append(self.norm,c, axis=4)
+        self.norm=np.append(self.norm,c, axis=3)
         #.reshape(1,self.Imax+1-self.Imin, self.Jmax+1-self.Jmin, self.RLmax+1-self.RLmin, self.channels)
         #self.norm=normalize(np.reshape(self.geo_array,((1,self.Imax+1-self.Imin, self.Jmax+1-self.Jmin, self.RLmax+1-self.RLmin, self.channels))),4)
         self.ob_sample=deepcopy(self.norm)
@@ -238,7 +238,8 @@ class environment(gym.Env):
     def update(self, selected_block):
     
         self.block_dic["%s"% selected_block]=1 #set to one (mined) for dependency logic multiplication
-        
+        self.ob_sample[self.i,self.j,self.RL,2]=1 #set to one (mined) for agent observation
+
     
     def reset(self):
         

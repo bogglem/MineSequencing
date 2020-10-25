@@ -64,9 +64,9 @@ z=5
 #n_steps=5
 #inspectenv = environment(inputfile, gamma)
 
-episodetimesteps=round(x*y*z)
-
-LR_s=str(LR).split('.')[1]
+episodetimesteps=round(x*y*z*0.5)
+LR_s=format(LR,"e")
+LR_s=str(LR_s).split('-')[1]
 inputfile_s='RG_%s_%s_%s' % (x,y,z)
 #inputfile_s=inputfile.split('.')[0]
 gamma_s=str(gamma).split('.')[1]
@@ -118,7 +118,7 @@ def make_env(x,y,z, rank, seed=0):
 
 if __name__ == '__main__':
 
-    num_cpu = 15  # Number of processes to use
+    num_cpu = 31  # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
     eval_env=environment(x,y,z,gamma)
