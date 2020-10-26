@@ -34,9 +34,9 @@ class environment(gym.Env):
         self.Jmax=y
         self.RLmin=0
         self.RLmax=z
-        self.Ilen=self.Imax-self.Imin+1
-        self.Jlen=self.Jmax-self.Jmin+1
-        self.RLlen=self.RLmax-self.RLmin+1 #RL counts up as depth increases
+        self.Ilen=self.Imax-self.Imin
+        self.Jlen=self.Jmax-self.Jmin
+        self.RLlen=self.RLmax-self.RLmin #RL counts up as depth increases
         
         #self.orebody=np.array([self.Ilen,self.Jlen,self.RLlen])
         #self.idxbody=np.array([self.Ilen,self.Jlen,self.RLlen])

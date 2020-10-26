@@ -58,7 +58,7 @@ end=start+2*60*60
 LR=0.00001
 LR2=0.000001
 gamma=0.95
-batch_size=1
+batch_size=32
 #n_steps=5
 x=15
 y=15
@@ -66,7 +66,7 @@ z=5
 
 #inspectenv = environment(x,y,z, gamma)
 
-episodetimesteps=x*y*z#int(inspectenv.turns)
+episodetimesteps=round(x*y*z*0.5)#int(inspectenv.turns)
 
 
 

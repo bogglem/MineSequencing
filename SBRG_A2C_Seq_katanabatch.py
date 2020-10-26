@@ -118,7 +118,7 @@ def make_env(x,y,z, rank, seed=0):
 
 if __name__ == '__main__':
 
-    num_cpu = 31  # Number of processes to use
+    num_cpu = 15  # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
     eval_env=environment(x,y,z,gamma)
@@ -126,7 +126,7 @@ if __name__ == '__main__':
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
     scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_gamma{gamma_s}_batch{batch_size}')    
-    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=scenario, n_eval_episodes=20
+    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=scenario, n_eval_episodes=5
                                                                          , deterministic=False, best_model_save_path=scenario)])
     
 

@@ -126,7 +126,7 @@ if __name__ == '__main__':
     
 
         
-    model = A2C(MlpPolicy, env, gamma=gamma, n_steps=batch_size, learning_rate=LR,  verbose=1, tensorboard_log=scenario)
+    model = A2C(MlpPolicy, env, gamma=gamma, n_steps=batch_size, learning_rate=LR)#,  verbose=1, tensorboard_log=scenario)
     model.learn(total_timesteps=episodetimesteps**99, callback=callbacklist)
     
     
