@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Oct 13 09:35:16 2020
+Created on Tue Oct 13 17:38:18 2020
 
 @author: z3333990
 """
-
 
 # Filter tensorflow version warnings
 import os
@@ -27,47 +26,50 @@ import gym
 import numpy as np
 import sys
 import pandas as pd
-
-from stable_baselines.common.policies import MlpPolicy, CnnPolicy
+import matplotlib.pyplot as plt
+from stable_baselines.common.policies import CnnPolicy
 from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
-from stable_baselines.common.callbacks import BaseCallback, EvalCallback, CallbackList
-from stable_baselines.common.schedules import PiecewiseSchedule
-from stable_baselines import SAC, A2C
+from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
+from stable_baselines import A2C
 from OPRG3Denv_gym import environment
 
-test='test'
+test='CNNA2C'
 
 
-#idx=int(sys.argv[1])
+idx=int(sys.argv[1])
 
-#inputarray=pd.read_csv('SB_job_input_array.csv')
+inputarray=pd.read_csv('SB_job_input_array.csv')
  
 #LR_critic=inputarray.loc[idx].LR_critic
-#LR=inputarray.loc[idx].LR
-#batch_size=int(inputarray.loc[idx].batch_size)
+LR=inputarray.loc[idx].LR
+batch_size=int(inputarray.loc[idx].batch_size)
 #memcap=int(inputarray.loc[idx].memcap)
 #inputfile=inputarray.loc[idx].inputfile
-#gamma=inputarray.loc[idx].gamma
+gamma=inputarray.loc[idx].gamma
 #dropout=float(inputarray.loc[idx].dropout)
-
+runtime=inputarray.loc[idx].runtime
 
 start=time.time()
-end=start+2*60*60
-#inputfile="BM_easy10x10x8.xlsx"
-LR=0.00001
-LR2=0.000001
-gamma=0.95
-batch_size=32
-#n_steps=5
+end=start+runtime
 x=15
 y=15
 z=5
 
-#inspectenv = environment(x,y,z, gamma)
 
-episodetimesteps=round(x*y*z*0.5)#int(inspectenv.turns)
+#inputfile="BM_easy6x6x4.xlsx"
+#LR=0.000001
+#gamma=0.995
+#batch_size=32
+#n_steps=5
+#inspectenv = environment(inputfile, gamma)
 
+episodetimesteps=round(x*y*z*0.5)
+LR_s=format(LR,"e")
+LR_s=str(LR_s).split('-')[1]
+inputfile_s='RG_%s_%s_%s' % (x,y,z)
+#inputfile_s=inputfile.split('.')[0]
+gamma_s=str(gamma).split('.')[1]
 
 
 class TimeLimit(BaseCallback):
@@ -107,30 +109,46 @@ def make_env(x,y,z, rank, seed=0):
     :param rank: (int) index of the subprocess
     """
     def _init():
-        env = environment(x,y,z, gamma)
+        env = environment(x,y,z,gamma)
         env.seed(seed + rank)
         return env
     set_global_seeds(seed)
     return _init
 
 
-#points_values=list([[0,LR1],[1000000,LR2]])
-
-#Sched=PiecewiseSchedule(points_values, outside_value=LR2)
-
 if __name__ == '__main__':
 
-    num_cpu = 1  # Number of processes to use
+    num_cpu = 15  # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
-    eval_env=environment(x,y,z, gamma)
+    eval_env=environment(x,y,z,gamma)
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
-    scenario=str(f'RG_t{test}_lr{LR}_gamma{gamma}_batch{batch_size}')    
-    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=scenario, deterministic=False)])
+    scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_gamma{gamma_s}_batch{batch_size}')    
+    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=scenario, n_eval_episodes=5
+                                                                         , deterministic=False, best_model_save_path=scenario)])
     
 
         
-    model = A2C(CnnPolicy, env, gamma=gamma, verbose=1)#, tensorboard_log=scenario)
+    model = A2C(CnnPolicy, env, gamma=gamma, n_steps=batch_size, learning_rate=LR,  verbose=1)#, tensorboard_log=scenario)
     model.learn(total_timesteps=episodetimesteps**99, callback=callbacklist)
+    
+    
+    filename= './%s/evaluations.npz' % scenario
+    
+    data=np.load(filename)
+    results=data['results']
+    y=np.average(results, axis=1)
+    timesteps=data['timesteps']
+    plt.plot(timesteps,y)
+    
+    plt.xlabel('Timesteps')
+    plt.ylabel('Score')
+    #plt.show()
+    
+    savepath='./%s/fig_%s' % (scenario, scenario)
+    plt.savefig(savepath)
+    
+    
+    
