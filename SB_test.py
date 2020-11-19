@@ -62,7 +62,7 @@ batch_size=32
 #n_steps=5
 x=15
 y=15
-z=5
+z=6
 
 #inspectenv = environment(x,y,z, gamma)
 
