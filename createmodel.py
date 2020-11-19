@@ -65,7 +65,7 @@ class automodel():
             
             i = random.randint(0, self._I-2)
             j = random.randint(0, self._J-2)
-            RL = random.randint(1, self.RL)
+            RL = random.randint(1, self.RL-2)
             H2O= random.vonmisesvariate(mu, kappa)/alpha
             #dic={'_I':i,'_J':j,'RL':RL,'H2O':H2O,'Tonnes':10}
             self.seeds[s,::]=[i,j,RL,H2O,10] #last column or tonnes
