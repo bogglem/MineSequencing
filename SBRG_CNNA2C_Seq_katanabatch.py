@@ -39,11 +39,11 @@ test='CNNA2C'
 
 idx=int(sys.argv[1])
 
-inputarray=pd.read_csv('SB_job_input_array.csv')
+inputarray=pd.read_csv('SBRG_job_input_array.csv')
  
 #LR_critic=inputarray.loc[idx].LR_critic
 LR=inputarray.loc[idx].LR
-batch_size=int(inputarray.loc[idx].batch_size)
+#batch_size=int(inputarray.loc[idx].batch_size)
 #memcap=int(inputarray.loc[idx].memcap)
 #inputfile=inputarray.loc[idx].inputfile
 gamma=inputarray.loc[idx].gamma
@@ -64,7 +64,7 @@ z=6
 #n_steps=5
 #inspectenv = environment(inputfile, gamma)
 
-episodetimesteps=round(x*y*z*0.8)
+episodetimesteps=round(x*y*z*0.6)
 LR_s=format(LR,"e")
 LR_s=str(LR_s).split('-')[1]
 inputfile_s='RG_%s_%s_%s' % (x,y,z)
@@ -125,13 +125,13 @@ if __name__ == '__main__':
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
-    scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_gamma{gamma_s}_batch{batch_size}')    
+    scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_gamma{gamma_s}')    
     callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=scenario, n_eval_episodes=5
                                                                          , deterministic=False, best_model_save_path=scenario)])
     
 
         
-    model = A2C(CnnPolicy, env, gamma=gamma, n_steps=batch_size, learning_rate=LR,  verbose=1)#, tensorboard_log=scenario)
+    model = A2C(CnnPolicy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  verbose=1)#, tensorboard_log=scenario)
     model.learn(total_timesteps=episodetimesteps**99, callback=callbacklist)
     
     
