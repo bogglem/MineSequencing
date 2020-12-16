@@ -40,7 +40,7 @@ test='CNNA2C'
 idx=int(sys.argv[1])
 
 inputarray=pd.read_csv('SBRG_job_input_array.csv')
- 
+trialv=inputarray.loc[idx].trialv 
 #LR_critic=inputarray.loc[idx].LR_critic
 LR=inputarray.loc[idx].LR
 #batch_size=int(inputarray.loc[idx].batch_size)
@@ -125,7 +125,7 @@ if __name__ == '__main__':
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
-    scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_gamma{gamma_s}')    
+    scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_gamma{gamma_s}_{trialv}')    
     callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=scenario, n_eval_episodes=5
                                                                          , deterministic=False, best_model_save_path=scenario)])
     

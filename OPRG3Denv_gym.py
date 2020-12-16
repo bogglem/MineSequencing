@@ -53,17 +53,26 @@ class environment(gym.Env):
         
         self.callnumber=1
         
-        a=automodel()
-        self.geo_array=a.buildmodel(self.Ilen,self.Jlen,self.RLlen)
+        self.automodel=automodel()
+             
+        self.build()
+        self.turns=round(len(self.dep_dic)*0.5,0)
         
-      # normalising input space
         
-     #   for i in self.data.index:
-      #      self.geo_array[self.data._I[i]-1,self.data._J[i]-1,self.data.RL[i]-1,0]=self.data.H2O[i]
-       #     self.geo_array[self.data._I[i]-1,self.data._J[i]-1,self.data.RL[i]-1,1]=self.data.Tonnes[i]
-            #state space (mined/notmined)
-            #self.geo_array[self.data._I[i]-1,self.data._J[i]-1,self.data.RL[i]-1,2]=1
-            
+       #super(environment, self).__init__()
+        # Define action and observation space
+        # They must be gym.spaces objects
+        # Example when using discrete actions:
+        self.action_space = spaces.Discrete((self.Ilen)*(self.Jlen))#Box(low=0, high=1,
+                                        #shape=((self.Ilen)*(self.Jlen),), dtype=np.float64)
+        # Example for using image as input:
+        self.observation_space = spaces.Box(low=-1, high=1,
+                                        shape=(self.Ilen, self.Jlen, self.RLlen,self.channels), dtype=np.float64)
+
+    def build(self):
+                
+        self.geo_array=self.automodel.buildmodel(self.Ilen,self.Jlen,self.RLlen)
+        
         scaler=MinMaxScaler()
         H2O_init=self.geo_array[:,:,:,0]
         Tonnes_init=self.geo_array[:,:,:,1]
@@ -90,20 +99,7 @@ class environment(gym.Env):
         self.construct_block_dic()
         self.block_dic=deepcopy(self.block_dic_init)
         self.render_update = self.geo_array[:,:,:,0]
-        self.turns=round(len(self.dep_dic)*0.5,0)
-        
-        
-       #super(environment, self).__init__()
-        # Define action and observation space
-        # They must be gym.spaces objects
-        # Example when using discrete actions:
-        self.action_space = spaces.Discrete((self.Ilen)*(self.Jlen))#Box(low=0, high=1,
-                                        #shape=((self.Ilen)*(self.Jlen),), dtype=np.float64)
-        # Example for using image as input:
-        self.observation_space = spaces.Box(low=-1, high=1,
-                                        shape=(self.Ilen, self.Jlen, self.RLlen,self.channels), dtype=np.float64)
-        
-       
+               
     
     def construct_block_dic(self):
        
@@ -243,8 +239,9 @@ class environment(gym.Env):
     
     def reset(self):
         
-        self.block_dic=deepcopy(self.block_dic_init)
-        self.ob_sample=deepcopy(self.norm)
+        #self.block_dic=deepcopy(self.block_dic_init)
+        #self.ob_sample=deepcopy(self.norm)
+        self.build()
         self.turnore=0
         self.discountedmined=0
         self.turncounter=0
@@ -253,7 +250,7 @@ class environment(gym.Env):
         self.j=-1
         self.RL=-1
         self.actionslist=list()
-        self.render_update=deepcopy(self.geo_array[:,:,:,0])
+        #self.render_update=deepcopy(self.geo_array[:,:,:,0])
         
         #arr=np.ndarray.flatten(self.ob_sample) #used for MLP policy
         #out=arr.reshape([1,len(arr)])
@@ -268,7 +265,7 @@ class environment(gym.Env):
              bm.plot()
             
         pass
-    
+   
         
         
     #def close(self):
