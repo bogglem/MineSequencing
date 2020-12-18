@@ -241,13 +241,13 @@ class environment(gym.Env):
     
     def reset(self):
         
-        #if np.random.uniform()>0.005: #1/200 chance to create new environment
-        #    self.block_dic=deepcopy(self.block_dic_init)
-        #    self.ob_sample=deepcopy(self.norm)
+        if np.random.uniform()>0.005: #1/200 chance to create new environment
+            self.block_dic=deepcopy(self.block_dic_init)
+            self.ob_sample=deepcopy(self.norm)
             #self.render_update=deepcopy(self.geo_array[:,:,:,0])
         
-        #else:
-        self.build()
+        else:
+            self.build()
             
         
         self.turnore=0
