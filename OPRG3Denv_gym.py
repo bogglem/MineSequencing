@@ -43,7 +43,8 @@ class environment(gym.Env):
         self.block_dic={}
         self.block_dic_init={}
         self.dep_dic={}
-    
+        self.dep_dic_init={}
+        
         #self.RL=self.RLlen-1
         self.channels = 3
         #self.geo_array= np.zeros([self.Ilen, self.Jlen, self.RLlen, self.channels], dtype=float)
@@ -95,6 +96,7 @@ class environment(gym.Env):
         #self.norm=normalize(np.reshape(self.geo_array,((1,self.Imax+1-self.Imin, self.Jmax+1-self.Jmin, self.RLmax+1-self.RLmin, self.channels))),4)
         self.ob_sample=deepcopy(self.norm)
         self.construct_dep_dic()
+        self.dep_dic=deepcopy(self.dep_dic_init)
         #construct_dependencies blocks with padding
         self.construct_block_dic()
         self.block_dic=deepcopy(self.block_dic_init)
@@ -126,7 +128,7 @@ class environment(gym.Env):
                     if k==0: #if block is surface layer, then no dependency exists
                         
                         dep=list(['','','','','','','','',''])
-                        self.dep_dic["%s"% block]=dep
+                        self.dep_dic_init["%s"% block]=dep
                         
                     else:
                         dep0=str(i-1)+str('_')+str(j+1)+str('_')+str(k-1)
@@ -140,7 +142,7 @@ class environment(gym.Env):
                         dep8=str(i+1)+str('_')+str(j-1)+str('_')+str(k-1)
                         
                         dep=list([dep0,dep1,dep2,dep3,dep4,dep5,dep6,dep7,dep8])
-                        self.dep_dic["%s"% block]=dep
+                        self.dep_dic_init["%s"% block]=dep
                
     
     def actcoords(self, action):
@@ -239,9 +241,15 @@ class environment(gym.Env):
     
     def reset(self):
         
-        #self.block_dic=deepcopy(self.block_dic_init)
-        #self.ob_sample=deepcopy(self.norm)
+        #if np.random.uniform()>0.005: #1/200 chance to create new environment
+        #    self.block_dic=deepcopy(self.block_dic_init)
+        #    self.ob_sample=deepcopy(self.norm)
+            #self.render_update=deepcopy(self.geo_array[:,:,:,0])
+        
+        #else:
         self.build()
+            
+        
         self.turnore=0
         self.discountedmined=0
         self.turncounter=0
@@ -250,7 +258,7 @@ class environment(gym.Env):
         self.j=-1
         self.RL=-1
         self.actionslist=list()
-        #self.render_update=deepcopy(self.geo_array[:,:,:,0])
+        
         
         #arr=np.ndarray.flatten(self.ob_sample) #used for MLP policy
         #out=arr.reshape([1,len(arr)])
