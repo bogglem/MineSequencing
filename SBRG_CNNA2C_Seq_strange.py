@@ -35,11 +35,13 @@ from stable_baselines import A2C
 from OPRG3Denv_gym import environment
 
 test='CNNA2C'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
+
+#idx=int(sys.argv[1])
+idx=0
 
 
-idx=int(sys.argv[1])
-
-inputarray=pd.read_csv('SBRG_job_input_array.csv')
+inputarray=pd.read_csv('SBRGstrange_job_input_array.csv')
 trialv=inputarray.loc[idx].trialv 
 #LR_critic=inputarray.loc[idx].LR_critic
 LR=inputarray.loc[idx].LR
