@@ -35,7 +35,7 @@ from stable_baselines import A2C
 from OPRG3Denv_gym import environment
 
 test='CNNA2C'
-os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '5,7'
 
 #idx=int(sys.argv[1])
 idx=0
@@ -120,7 +120,7 @@ def make_env(x,y,z, rank, seed=0):
 
 if __name__ == '__main__':
 
-    num_cpu = 15  # Number of processes to use
+    num_cpu = 23  # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
     eval_env=environment(x,y,z,gamma)

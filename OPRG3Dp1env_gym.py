@@ -64,7 +64,7 @@ class environment(gym.Env):
         # Define action and observation space
         # They must be gym.spaces objects
         # Example when using discrete actions:
-        self.action_space = spaces.Discrete((self.Ilen)*(self.Jlen))#Box(low=0, high=1,
+        self.action_space = spaces.Discrete((self.Ilen)*(self.Jlen)+1)#Box(low=0, high=1,
                                         #shape=((self.Ilen)*(self.Jlen),), dtype=np.float64)
         # Example for using image as input:
         self.observation_space = spaces.Box(low=-1, high=1,
@@ -194,22 +194,18 @@ class environment(gym.Env):
     
     def step(self, action):        
         info={}
-        self.actcoords(action)
-        selected_block=self.select_block()
-        minable=self.isMinable(selected_block)
-        
-        if (self.turncounter<self.turns):
-            
-            self.evaluate(selected_block, minable)
-            self.update(selected_block)
-            self.turncounter+=1
-            self.render(self.rendermode)
+        if (action>=(self.Ilen)*(self.Jlen)) or (self.turncounter>=self.turns):
+            self.terminal=True
+            self.turnore = 0
         else:
+            self.actcoords(action)
+            selected_block=self.select_block()
+            minable=self.isMinable(selected_block)
+              
             self.evaluate(selected_block, minable)
             self.update(selected_block)
             self.turncounter+=1
             self.render(self.rendermode)
-            self.terminal =True
         
         #arr=np.ndarray.flatten(self.ob_sample) #used for MLP policy
         #out=arr.reshape([1,len(arr)])

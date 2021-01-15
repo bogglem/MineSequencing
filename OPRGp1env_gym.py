@@ -15,10 +15,11 @@ from createmodel import automodel
 
 class environment(gym.Env):
     
-    def __init__(self, x,y,z ,gamma, rendermode='off'):
+    def __init__(self, x,y,z ,gamma,penaltyscalar, rgscalar, rendermode='off'):
         
         self.rendermode=rendermode
-
+        self.cutoffpenaltyscalar=penaltyscalar
+        self.rgscalar=rgscalar
         #self.data=self.inputdata
         self.actionslist = list()
         self.turnore=0     
@@ -57,22 +58,24 @@ class environment(gym.Env):
         self.automodel=automodel()
              
         self.build()
-        self.turns=round(len(self.dep_dic)*0.5,0)
+        
         
         
        #super(environment, self).__init__()
         # Define action and observation space
         # They must be gym.spaces objects
         # Example when using discrete actions:
-        self.action_space = spaces.Discrete((self.Ilen)*(self.Jlen))#Box(low=0, high=1,
+        self.action_space = spaces.Discrete((self.Ilen)*(self.Jlen)+1)#Box(low=0, high=1,
                                         #shape=((self.Ilen)*(self.Jlen),), dtype=np.float64)
         # Example for using image as input:
         self.observation_space = spaces.Box(low=-1, high=1,
-                                        shape=(self.Ilen, self.Jlen, self.RLlen,self.channels), dtype=np.float64)
+                                        shape=(self.flatlen,), dtype=np.float64)
+                                            #shape=(self.Ilen, self.Jlen, self.RLlen,self.channels), dtype=np.float64) #for 3D space
 
     def build(self):
                 
         self.geo_array=self.automodel.buildmodel(self.Ilen,self.Jlen,self.RLlen)
+        
         
         scaler=MinMaxScaler()
         H2O_init=self.geo_array[:,:,:,0]
@@ -101,7 +104,11 @@ class environment(gym.Env):
         self.construct_block_dic()
         self.block_dic=deepcopy(self.block_dic_init)
         self.render_update = self.geo_array[:,:,:,0]
-               
+        
+        self.turns=round(len(self.dep_dic)*0.5,0)
+        self.expected_ore=np.average(np.multiply(self.geo_array[:,:,:,0],self.geo_array[:,:,:,1]))*self.gamma**(self.turns/2) #
+
+
     
     def construct_block_dic(self):
        
@@ -192,36 +199,52 @@ class environment(gym.Env):
         return isMinable
       
     
+    def cutoffpenalty(self):
+        
+        penaltystate=(self.ob_sample[:,:,:,2]-0.5)*self.cutoffpenaltyscalar #mined blocks updated to 1, (blocks-0.5)*2 translates states to cause penalty for not mining, reward for mining.
+        a=np.multiply(self.geo_array[:,:,:,0],penaltystate)
+        self.turnore=sum(sum(sum(a)))
+    
+    
+    
     def step(self, action):        
         info={}
-        self.actcoords(action)
-        selected_block=self.select_block()
-        minable=self.isMinable(selected_block)
-        
-        if (self.turncounter<self.turns):
+        if (action>=(self.Ilen)*(self.Jlen)):
+            self.terminal=True
+            self.cutoffpenalty()
             
-            self.evaluate(selected_block, minable)
-            self.update(selected_block)
-            self.turncounter+=1
-            self.render(self.rendermode)
+        elif (self.turncounter>=self.turns):
+            self.terminal=True
+            self.turnore = 0
+            
         else:
+            self.actcoords(action)
+            selected_block=self.select_block()
+            minable=self.isMinable(selected_block)
+              
             self.evaluate(selected_block, minable)
             self.update(selected_block)
             self.turncounter+=1
             self.render(self.rendermode)
-            self.terminal =True
+          
+            
+            #self.evaluate(selected_block, minable) #removed for termination button
+            #self.update(selected_block)
+            #self.turncounter+=1
+            #self.render(self.rendermode)
+            #self.terminal =True
         
-        #arr=np.ndarray.flatten(self.ob_sample) #used for MLP policy
+        arr=np.ndarray.flatten(self.ob_sample) #used for MLP policy
         #out=arr.reshape([1,len(arr)])
                     
-        return self.ob_sample, self.turnore, self.terminal, info    
-    
+        return arr, self.turnore, self.terminal, info    
+               #self.ob_sample
                  
     def evaluate(self, selected_block, isMinable):
         
         if isMinable==0:             #penalising repetetive useless actions
             
-            self.turnore=-1#/(self.gamma**(self.turncounter))
+            self.turnore=-self.expected_ore #penalty scaled to negative 1 x expected ore 
 
             
         else:
@@ -241,7 +264,7 @@ class environment(gym.Env):
     
     def reset(self):
         
-        if np.random.uniform()>0.00: #1/100 chance to create new environment
+        if np.random.uniform()>self.rgscalar: #1/100 chance to create new environment
             self.block_dic=deepcopy(self.block_dic_init)
             self.ob_sample=deepcopy(self.norm)
             #self.render_update=deepcopy(self.geo_array[:,:,:,0])
@@ -260,9 +283,9 @@ class environment(gym.Env):
         self.actionslist=list()
         
         
-        #arr=np.ndarray.flatten(self.ob_sample) #used for MLP policy
+        arr=np.ndarray.flatten(self.ob_sample) #used for MLP policy
         #out=arr.reshape([1,len(arr)])
-        return self.ob_sample
+        return arr #self.ob_sample
                     
     def render(self, mode):      
         

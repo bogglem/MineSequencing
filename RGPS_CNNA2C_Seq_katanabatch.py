@@ -27,20 +27,20 @@ import numpy as np
 import sys
 import pandas as pd
 import matplotlib.pyplot as plt
-from stable_baselines.common.policies import MlpPolicy
+from stable_baselines.common.policies import CnnPolicy
 from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import A2C
-from OPRGp1env_gym import environment
+from OPRG3Dp1env_gym import environment
 
-test='A2C'
+test='CNNA2C'
 
 
 idx=int(sys.argv[1])
 
-inputarray=pd.read_csv('SBRG_job_input_array.csv')
-trialv=inputarray.loc[idx].trialv  
+inputarray=pd.read_csv('RGPS_job_input_array.csv')
+trialv=inputarray.loc[idx].trialv 
 #LR_critic=inputarray.loc[idx].LR_critic
 LR=inputarray.loc[idx].LR
 batch_size=int(inputarray.loc[idx].batch_size)
@@ -49,12 +49,16 @@ batch_size=int(inputarray.loc[idx].batch_size)
 gamma=inputarray.loc[idx].gamma
 #dropout=float(inputarray.loc[idx].dropout)
 runtime=inputarray.loc[idx].runtime
+cutoffpenaltyscalar=inputarray.loc[idx].cutoffpenaltyscalar
+rgscalar=inputarray.loc[idx].rgscalar
+
+
 
 start=time.time()
 end=start+runtime
 x=15
 y=15
-z=5
+z=6
 
 
 #inputfile="BM_easy6x6x4.xlsx"
@@ -64,7 +68,7 @@ z=5
 #n_steps=5
 #inspectenv = environment(inputfile, gamma)
 
-episodetimesteps=round(x*y*z*0.5)
+episodetimesteps=round(x*y*z*0.6)
 LR_s=format(LR,"e")
 LR_s=str(LR_s).split('-')[1]
 inputfile_s='RG_%s_%s_%s' % (x,y,z)
@@ -121,17 +125,17 @@ if __name__ == '__main__':
     num_cpu = 15  # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
-    eval_env=environment(x,y,z,gamma)
+    eval_env=environment(x,y,z,gamma, cutoffpenaltyscalar, rgscalar)
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
-    scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_batch{batch_size}_gamma{gamma_s}_{trialv}')    
+    scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_rg{rgscalar}_cutoff{cutoffpenaltyscalar}_{trialv}')    
     callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=scenario, n_eval_episodes=5
                                                                          , deterministic=False, best_model_save_path=scenario)])
     
 
         
-    model = A2C(MlpPolicy, env, gamma=gamma, n_steps=batch_size, learning_rate=LR,  verbose=1)#, tensorboard_log=scenario)
+    model = A2C(CnnPolicy, env, gamma=gamma, n_steps=batch_size, learning_rate=LR,  verbose=1)#, tensorboard_log=scenario)
     model.learn(total_timesteps=episodetimesteps**99, callback=callbacklist)
     
     
