@@ -15,11 +15,11 @@ from createmodel import automodel
 
 class environment(gym.Env):
     
-    def __init__(self, x,y,z ,gamma,penaltyscalar, rgscalar, rendermode='off'):
+    def __init__(self, x,y,z ,gamma, penaltyscalar, rg_prob, rendermode='off'):
         
         self.rendermode=rendermode
         self.cutoffpenaltyscalar=penaltyscalar
-        self.rgscalar=rgscalar
+        self.rg_prob=rg_prob
         #self.data=self.inputdata
         self.actionslist = list()
         self.turnore=0     
@@ -264,7 +264,7 @@ class environment(gym.Env):
     
     def reset(self):
         
-        if np.random.uniform()>self.rgscalar: #1/100 chance to create new environment
+        if np.random.uniform()>self.rg_prob: #1/100 chance to create new environment
             self.block_dic=deepcopy(self.block_dic_init)
             self.ob_sample=deepcopy(self.norm)
             #self.render_update=deepcopy(self.geo_array[:,:,:,0])

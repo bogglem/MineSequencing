@@ -50,7 +50,7 @@ gamma=inputarray.loc[idx].gamma
 #dropout=float(inputarray.loc[idx].dropout)
 runtime=inputarray.loc[idx].runtime
 cutoffpenaltyscalar=inputarray.loc[idx].cutoffpenaltyscalar
-rgscalar=inputarray.loc[idx].rgscalar
+rg_prob=inputarray.loc[idx].rg_prob
 
 
 
@@ -74,7 +74,8 @@ LR_s=str(LR_s).split('-')[1]
 inputfile_s='RG_%s_%s_%s' % (x,y,z)
 #inputfile_s=inputfile.split('.')[0]
 gamma_s=str(gamma).split('.')[1]
-
+cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
+rg_s=str(rg_prob).split('.')[1]
 
 class TimeLimit(BaseCallback):
     """
@@ -113,7 +114,7 @@ def make_env(x,y,z, rank, seed=0):
     :param rank: (int) index of the subprocess
     """
     def _init():
-        env = environment(x,y,z,gamma)
+        env = environment(x,y,z,gamma, cutoffpenaltyscalar, rg_prob)
         env.seed(seed + rank)
         return env
     set_global_seeds(seed)
@@ -125,11 +126,11 @@ if __name__ == '__main__':
     num_cpu = 15  # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
-    eval_env=environment(x,y,z,gamma, cutoffpenaltyscalar, rgscalar)
+    eval_env=environment(x, y, z, gamma, cutoffpenaltyscalar, rg_prob)
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
-    scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_rg{rgscalar}_cutoff{cutoffpenaltyscalar}_{trialv}')    
+    scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_rg{rg_s}_cutoff{cutoff_s}_{trialv}')    
     callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=scenario, n_eval_episodes=5
                                                                          , deterministic=False, best_model_save_path=scenario)])
     

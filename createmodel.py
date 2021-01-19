@@ -46,11 +46,11 @@ class manualmodel():
     
 class automodel():
     
-    def __init__(self):
+    def __init__(self,ilen,jlen,depth):
 
-        self._I=-1
-        self._J=-1
-        self.RL=-1
+        self._I=ilen
+        self._J=jlen
+        self.RL=depth
         self.seeds=np.zeros(1)
 
         
@@ -63,8 +63,8 @@ class automodel():
         
         for s in range(numseedlocations):
             
-            i = random.randint(0, self._I-2)
-            j = random.randint(0, self._J-2)
+            i = random.randint(2, self._I-2)
+            j = random.randint(2, self._J-2)
             RL = random.randint(1, self.RL-2)
             H2O= random.vonmisesvariate(mu, kappa)/alpha
             #dic={'_I':i,'_J':j,'RL':RL,'H2O':H2O,'Tonnes':10}
@@ -139,19 +139,17 @@ class automodel():
         self._I=ilen
         self._J=jlen
         self.RL=depth
-        maxseeds=round(ilen*jlen*depth/50)
+        maxseeds=np.ceil(ilen*jlen*depth/150)
         self.seedlocations(random.randint(8,maxseeds))
         data=self.interpolate_excel()        
         
         filename= 'BM_auto%s.xlsx' % callnumber
         data.to_excel(filename)     
         
-    def buildmodel(self, ilen,jlen,depth):
+    def buildmodel(self):
         
-        self._I=ilen
-        self._J=jlen
-        self.RL=depth
-        maxseeds=1#round(ilen*jlen*depth/50)
+        
+        maxseeds=np.ceil(self._I*self._J*self.RL/150)
         self.seedlocations(random.randint(1,maxseeds))
         geo_array=self.interpolate()        
         

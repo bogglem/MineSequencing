@@ -15,10 +15,11 @@ from createmodel import automodel
 
 class environment(gym.Env):
     
-    def __init__(self, x,y,z ,gamma, rendermode='off'):
+    def __init__(self, x,y,z ,gamma, penaltyscalar, rg_prob, rendermode='off'):
         
         self.rendermode=rendermode
-
+        self.cutoffpenaltyscalar=penaltyscalar
+        self.rg_prob=rg_prob
         #self.data=self.inputdata
         self.actionslist = list()
         self.turnore=0     
@@ -54,7 +55,7 @@ class environment(gym.Env):
         
         self.callnumber=1
         
-        self.automodel=automodel()
+        self.automodel=automodel(self.Ilen,self.Jlen,self.RLlen)
              
         self.build()
         self.turns=round(len(self.dep_dic)*0.5,0)
@@ -72,7 +73,7 @@ class environment(gym.Env):
 
     def build(self):
                 
-        self.geo_array=self.automodel.buildmodel(self.Ilen,self.Jlen,self.RLlen)
+        self.geo_array=self.automodel.buildmodel()
         
         scaler=MinMaxScaler()
         H2O_init=self.geo_array[:,:,:,0]
@@ -192,11 +193,24 @@ class environment(gym.Env):
         return isMinable
       
     
+    def cutoffpenalty(self):
+        
+        penaltystate=(self.ob_sample[:,:,:,2]-0.5)*self.cutoffpenaltyscalar #mined blocks updated to 1, (blocks-0.5)*2 translates states to cause penalty for not mining, reward for mining.
+        a=np.multiply(self.geo_array[:,:,:,0],self.geo_array[:,:,:,1],penaltystate)
+        self.turnore=sum(sum(sum(a)))
+    
+    
+    
     def step(self, action):        
         info={}
-        if (action>=(self.Ilen)*(self.Jlen)) or (self.turncounter>=self.turns):
+        if (action>=(self.Ilen)*(self.Jlen)):
+            self.terminal=True
+            self.cutoffpenalty()
+            
+        elif (self.turncounter>=self.turns):
             self.terminal=True
             self.turnore = 0
+            
         else:
             self.actcoords(action)
             selected_block=self.select_block()
@@ -205,7 +219,7 @@ class environment(gym.Env):
             self.evaluate(selected_block, minable)
             self.update(selected_block)
             self.turncounter+=1
-            self.render(self.rendermode)
+            self.renderif(self.rendermode)
         
         #arr=np.ndarray.flatten(self.ob_sample) #used for MLP policy
         #out=arr.reshape([1,len(arr)])
@@ -237,7 +251,7 @@ class environment(gym.Env):
     
     def reset(self):
         
-        if np.random.uniform()>0.00: #1/100 chance to create new environment
+        if np.random.uniform()>self.rg_prob: #1/100 chance to create new environment
             self.block_dic=deepcopy(self.block_dic_init)
             self.ob_sample=deepcopy(self.norm)
             #self.render_update=deepcopy(self.geo_array[:,:,:,0])
@@ -260,7 +274,7 @@ class environment(gym.Env):
         #out=arr.reshape([1,len(arr)])
         return self.ob_sample
                     
-    def render(self, mode):      
+    def renderif(self, mode):      
         
         if mode=='on':
              
@@ -270,6 +284,13 @@ class environment(gym.Env):
             
         pass
    
+    def render(self):      
+        
+                   
+         self.render_update[self.i, self.j, self.RL]=0
+         bm=renderbm(self.render_update)
+         bm.plot()
+
         
         
     #def close(self):
