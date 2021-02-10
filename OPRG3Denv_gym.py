@@ -15,10 +15,12 @@ from createmodel import automodel
 
 class environment(gym.Env):
     
-    def __init__(self, x,y,z ,gamma, rendermode='off'):
+    def __init__(self, x,y,z ,gamma, penaltyscalar, rg_prob, turnspc, rendermode='off'):
         
         self.rendermode=rendermode
-
+        self.framecounter=0
+        self.cutoffpenaltyscalar=penaltyscalar
+        self.rg_prob=rg_prob
         #self.data=self.inputdata
         self.actionslist = list()
         self.turnore=0     
@@ -54,25 +56,29 @@ class environment(gym.Env):
         
         self.callnumber=1
         
-        self.automodel=automodel()
+        self.automodel=automodel(self.Ilen,self.Jlen,self.RLlen)
              
         self.build()
-        self.turns=round(len(self.dep_dic)*0.5,0)
+        self.turns=round(len(self.dep_dic)*turnspc,0)
         
         
        #super(environment, self).__init__()
         # Define action and observation space
         # They must be gym.spaces objects
         # Example when using discrete actions:
-        self.action_space = spaces.Discrete((self.Ilen)*(self.Jlen))#Box(low=0, high=1,
+        self.action_space = spaces.Discrete((self.Ilen)*(self.Jlen)+1)#Box(low=0, high=1,
                                         #shape=((self.Ilen)*(self.Jlen),), dtype=np.float64)
         # Example for using image as input:
         self.observation_space = spaces.Box(low=-1, high=1,
                                         shape=(self.Ilen, self.Jlen, self.RLlen,self.channels), dtype=np.float64)
+        
+        self.init_cutoffpenalty=self.cutoffpenalty()
+        #np.average(np.multiply(self.geo_array[:,:,:,0],self.geo_array[:,:,:,1]))*self.gamma**(self.turns/2) #
+
 
     def build(self):
                 
-        self.geo_array=self.automodel.buildmodel(self.Ilen,self.Jlen,self.RLlen)
+        self.geo_array=self.automodel.buildmodel()
         
         scaler=MinMaxScaler()
         H2O_init=self.geo_array[:,:,:,0]
@@ -192,24 +198,35 @@ class environment(gym.Env):
         return isMinable
       
     
+    def cutoffpenalty(self):
+        
+        penaltystate=(self.ob_sample[:,:,:,2]-0.5)*self.cutoffpenaltyscalar*(1/(self.Ilen*self.Jlen*self.RLlen)) #mined blocks updated to 1, (blocks-0.5)*x translates states to cause penalty for not mining, reward for mining.
+        a=np.multiply(self.geo_array[:,:,:,0],self.geo_array[:,:,:,1])
+        b=np.multiply(a,penaltystate)
+        self.turnore=sum(sum(sum(b)))
+        
+        return self.turnore
+    
+
     def step(self, action):        
         info={}
-        self.actcoords(action)
-        selected_block=self.select_block()
-        minable=self.isMinable(selected_block)
-        
-        if (self.turncounter<self.turns):
+        if (action>=(self.Ilen)*(self.Jlen)):
+            self.terminal=True
+            #self.cutoffpenalty()
             
-            self.evaluate(selected_block, minable)
-            self.update(selected_block)
-            self.turncounter+=1
-            self.render(self.rendermode)
+        elif (self.turncounter>=self.turns):
+            self.terminal=True
+            self.turnore = 0
+            
         else:
+            self.actcoords(action)
+            selected_block=self.select_block()
+            minable=self.isMinable(selected_block)
+              
             self.evaluate(selected_block, minable)
             self.update(selected_block)
             self.turncounter+=1
-            self.render(self.rendermode)
-            self.terminal =True
+            self.renderif(self.rendermode)
         
         #arr=np.ndarray.flatten(self.ob_sample) #used for MLP policy
         #out=arr.reshape([1,len(arr)])
@@ -221,7 +238,8 @@ class environment(gym.Env):
         
         if isMinable==0:             #penalising repetetive useless actions
             
-            self.turnore=-1#/(self.gamma**(self.turncounter))
+            self.turnore=self.init_cutoffpenalty
+            #self.turnore=-1#/(self.gamma**(self.turncounter))
 
             
         else:
@@ -241,7 +259,7 @@ class environment(gym.Env):
     
     def reset(self):
         
-        if np.random.uniform()>0.00: #1/100 chance to create new environment
+        if np.random.uniform()>self.rg_prob: #1/100 chance to create new environment
             self.block_dic=deepcopy(self.block_dic_init)
             self.ob_sample=deepcopy(self.norm)
             #self.render_update=deepcopy(self.geo_array[:,:,:,0])
@@ -264,16 +282,24 @@ class environment(gym.Env):
         #out=arr.reshape([1,len(arr)])
         return self.ob_sample
                     
-    def render(self, mode):      
-        
-        if mode=='on':
+    def renderif(self, mode):      
+        self.framecounter +=1
+        if ((mode=='on') and (self.framecounter>=50)):
              
              self.render_update[self.i, self.j, self.RL]=0
              bm=renderbm(self.render_update)
              bm.plot()
-            
+             self.framecounter=0
+             
         pass
    
+    def render(self):      
+        
+                   
+         self.render_update[self.i, self.j, self.RL]=0
+         bm=renderbm(self.render_update)
+         bm.plot()
+
         
         
     #def close(self):

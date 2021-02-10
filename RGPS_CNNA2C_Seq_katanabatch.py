@@ -32,14 +32,14 @@ from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import A2C
-from OPRG3Dp1env_gym import environment
+from OPRG3Denv_gym import environment
 
 test='CNNA2C'
 
 
 idx=int(sys.argv[1])
 
-inputarray=pd.read_csv('RGPS_job_input_array.csv')
+inputarray=pd.read_csv('RGPS2_job_input_array.csv')
 trialv=inputarray.loc[idx].trialv 
 #LR_critic=inputarray.loc[idx].LR_critic
 LR=inputarray.loc[idx].LR
@@ -51,7 +51,7 @@ gamma=inputarray.loc[idx].gamma
 runtime=inputarray.loc[idx].runtime
 cutoffpenaltyscalar=inputarray.loc[idx].cutoffpenaltyscalar
 rg_prob=inputarray.loc[idx].rg_prob
-
+turnspc=inputarray.loc[idx].turnspc
 
 
 start=time.time()
@@ -76,6 +76,7 @@ inputfile_s='RG_%s_%s_%s' % (x,y,z)
 gamma_s=str(gamma).split('.')[1]
 cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
 rg_s=str(rg_prob).split('.')[1]
+turnspc_s=str(turnspc).split('.')[1]
 
 class TimeLimit(BaseCallback):
     """
@@ -114,7 +115,7 @@ def make_env(x,y,z, rank, seed=0):
     :param rank: (int) index of the subprocess
     """
     def _init():
-        env = environment(x,y,z,gamma, cutoffpenaltyscalar, rg_prob)
+        env = environment(x,y,z,gamma, cutoffpenaltyscalar, rg_prob, turnspc)
         env.seed(seed + rank)
         return env
     set_global_seeds(seed)
@@ -126,11 +127,11 @@ if __name__ == '__main__':
     num_cpu = 15  # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
-    eval_env=environment(x, y, z, gamma, cutoffpenaltyscalar, rg_prob)
+    eval_env=environment(x, y, z, gamma, cutoffpenaltyscalar, rg_prob, turnspc)
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
-    scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_rg{rg_s}_cutoff{cutoff_s}_{trialv}')    
+    scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_rg{rg_s}_maxturnspc{turnspc_s}_{trialv}')    
     callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=scenario, n_eval_episodes=5
                                                                          , deterministic=False, best_model_save_path=scenario)])
     

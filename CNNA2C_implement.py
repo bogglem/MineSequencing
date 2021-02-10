@@ -24,7 +24,7 @@ import gym
 from stable_baselines import A2C
 from stable_baselines.common.policies import CnnPolicy
 from stable_baselines.common.evaluation import evaluate_policy
-from OPRG3Dp1env_gym import environment
+from OPRG3Denv_gym import environment
 
 # Create environment
 x=15
@@ -49,7 +49,7 @@ mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=10)
 
 # Enjoy trained agent
 obs = env.reset()
-for i in range(200):
+for i in range(50):
     action, _states = model.predict(obs)
     obs, rewards, dones, info = env.step(action)
     env.render()

@@ -70,6 +70,10 @@ class environment(gym.Env):
         # Example for using image as input:
         self.observation_space = spaces.Box(low=-1, high=1,
                                         shape=(self.Ilen, self.Jlen, self.RLlen,self.channels), dtype=np.float64)
+        
+        self.init_cutoffpenalty=self.cutoffpenalty()
+        #np.average(np.multiply(self.geo_array[:,:,:,0],self.geo_array[:,:,:,1]))*self.gamma**(self.turns/2) #
+
 
     def build(self):
                 
@@ -195,12 +199,14 @@ class environment(gym.Env):
     
     def cutoffpenalty(self):
         
-        penaltystate=(self.ob_sample[:,:,:,2]-0.5)*self.cutoffpenaltyscalar #mined blocks updated to 1, (blocks-0.5)*2 translates states to cause penalty for not mining, reward for mining.
-        a=np.multiply(self.geo_array[:,:,:,0],self.geo_array[:,:,:,1],penaltystate)
-        self.turnore=sum(sum(sum(a)))
+        penaltystate=(self.ob_sample[:,:,:,2]-0.5)*self.cutoffpenaltyscalar*(1/(self.Ilen*self.Jlen*self.RLlen)) #mined blocks updated to 1, (blocks-0.5)*x translates states to cause penalty for not mining, reward for mining.
+        a=np.multiply(self.geo_array[:,:,:,0],self.geo_array[:,:,:,1])
+        b=np.multiply(a,penaltystate)
+        self.turnore=sum(sum(sum(b)))
+        
+        return self.turnore
     
-    
-    
+
     def step(self, action):        
         info={}
         if (action>=(self.Ilen)*(self.Jlen)):
@@ -231,7 +237,8 @@ class environment(gym.Env):
         
         if isMinable==0:             #penalising repetetive useless actions
             
-            self.turnore=-1#/(self.gamma**(self.turncounter))
+            self.turnore=self.init_cutoffpenalty
+            #self.turnore=-1#/(self.gamma**(self.turncounter))
 
             
         else:
