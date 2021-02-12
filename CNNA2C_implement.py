@@ -31,12 +31,15 @@ x=15
 y=15
 z=6
 batch_size=64
-LR=0.0004
-gamma=0.9
+LR=0.0001
+gamma=0.99
 cutoffpenaltyscalar=1.0
-rg_prob=0.1
+rg_prob=0.3
+turnspc=0.8
 
-env = environment(x,y,z,gamma, cutoffpenaltyscalar, rg_prob)
+turns=round(x*y*z*turnspc)
+
+env = environment(x,y,z,gamma, cutoffpenaltyscalar, rg_prob, turnspc)
 
 # Instantiate the agent
 model = A2C(CnnPolicy, env, gamma=gamma, n_steps=batch_size, learning_rate=LR,  verbose=1)
@@ -49,7 +52,7 @@ mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=10)
 
 # Enjoy trained agent
 obs = env.reset()
-for i in range(50):
+for i in range(turns):
     action, _states = model.predict(obs)
     obs, rewards, dones, info = env.step(action)
-    env.render()
+    env.renderif('on')

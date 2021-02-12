@@ -1,10 +1,7 @@
-LR,gamma,batch_size,runtime,cutoffpenaltyscalar,rg_prob,tunspc,trialv
-0.0001,0.99,64,25200,1,0.01,0.2,capped length
-0.0001,0.99,64,25200,1,0.01,0.4,capped length
-0.0001,0.99,64,25200,1,0.01,0.6,capped length
-0.0001,0.99,64,25200,1,0.1,0.2,capped length
-0.0001,0.99,64,25200,1,0.1,0.4,capped length
-0.0001,0.99,64,25200,1,0.1,0.6,capped length
-0.0001,0.99,64,25200,1,0.3,0.2,capped length
-0.0001,0.99,64,25200,1,0.3,0.4,capped length
-0.0001,0.99,64,25200,1,0.3,0.6,capped length
+LR,gamma,batch_size,runtime,cutoffpenaltyscalar,rg_prob,turnspc,trialv
+0.0001,0.99,64,41400,1,0.01,0.6,map25
+0.0001,0.99,64,41400,2,0.01,0.6,map25
+0.0001,0.99,64,41400,1,0.1,0.6,map25
+0.0001,0.99,64,41400,2,0.1,0.6,map25
+0.0001,0.99,64,41400,1,0.3,0.6,map25
+0.0001,0.99,64,41400,2,0.3,0.6,map25

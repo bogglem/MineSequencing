@@ -107,7 +107,7 @@ class environment(gym.Env):
         self.construct_block_dic()
         self.block_dic=deepcopy(self.block_dic_init)
         self.render_update = self.geo_array[:,:,:,0]
-               
+        self.bm=renderbm(self.render_update)               
     
     def construct_block_dic(self):
        
@@ -238,7 +238,7 @@ class environment(gym.Env):
         
         if isMinable==0:             #penalising repetetive useless actions
             
-            self.turnore=self.init_cutoffpenalty
+            self.turnore=5*self.init_cutoffpenalty
             #self.turnore=-1#/(self.gamma**(self.turncounter))
 
             
@@ -247,8 +247,12 @@ class environment(gym.Env):
             H2O=self.geo_array[self.i,self.j,self.RL,0]
             Tonnes=self.geo_array[self.i, self.j,self.RL,1] 
 
-            self.turnore=(H2O*Tonnes)
-    
+            if (H2O*Tonnes)+self.init_cutoffpenalty>0:
+                self.turnore=(H2O*Tonnes)
+            else:
+                self.turnore=self.init_cutoffpenalty
+                
+                
         self.discountedmined+=self.turnore*self.gamma**(self.turncounter)
         
     def update(self, selected_block):
@@ -283,22 +287,31 @@ class environment(gym.Env):
         return self.ob_sample
                     
     def renderif(self, mode):      
-        self.framecounter +=1
-        if ((mode=='on') and (self.framecounter>=50)):
-             
-             self.render_update[self.i, self.j, self.RL]=0
-             bm=renderbm(self.render_update)
-             bm.plot()
-             self.framecounter=0
-             
+        if (mode=='on'): 
+            self.framecounter +=1
+        
+            if self.framecounter<=1:
+                self.render_update[self.i, self.j, self.RL]=0
+    
+                self.bm.initiate_plot()
+            
+            self.bm.update_mined(self.i, self.j, self.RL)
+            self.render_update[self.i, self.j, self.RL]=0 #not really required
+                    
+            if (self.framecounter % 50 == 0):
+                              
+                 self.bm.plot()
+        
         pass
    
-    def render(self):      
+    def render(self):      #deprecated
         
                    
-         self.render_update[self.i, self.j, self.RL]=0
-         bm=renderbm(self.render_update)
-         bm.plot()
+         self.render_update[self.i, self.j, self.RL]=0 #updates mined blocks to 0 for rendering
+         #self.bm.initiate_plot()
+         self.bm.update_mined(self.i, self.j, self.RL)
+         #self.bm=renderbm(self.render_update)
+         self.bm.plot()
 
         
         
