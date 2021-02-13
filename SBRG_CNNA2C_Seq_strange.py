@@ -41,16 +41,20 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '5,7'
 idx=0
 
 
-inputarray=pd.read_csv('SBRGstrange_job_input_array.csv')
+inputarray=pd.read_csv('RGPS2_job_input_array.csv')
 trialv=inputarray.loc[idx].trialv 
 #LR_critic=inputarray.loc[idx].LR_critic
 LR=inputarray.loc[idx].LR
-#batch_size=int(inputarray.loc[idx].batch_size)
+batch_size=int(inputarray.loc[idx].batch_size)
 #memcap=int(inputarray.loc[idx].memcap)
 #inputfile=inputarray.loc[idx].inputfile
 gamma=inputarray.loc[idx].gamma
 #dropout=float(inputarray.loc[idx].dropout)
 runtime=inputarray.loc[idx].runtime
+cutoffpenaltyscalar=inputarray.loc[idx].cutoffpenaltyscalar
+rg_prob=inputarray.loc[idx].rg_prob
+turnspc=inputarray.loc[idx].turnspc
+
 
 start=time.time()
 end=start+runtime
@@ -66,12 +70,15 @@ z=6
 #n_steps=5
 #inspectenv = environment(inputfile, gamma)
 
-episodetimesteps=round(x*y*z*0.6)
-LR_s=format(LR,"e")
-LR_s=str(LR_s).split('-')[1]
+episodetimesteps=round(x*y*z*turnspc)
+#LR_s=format(LR,"e")
+LR_s=str(LR).split('.')[1]
 inputfile_s='RG_%s_%s_%s' % (x,y,z)
 #inputfile_s=inputfile.split('.')[0]
 gamma_s=str(gamma).split('.')[1]
+cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
+rg_s=str(rg_prob).split('.')[1]
+turnspc_s=str(turnspc).split('.')[1]
 
 
 class TimeLimit(BaseCallback):
@@ -111,7 +118,7 @@ def make_env(x,y,z, rank, seed=0):
     :param rank: (int) index of the subprocess
     """
     def _init():
-        env = environment(x,y,z,gamma)
+        env = environment(x,y,z,gamma, cutoffpenaltyscalar, rg_prob, turnspc)
         env.seed(seed + rank)
         return env
     set_global_seeds(seed)
@@ -120,21 +127,21 @@ def make_env(x,y,z, rank, seed=0):
 
 if __name__ == '__main__':
 
-    num_cpu = 23  # Number of processes to use
+    num_cpu = 1  # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
-    eval_env=environment(x,y,z,gamma)
+    eval_env=environment(x, y, z, gamma, cutoffpenaltyscalar, rg_prob, turnspc)
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
-    scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_gamma{gamma_s}_{trialv}')    
+    scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_rg{rg_s}_cutoff{cutoff_s}_{trialv}')    
     callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=scenario, n_eval_episodes=5
                                                                          , deterministic=False, best_model_save_path=scenario)])
     
 
         
     model = A2C(CnnPolicy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  verbose=1)#, tensorboard_log=scenario)
-    model.learn(total_timesteps=episodetimesteps**99, callback=callbacklist)
+    model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist)
     
     
     filename= './%s/evaluations.npz' % scenario

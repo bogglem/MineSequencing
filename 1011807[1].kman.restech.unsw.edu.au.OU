@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "RGPS_CNNA2C_Seq_katanabatch.py", line 141, in <module>
+    model.learn(total_timesteps=episodetimesteps**99, callback=callbacklist)
+  File "/home/z3333990/tf1.14env/lib64/python3.6/site-packages/stable_baselines/a2c/a2c.py", line 275, in learn
+    self.num_timesteps // self.n_batch, writer)
+  File "/home/z3333990/tf1.14env/lib64/python3.6/site-packages/stable_baselines/a2c/a2c.py", line 215, in _train_step
+    cur_lr = self.learning_rate_schedule.value()
+  File "/home/z3333990/tf1.14env/lib64/python3.6/site-packages/stable_baselines/common/schedules.py", line 243, in value
+    current_value = self.initial_value * self.schedule(self.step / self.nvalues)
+OverflowError: int too large to convert to float

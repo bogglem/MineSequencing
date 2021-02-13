@@ -90,20 +90,21 @@ class renderbm():
         #minedarr=explode(self.bm)
         exploded_x,exploded_y,exploded_z = self.translate_to_exploded(i,j,RL)
         
-        self.facecolours[exploded_x,exploded_y,exploded_z] = [0.5,0.5,0.5,0.5]
+        self.facecolours[exploded_x,exploded_y,exploded_z] = [0.5,0.5,0.5,1]
         
         if exploded_z>0:
             self.facecolours[exploded_x,exploded_y,0:exploded_z-1] = [0.5,0.5,0.5,0] #hide previously mined blocks above
         
         
 
-    def initiate_plot(self):   
+    def initiate_plot(self, init_cutoffpenalty):   
 
         self.exparr=self.explode(self.bm)
+        self.exparr=np.where(self.exparr+init_cutoffpenalty<0, 0,self.exparr) #turns values below cutoff to 0 invisible waste
         normarr = self.normalize(self.exparr)     
         self.facecolours = cm.plasma(normarr) # facecolours [x,y,z, (r,g,b,a)]
-        ceilarr=np.ceil(normarr)
-        normarr[normarr<=0.05]=0 #hide voxels less than 0.05
+        #ceilarr=np.ceil(normarr)
+        #normarr[normarr<=0.05]=0 #hide voxels less than 0.05
         
         self.facecolours[:,:,:,-1] = normarr #matches transperancy to normarr intensity
              

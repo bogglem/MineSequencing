@@ -56,8 +56,8 @@ turnspc=inputarray.loc[idx].turnspc
 
 start=time.time()
 end=start+runtime
-x=25
-y=25
+x=15
+y=15
 z=6
 
 
@@ -68,7 +68,7 @@ z=6
 #n_steps=5
 #inspectenv = environment(inputfile, gamma)
 
-episodetimesteps=round(x*y*z*0.6)
+episodetimesteps=round(x*y*z*turnspc)
 #LR_s=format(LR,"e")
 LR_s=str(LR).split('.')[1]
 inputfile_s='RG_%s_%s_%s' % (x,y,z)
@@ -138,7 +138,7 @@ if __name__ == '__main__':
 
         
     model = A2C(CnnPolicy, env, gamma=gamma, n_steps=batch_size, learning_rate=LR,  verbose=1)#, tensorboard_log=scenario)
-    model.learn(total_timesteps=episodetimesteps**99, callback=callbacklist)
+    model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist)
     
     
     filename= './%s/evaluations.npz' % scenario

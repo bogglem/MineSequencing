@@ -27,15 +27,15 @@ from stable_baselines.common.evaluation import evaluate_policy
 from OPRG3Denv_gym import environment
 
 # Create environment
-x=15
-y=15
+x=25
+y=25
 z=6
 batch_size=64
 LR=0.0001
 gamma=0.99
 cutoffpenaltyscalar=1.0
-rg_prob=0.3
-turnspc=0.8
+rg_prob=0.01
+turnspc=0.6
 
 turns=round(x*y*z*turnspc)
 

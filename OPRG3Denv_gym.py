@@ -46,6 +46,7 @@ class environment(gym.Env):
         self.block_dic_init={}
         self.dep_dic={}
         self.dep_dic_init={}
+        self.eff_dic_init={}
         
         #self.RL=self.RLlen-1
         self.channels = 3
@@ -103,6 +104,9 @@ class environment(gym.Env):
         self.ob_sample=deepcopy(self.norm)
         self.construct_dep_dic()
         self.dep_dic=deepcopy(self.dep_dic_init)
+        self.construct_eff_dic()
+        self.eff_dic=deepcopy(self.eff_dic_init)
+        
         #construct_dependencies blocks with padding
         self.construct_block_dic()
         self.block_dic=deepcopy(self.block_dic_init)
@@ -150,6 +154,27 @@ class environment(gym.Env):
                         dep=list([dep0,dep1,dep2,dep3,dep4,dep5,dep6,dep7,dep8])
                         self.dep_dic_init["%s"% block]=dep
                
+    def construct_eff_dic(self):    
+    #construct_dependencies
+        
+        for i in range(self.Ilen):
+            for j in range(self.Jlen):
+                for k in range(self.RLlen):
+                    
+                    block=str(i)+str('_')+str(j)+str('_')+str(k)
+                       
+                    dep9=str(i-1)+str('_')+str(j+1)+str('_')+str(k)
+                    dep10=str(i)+str('_')+str(j+1)+str('_')+str(k)
+                    dep11=str(i+1)+str('_')+str(j+1)+str('_')+str(k)
+                    dep12=str(i-1)+str('_')+str(j)+str('_')+str(k)
+                    dep13=str(i+1)+str('_')+str(j)+str('_')+str(k)
+                    dep14=str(i-1)+str('_')+str(j-1)+str('_')+str(k)
+                    dep15=str(i)+str('_')+str(j-1)+str('_')+str(k)
+                    dep16=str(i+1)+str('_')+str(j-1)+str('_')+str(k)
+
+                        
+                    dep=list([dep9,dep10,dep11,dep12,dep13,dep14,dep15,dep16])
+                    self.eff_dic_init["%s"% block]=dep
     
     def actcoords(self, action):
         #map coords
@@ -196,7 +221,25 @@ class environment(gym.Env):
         isMinable=int(np.prod(minablelogic))
                    
         return isMinable
-      
+    
+    def isEfficient(self,selected_block):
+        
+        deplist = self.eff_dic["%s"% selected_block]
+        efficientlogic=np.zeros(len(deplist))
+        
+        for d in range(len(deplist)):
+            depstr=deplist[d]
+            
+            #if depstr=='':
+            #   efficientlogic[d]=1
+               
+            #else: #if not surface then check dependencies
+            efficientlogic[d]=self.block_dic["%s"% depstr]
+        
+        isEfficient=efficientlogic.max()
+                   
+        return isEfficient        
+        
     
     def cutoffpenalty(self):
         
@@ -222,8 +265,9 @@ class environment(gym.Env):
             self.actcoords(action)
             selected_block=self.select_block()
             minable=self.isMinable(selected_block)
-              
-            self.evaluate(selected_block, minable)
+            efficient=self.isEfficient(selected_block)
+            
+            self.evaluate(selected_block, minable, efficient)
             self.update(selected_block)
             self.turncounter+=1
             self.renderif(self.rendermode)
@@ -234,7 +278,7 @@ class environment(gym.Env):
         return self.ob_sample, self.turnore, self.terminal, info    
     
                  
-    def evaluate(self, selected_block, isMinable):
+    def evaluate(self, selected_block, isMinable, isEfficient):
         
         if isMinable==0:             #penalising repetetive useless actions
             
@@ -242,16 +286,25 @@ class environment(gym.Env):
             #self.turnore=-1#/(self.gamma**(self.turncounter))
 
             
+        elif isEfficient==0:
+            
+            #H2O=self.geo_array[self.i,self.j,self.RL,0]
+            #Tonnes=self.geo_array[self.i, self.j,self.RL,1] 
+
+            #if (H2O*Tonnes)+self.init_cutoffpenalty>=0:
+            #    self.turnore=(H2O*Tonnes)
+            #else:
+            self.turnore=self.init_cutoffpenalty
+                
         else:
             
             H2O=self.geo_array[self.i,self.j,self.RL,0]
             Tonnes=self.geo_array[self.i, self.j,self.RL,1] 
 
-            if (H2O*Tonnes)+self.init_cutoffpenalty>0:
+            if (H2O*Tonnes)+self.init_cutoffpenalty>=0:
                 self.turnore=(H2O*Tonnes)
             else:
                 self.turnore=self.init_cutoffpenalty
-                
                 
         self.discountedmined+=self.turnore*self.gamma**(self.turncounter)
         
@@ -293,7 +346,7 @@ class environment(gym.Env):
             if self.framecounter<=1:
                 self.render_update[self.i, self.j, self.RL]=0
     
-                self.bm.initiate_plot()
+                self.bm.initiate_plot(self.init_cutoffpenalty)
             
             self.bm.update_mined(self.i, self.j, self.RL)
             self.render_update[self.i, self.j, self.RL]=0 #not really required
