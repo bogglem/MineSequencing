@@ -10,8 +10,8 @@ from copy import deepcopy
 from sklearn.preprocessing import MinMaxScaler
 import gym
 from gym import spaces
-from render import renderbm
-from createmodel import automodel
+from tools.render import renderbm
+from tools.createmodel import automodel
 
 class environment(gym.Env):
     

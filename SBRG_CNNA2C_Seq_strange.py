@@ -32,16 +32,16 @@ from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import A2C
-from OPRG3Denv_gym import environment
+from tools.RG3DBMenv import environment
 
 test='CNNA2C'
-os.environ['CUDA_VISIBLE_DEVICES'] = '5,7'
+os.environ['CUDA_VISIBLE_DEVICES'] = '2,3'
 
 #idx=int(sys.argv[1])
 idx=0
 
 
-inputarray=pd.read_csv('RGPS2_job_input_array.csv')
+inputarray=pd.read_csv('SBRGstrange_job_input_array.csv')
 trialv=inputarray.loc[idx].trialv 
 #LR_critic=inputarray.loc[idx].LR_critic
 LR=inputarray.loc[idx].LR
@@ -127,7 +127,7 @@ def make_env(x,y,z, rank, seed=0):
 
 if __name__ == '__main__':
 
-    num_cpu = 1  # Number of processes to use
+    num_cpu = 32  # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
     eval_env=environment(x, y, z, gamma, cutoffpenaltyscalar, rg_prob, turnspc)

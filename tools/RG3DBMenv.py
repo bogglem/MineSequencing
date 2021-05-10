@@ -10,75 +10,79 @@ from copy import deepcopy
 from sklearn.preprocessing import MinMaxScaler
 import gym
 from gym import spaces
-from render import renderbm
-from createmodel import automodel
+from tools.render import renderbm
+from tools.createmodel import automodel
+
+
+#inherits gym.Env to create a new gym environment (orebody block model) type for stable-baselines
 
 class environment(gym.Env):
     
     def __init__(self, x,y,z ,gamma, penaltyscalar, rg_prob, turnspc, rendermode='off'):
         
-        self.rendermode=rendermode
+        self.rendermode=rendermode # on/off display block model in matplotlib
+        self.cutoffpenaltyscalar=penaltyscalar #scaling parameter for changing the penalty for taking no action (cutoff).
+        self.rg_prob=rg_prob #probability of randomly generating a new environment
+        #initiating values
         self.framecounter=0
-        self.cutoffpenaltyscalar=penaltyscalar
-        self.rg_prob=rg_prob
-        #self.data=self.inputdata
         self.actionslist = list()
-        self.turnore=0     
+        self.reward=0
         self.discountedmined=0
         self.turncounter=1
         self.i=-1
         self.j=-1
         self.terminal=False
-        self.gamma=gamma
+        self.gamma=gamma #discount factor exponential (reward*turn^discount factor)
         self.Imin=0
         self.Imax=x
         self.Jmin=0
         self.Jmax=y
         self.RLmin=0
         self.RLmax=z
-        self.Ilen=self.Imax-self.Imin
-        self.Jlen=self.Jmax-self.Jmin
-        self.RLlen=self.RLmax-self.RLmin #RL counts up as depth increases
+        self.mined=-1
+        self.callnumber=1
         
-        #self.orebody=np.array([self.Ilen,self.Jlen,self.RLlen])
-        #self.idxbody=np.array([self.Ilen,self.Jlen,self.RLlen])
+        #sizing the block model environment
+        self.Ilen=self.Imax-self.Imin 
+        self.Jlen=self.Jmax-self.Jmin
+        self.RLlen=self.RLmax-self.RLmin #RL (z coordinate) counts up as depth increases
+        self.channels = 3
+        self.flatlen=self.Ilen*self.Jlen*self.RLlen*self.channels
+        
+        
+        #initiating block dependency dictionaries
         self.block_dic={}
         self.block_dic_init={}
         self.dep_dic={}
         self.dep_dic_init={}
         self.eff_dic_init={}
         
-        #self.RL=self.RLlen-1
-        self.channels = 3
-        #self.geo_array= np.zeros([self.Ilen, self.Jlen, self.RLlen, self.channels], dtype=float)
-        #self.state_size = self.geo_array.shape
-        self.flatlen=self.Ilen*self.Jlen*self.RLlen*self.channels
-        self.mined=-1
-        
-        self.callnumber=1
-        
+        #create block model
         self.automodel=automodel(self.Ilen,self.Jlen,self.RLlen)
-             
         self.build()
-        self.turns=round(len(self.dep_dic)*turnspc,0)
+        
+        self.turns=round(len(self.dep_dic)*turnspc,0) #set max number of turns (actions) in each episode based on percentage of block model size.
         
         
-       #super(environment, self).__init__()
         # Define action and observation space
         # They must be gym.spaces objects
         # Example when using discrete actions:
-        self.action_space = spaces.Discrete((self.Ilen)*(self.Jlen)+1)#Box(low=0, high=1,
+        #actions are taken on a 2D checkerboard style view of the environement. progress will be made downwards in 3D over time.
+        
+        self.action_space = spaces.Discrete((self.Ilen)*(self.Jlen))#+1)#Box(low=0, high=1,
                                         #shape=((self.Ilen)*(self.Jlen),), dtype=np.float64)
-        # Example for using image as input:
+
+        #observations are made of the entire environment (3D model with 3 channels, 1 channel represents mined state)
         self.observation_space = spaces.Box(low=-1, high=1,
                                         shape=(self.Ilen, self.Jlen, self.RLlen,self.channels), dtype=np.float64)
         
-        self.init_cutoffpenalty=self.cutoffpenalty()
-        #np.average(np.multiply(self.geo_array[:,:,:,0],self.geo_array[:,:,:,1]))*self.gamma**(self.turns/2) #
+        self.init_cutoffpenalty=self.cutoffpenalty() #experimental parameter function. penalises agent for not mining (do nothing), reward for taking action.
+
 
 
     def build(self):
                 
+        #builds block model and mining sequence constraints dictionary (eg. top must be mined first)
         self.geo_array=self.automodel.buildmodel()
         
         scaler=MinMaxScaler()
@@ -99,36 +103,35 @@ class environment(gym.Env):
                
         self.norm=np.append(a, b, axis=3)
         self.norm=np.append(self.norm,c, axis=3)
-        #.reshape(1,self.Imax+1-self.Imin, self.Jmax+1-self.Jmin, self.RLmax+1-self.RLmin, self.channels)
-        #self.norm=normalize(np.reshape(self.geo_array,((1,self.Imax+1-self.Imin, self.Jmax+1-self.Jmin, self.RLmax+1-self.RLmin, self.channels))),4)
         self.ob_sample=deepcopy(self.norm)
         self.construct_dep_dic()
         self.dep_dic=deepcopy(self.dep_dic_init)
         self.construct_eff_dic()
         self.eff_dic=deepcopy(self.eff_dic_init)
         
-        #construct_dependencies blocks with padding
+        #construct_dependencies blocks with zeros padding to avoid errors around environment edges.
         self.construct_block_dic()
-        self.block_dic=deepcopy(self.block_dic_init)
-        self.render_update = self.geo_array[:,:,:,0]
+        self.block_dic=deepcopy(self.block_dic_init) #deepcopy so dictionary doesnt have to be rebuilt for every new environment.
+        self.render_update = self.geo_array[:,:,:,0] #provides data sliced for render function
         self.bm=renderbm(self.render_update)               
     
     def construct_block_dic(self):
        
+        #each block has a string reference in the dictionary bassed on i,j,k coordinates
+        #extra 0 dependencies (padding) around edges to avoid errors.
+        
         for i in range(-1,self.Ilen+1):
             for j in range(-1,self.Jlen+1):
                 for k in range(self.RLlen):
                     
                     block=str(i)+str('_')+str(j)+str('_')+str(k)
                     self.block_dic_init["%s"% block]=0 
-                    #if (i>=0 & i<self.Ilen)&(j>=0 & j<self.Jlen)&(k>=0 & k<self.RLlen): 
-                        #self.block_dic_init["%s"% block]=0 # not mined yet
-                    #else:
-                    #    self.block_dic_init["%s"% block]=1 # mined or doesnt exist
-                        
+                           
     
     def construct_dep_dic(self):    
-    #construct_dependencies
+    
+        #construct_dependencies
+        #each block has a list of dependencies (other blocks) which must be removed prior to mining that block.
         
         for i in range(self.Ilen):
             for j in range(self.Jlen):
@@ -155,7 +158,7 @@ class environment(gym.Env):
                         self.dep_dic_init["%s"% block]=dep
                
     def construct_eff_dic(self):    
-    #construct_dependencies
+    #construct_dependencies to determine effectivess of algorithm in digging deeper. experimental function.
         
         for i in range(self.Ilen):
             for j in range(self.Jlen):
@@ -190,6 +193,8 @@ class environment(gym.Env):
     
     def select_block(self):
     
+        #function identifies which block will be mined based on the current action (top to bottom mining).
+        
         for k in range(self.RLlen): #iterate through orebody at action location to find highest unmined block (reversed -top to bottom)
             check_block=str(self.i)+str('_')+str(self.j)+str('_')+str(k)
             
@@ -206,6 +211,8 @@ class environment(gym.Env):
     
     def isMinable(self, selected_block):
         
+        #find out if it is possible to mine selected block via dependency list.
+        
         deplist = self.dep_dic["%s"% selected_block]
         minablelogic=np.zeros(len(deplist))
         
@@ -218,83 +225,93 @@ class environment(gym.Env):
             else: #if not surface then check dependencies
                minablelogic[d]=self.block_dic["%s"% depstr]
         
-        isMinable=int(np.prod(minablelogic))
+        isMinable=int(np.prod(minablelogic)) #logic 1,0 (is minable, not minable)
                    
         return isMinable
     
-    def isEfficient(self,selected_block):
+    # def isEfficient(self,selected_block):
         
-        deplist = self.eff_dic["%s"% selected_block]
-        efficientlogic=np.zeros(len(deplist))
+    #     #experimental indicator function. not generally required.
         
-        for d in range(len(deplist)):
-            depstr=deplist[d]
+    #     deplist = self.eff_dic["%s"% selected_block]
+    #     efficientlogic=np.zeros(len(deplist))
+        
+    #     for d in range(len(deplist)):
+    #         depstr=deplist[d]
             
-            #if depstr=='':
-            #   efficientlogic[d]=1
+    #         if depstr=='':
+    #             efficientlogic[d]=1
                
-            #else: #if not surface then check dependencies
-            efficientlogic[d]=self.block_dic["%s"% depstr]
+    #         else: #if not surface then check dependencies
+    #             efficientlogic[d]=self.block_dic["%s"% depstr]
         
-        isEfficient=efficientlogic.max()
+    #     isEfficient=efficientlogic.max()
                    
-        return isEfficient        
+    #     return isEfficient        
         
     
     def cutoffpenalty(self):
         
-        penaltystate=(self.ob_sample[:,:,:,2]-0.5)*self.cutoffpenaltyscalar*(1/(self.Ilen*self.Jlen*self.RLlen)) #mined blocks updated to 1, (blocks-0.5)*x translates states to cause penalty for not mining, reward for mining.
+        #penalty State = mined blocks updated to 1, (blocks-0.5)*x translates states to cause (-reward) penalty for not mining, reward for mining.
+        #this function needs further development and will result in publishable material.
+        
+        penaltystate=(self.ob_sample[:,:,:,2]-0.5)*self.cutoffpenaltyscalar*(1/(self.Ilen*self.Jlen*self.RLlen)) 
         a=np.multiply(self.geo_array[:,:,:,0],self.geo_array[:,:,:,1])
         b=np.multiply(a,penaltystate)
-        self.turnore=sum(sum(sum(b)))
+        totalpenalty=sum(sum(sum(b))) #sums penalty states across entire environment
         
-        return self.turnore
+        return totalpenalty
     
-
+    def unminedOre(self):
+        
+        #sums remaining ore which is unmined (for future use to determine the cutoff grade)
+        
+        blocks=np.multiply(self.geo_array[:,:,:,0],self.geo_array[:,:,:,1])
+        cutoff=np.add(blocks,self.init_cutoffpenalty) #
+        ore=np.where(cutoff>0,cutoff,0) #
+        
+        mined=np.multiply(self.ob_sample[:,:,:,2],ore) #mined blocks updated to 1, (blocks-0.5)*x translates states to cause penalty for not mining, reward for mining.
+        unmined=np.subtract(ore,mined)
+        
+        return unmined
+    
+    
     def step(self, action):        
-        info={}
-        if (action>=(self.Ilen)*(self.Jlen)):
+        
+        info={} #required for gym.Env class output
+        unmined=self.unminedOre()
+        if (sum(sum(sum(unmined)))<=0): #if all blocks are mined, end episode
             self.terminal=True
-            #self.cutoffpenalty()
-            
-        elif (self.turncounter>=self.turns):
+               
+        elif (self.turncounter>=self.turns): #if number of turns exceeds limit, end episode
             self.terminal=True
-            self.turnore = 0
+            self.reward = 0
             
-        else:
+        else:   #normal step process
             self.actcoords(action)
             selected_block=self.select_block()
             minable=self.isMinable(selected_block)
-            efficient=self.isEfficient(selected_block)
+            #efficient=self.isEfficient(selected_block) #experimental parameter
             
-            self.evaluate(selected_block, minable, efficient)
+            self.evaluate(selected_block, minable)
             self.update(selected_block)
             self.turncounter+=1
             self.renderif(self.rendermode)
         
-        #arr=np.ndarray.flatten(self.ob_sample) #used for MLP policy
-        #out=arr.reshape([1,len(arr)])
+        #arr=np.ndarray.flatten(self.ob_sample) #uncomment line for MLP (no CNN) policy
+        #out=arr.reshape([1,len(arr)]) #uncomment line for MLP (no CNN) policy
                     
-        return self.ob_sample, self.turnore, self.terminal, info    
+        return self.ob_sample, self.reward, self.terminal, info    
     
                  
-    def evaluate(self, selected_block, isMinable, isEfficient):
+    def evaluate(self, selected_block, isMinable):
         
         if isMinable==0:             #penalising repetetive useless actions
             
-            self.turnore=5*self.init_cutoffpenalty
-            #self.turnore=-1#/(self.gamma**(self.turncounter))
-
+            self.reward=5*self.init_cutoffpenalty
             
-        elif isEfficient==0:
-            
-            #H2O=self.geo_array[self.i,self.j,self.RL,0]
-            #Tonnes=self.geo_array[self.i, self.j,self.RL,1] 
-
-            #if (H2O*Tonnes)+self.init_cutoffpenalty>=0:
-            #    self.turnore=(H2O*Tonnes)
-            #else:
-            self.turnore=self.init_cutoffpenalty
+        # elif isEfficient==0: #experimental parameter
+        #     self.reward=self.init_cutoffpenalty
                 
         else:
             
@@ -302,30 +319,31 @@ class environment(gym.Env):
             Tonnes=self.geo_array[self.i, self.j,self.RL,1] 
 
             if (H2O*Tonnes)+self.init_cutoffpenalty>=0:
-                self.turnore=(H2O*Tonnes)
+                self.reward=(H2O*Tonnes)
             else:
-                self.turnore=self.init_cutoffpenalty
+                self.reward=self.init_cutoffpenalty
                 
-        self.discountedmined+=self.turnore*self.gamma**(self.turncounter)
+        self.discountedmined+=self.reward*self.gamma**(self.turncounter)
         
     def update(self, selected_block):
     
-        self.block_dic["%s"% selected_block]=1 #set to one (mined) for dependency logic multiplication
-        self.ob_sample[self.i,self.j,self.RL,2]=1 #set to one (mined) for agent observation
-
-    
+        #updates observation environment and minable block dependencies.
+        
+        self.block_dic["%s"% selected_block]=1 #set to one (mined). required for dependency logical multiplication
+        self.ob_sample[self.i,self.j,self.RL,2]=1 #set to one (mined) for agent observation.
+   
     def reset(self):
         
-        if np.random.uniform()>self.rg_prob: #1/100 chance to create new environment
-            self.block_dic=deepcopy(self.block_dic_init)
+        #start new episode.
+        if np.random.uniform()>self.rg_prob: #probability to use same environment (not create a random new one)
+            self.block_dic=deepcopy(self.block_dic_init) #deepcopy same dependency dictionary as block models have same physical size and constraints.
             self.ob_sample=deepcopy(self.norm)
             #self.render_update=deepcopy(self.geo_array[:,:,:,0])
         
         else:
             self.build()
             
-        
-        self.turnore=0
+        self.reward=0
         self.discountedmined=0
         self.turncounter=0
         self.terminal=False
@@ -333,13 +351,15 @@ class environment(gym.Env):
         self.j=-1
         self.RL=-1
         self.actionslist=list()
-        
-        
         #arr=np.ndarray.flatten(self.ob_sample) #used for MLP policy
         #out=arr.reshape([1,len(arr)])
         return self.ob_sample
                     
+    
     def renderif(self, mode):      
+        
+        #create 3D plots if set 'on'
+        
         if (mode=='on'): 
             self.framecounter +=1
         
@@ -351,25 +371,14 @@ class environment(gym.Env):
             self.bm.update_mined(self.i, self.j, self.RL)
             self.render_update[self.i, self.j, self.RL]=0 #not really required
                     
-            if (self.framecounter % 50 == 0):
+            if (self.framecounter % 10 == 0): #replot every 10 action frames.
                               
                  self.bm.plot()
-        
         pass
    
-    def render(self):      #deprecated
         
-                   
-         self.render_update[self.i, self.j, self.RL]=0 #updates mined blocks to 0 for rendering
-         #self.bm.initiate_plot()
-         self.bm.update_mined(self.i, self.j, self.RL)
-         #self.bm=renderbm(self.render_update)
-         self.bm.plot()
+        
 
-        
-        
-    #def close(self):
-        
         
         
         

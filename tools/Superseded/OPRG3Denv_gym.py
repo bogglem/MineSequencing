@@ -10,14 +10,15 @@ from copy import deepcopy
 from sklearn.preprocessing import MinMaxScaler
 import gym
 from gym import spaces
-from render import renderbm
-from createmodel import automodel
+from tools.render import renderbm
+from tools.createmodel import automodel
 
 class environment(gym.Env):
     
-    def __init__(self, x,y,z ,gamma, penaltyscalar, rg_prob, rendermode='off'):
+    def __init__(self, x,y,z ,gamma, penaltyscalar, rg_prob, turnspc, rendermode='off'):
         
         self.rendermode=rendermode
+        self.framecounter=0
         self.cutoffpenaltyscalar=penaltyscalar
         self.rg_prob=rg_prob
         #self.data=self.inputdata
@@ -45,6 +46,7 @@ class environment(gym.Env):
         self.block_dic_init={}
         self.dep_dic={}
         self.dep_dic_init={}
+        self.eff_dic_init={}
         
         #self.RL=self.RLlen-1
         self.channels = 3
@@ -55,10 +57,10 @@ class environment(gym.Env):
         
         self.callnumber=1
         
-        self.automodel=automodel()
+        self.automodel=automodel(self.Ilen,self.Jlen,self.RLlen)
              
         self.build()
-        
+        self.turns=round(len(self.dep_dic)*turnspc,0)
         
         
        #super(environment, self).__init__()
@@ -69,13 +71,15 @@ class environment(gym.Env):
                                         #shape=((self.Ilen)*(self.Jlen),), dtype=np.float64)
         # Example for using image as input:
         self.observation_space = spaces.Box(low=-1, high=1,
-                                        shape=(self.flatlen,), dtype=np.float64)
-                                            #shape=(self.Ilen, self.Jlen, self.RLlen,self.channels), dtype=np.float64) #for 3D space
+                                        shape=(self.Ilen, self.Jlen, self.RLlen,self.channels), dtype=np.float64)
+        
+        self.init_cutoffpenalty=self.cutoffpenalty()
+        #np.average(np.multiply(self.geo_array[:,:,:,0],self.geo_array[:,:,:,1]))*self.gamma**(self.turns/2) #
+
 
     def build(self):
                 
-        self.geo_array=self.automodel.buildmodel(self.Ilen,self.Jlen,self.RLlen)
-        
+        self.geo_array=self.automodel.buildmodel()
         
         scaler=MinMaxScaler()
         H2O_init=self.geo_array[:,:,:,0]
@@ -100,15 +104,14 @@ class environment(gym.Env):
         self.ob_sample=deepcopy(self.norm)
         self.construct_dep_dic()
         self.dep_dic=deepcopy(self.dep_dic_init)
+        self.construct_eff_dic()
+        self.eff_dic=deepcopy(self.eff_dic_init)
+        
         #construct_dependencies blocks with padding
         self.construct_block_dic()
         self.block_dic=deepcopy(self.block_dic_init)
         self.render_update = self.geo_array[:,:,:,0]
-        
-        self.turns=round(len(self.dep_dic)*0.5,0)
-        self.expected_ore=np.average(np.multiply(self.geo_array[:,:,:,0],self.geo_array[:,:,:,1]))*self.gamma**(self.turns/2) #
-
-
+        self.bm=renderbm(self.render_update)               
     
     def construct_block_dic(self):
        
@@ -151,6 +154,27 @@ class environment(gym.Env):
                         dep=list([dep0,dep1,dep2,dep3,dep4,dep5,dep6,dep7,dep8])
                         self.dep_dic_init["%s"% block]=dep
                
+    def construct_eff_dic(self):    
+    #construct_dependencies
+        
+        for i in range(self.Ilen):
+            for j in range(self.Jlen):
+                for k in range(self.RLlen):
+                    
+                    block=str(i)+str('_')+str(j)+str('_')+str(k)
+                       
+                    dep9=str(i-1)+str('_')+str(j+1)+str('_')+str(k)
+                    dep10=str(i)+str('_')+str(j+1)+str('_')+str(k)
+                    dep11=str(i+1)+str('_')+str(j+1)+str('_')+str(k)
+                    dep12=str(i-1)+str('_')+str(j)+str('_')+str(k)
+                    dep13=str(i+1)+str('_')+str(j)+str('_')+str(k)
+                    dep14=str(i-1)+str('_')+str(j-1)+str('_')+str(k)
+                    dep15=str(i)+str('_')+str(j-1)+str('_')+str(k)
+                    dep16=str(i+1)+str('_')+str(j-1)+str('_')+str(k)
+
+                        
+                    dep=list([dep9,dep10,dep11,dep12,dep13,dep14,dep15,dep16])
+                    self.eff_dic_init["%s"% block]=dep
     
     def actcoords(self, action):
         #map coords
@@ -197,16 +221,36 @@ class environment(gym.Env):
         isMinable=int(np.prod(minablelogic))
                    
         return isMinable
-      
+    
+    def isEfficient(self,selected_block):
+        
+        deplist = self.eff_dic["%s"% selected_block]
+        efficientlogic=np.zeros(len(deplist))
+        
+        for d in range(len(deplist)):
+            depstr=deplist[d]
+            
+            #if depstr=='':
+            #   efficientlogic[d]=1
+               
+            #else: #if not surface then check dependencies
+            efficientlogic[d]=self.block_dic["%s"% depstr]
+        
+        isEfficient=efficientlogic.max()
+                   
+        return isEfficient        
+        
     
     def cutoffpenalty(self):
         
-        penaltystate=(self.ob_sample[:,:,:,2]-0.5)*self.cutoffpenaltyscalar #mined blocks updated to 1, (blocks-0.5)*2 translates states to cause penalty for not mining, reward for mining.
-        a=np.multiply(self.geo_array[:,:,:,0],penaltystate)
-        self.turnore=sum(sum(sum(a)))
+        penaltystate=(self.ob_sample[:,:,:,2]-0.5)*self.cutoffpenaltyscalar*(1/(self.Ilen*self.Jlen*self.RLlen)) #mined blocks updated to 1, (blocks-0.5)*x translates states to cause penalty for not mining, reward for mining.
+        a=np.multiply(self.geo_array[:,:,:,0],self.geo_array[:,:,:,1])
+        b=np.multiply(a,penaltystate)
+        self.turnore=sum(sum(sum(b)))
+        
+        return self.turnore
     
-    
-    
+
     def step(self, action):        
         info={}
         if (action>=(self.Ilen)*(self.Jlen)):
@@ -221,39 +265,47 @@ class environment(gym.Env):
             self.actcoords(action)
             selected_block=self.select_block()
             minable=self.isMinable(selected_block)
-              
-            self.evaluate(selected_block, minable)
+            efficient=self.isEfficient(selected_block)
+            
+            self.evaluate(selected_block, minable, efficient)
             self.update(selected_block)
             self.turncounter+=1
-            self.render(self.rendermode)
-          
-            
-            #self.evaluate(selected_block, minable) #removed for termination button
-            #self.update(selected_block)
-            #self.turncounter+=1
-            #self.render(self.rendermode)
-            #self.terminal =True
+            self.renderif(self.rendermode)
         
-        arr=np.ndarray.flatten(self.ob_sample) #used for MLP policy
+        #arr=np.ndarray.flatten(self.ob_sample) #used for MLP policy
         #out=arr.reshape([1,len(arr)])
                     
-        return arr, self.turnore, self.terminal, info    
-               #self.ob_sample
+        return self.ob_sample, self.turnore, self.terminal, info    
+    
                  
-    def evaluate(self, selected_block, isMinable):
+    def evaluate(self, selected_block, isMinable, isEfficient):
         
         if isMinable==0:             #penalising repetetive useless actions
             
-            self.turnore=-self.expected_ore #penalty scaled to negative 1 x expected ore 
+            self.turnore=5*self.init_cutoffpenalty
+            #self.turnore=-1#/(self.gamma**(self.turncounter))
 
             
+        elif isEfficient==0:
+            
+            #H2O=self.geo_array[self.i,self.j,self.RL,0]
+            #Tonnes=self.geo_array[self.i, self.j,self.RL,1] 
+
+            #if (H2O*Tonnes)+self.init_cutoffpenalty>=0:
+            #    self.turnore=(H2O*Tonnes)
+            #else:
+            self.turnore=self.init_cutoffpenalty
+                
         else:
             
             H2O=self.geo_array[self.i,self.j,self.RL,0]
             Tonnes=self.geo_array[self.i, self.j,self.RL,1] 
 
-            self.turnore=(H2O*Tonnes)
-    
+            if (H2O*Tonnes)+self.init_cutoffpenalty>=0:
+                self.turnore=(H2O*Tonnes)
+            else:
+                self.turnore=self.init_cutoffpenalty
+                
         self.discountedmined+=self.turnore*self.gamma**(self.turncounter)
         
     def update(self, selected_block):
@@ -283,20 +335,37 @@ class environment(gym.Env):
         self.actionslist=list()
         
         
-        arr=np.ndarray.flatten(self.ob_sample) #used for MLP policy
+        #arr=np.ndarray.flatten(self.ob_sample) #used for MLP policy
         #out=arr.reshape([1,len(arr)])
-        return arr #self.ob_sample
+        return self.ob_sample
                     
-    def render(self, mode):      
+    def renderif(self, mode):      
+        if (mode=='on'): 
+            self.framecounter +=1
         
-        if mode=='on':
-             
-             self.render_update[self.i, self.j, self.RL]=0
-             bm=renderbm(self.render_update)
-             bm.plot()
+            if self.framecounter<=1:
+                self.render_update[self.i, self.j, self.RL]=0
+    
+                self.bm.initiate_plot(self.init_cutoffpenalty)
             
+            self.bm.update_mined(self.i, self.j, self.RL)
+            self.render_update[self.i, self.j, self.RL]=0 #not really required
+                    
+            if (self.framecounter % 10 == 0):
+                              
+                 self.bm.plot()
+        
         pass
    
+    def render(self):      #deprecated
+        
+                   
+         self.render_update[self.i, self.j, self.RL]=0 #updates mined blocks to 0 for rendering
+         #self.bm.initiate_plot()
+         self.bm.update_mined(self.i, self.j, self.RL)
+         #self.bm=renderbm(self.render_update)
+         self.bm.plot()
+
         
         
     #def close(self):

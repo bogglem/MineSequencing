@@ -11,6 +11,8 @@ import random
 
 class manualmodel():
     
+    #deprecated
+    
     def __init__(self,ilen,jlen,depth):
 
         self._I=ilen
@@ -46,6 +48,8 @@ class manualmodel():
     
 class automodel():
     
+    #generate a block model based on seed blocks and interpolation.
+    
     def __init__(self,ilen,jlen,depth):
 
         self._I=ilen
@@ -55,6 +59,8 @@ class automodel():
 
         
     def seedlocations(self, numseedlocations):
+        
+        #input parameters for seeds.
         
         mu = 0#mean location (-1-0.1)
         kappa =4 #dilation y (range 1-3)
@@ -66,12 +72,13 @@ class automodel():
             i = random.randint(2, self._I-2)
             j = random.randint(2, self._J-2)
             RL = random.randint(1, self.RL-2)
-            H2O= random.vonmisesvariate(mu, kappa)/alpha
-            #dic={'_I':i,'_J':j,'RL':RL,'H2O':H2O,'Tonnes':10}
-            self.seeds[s,::]=[i,j,RL,H2O,10] #last column or tonnes
+            H2O= random.vonmisesvariate(mu, kappa)/alpha #ore grade distribution
+            self.seeds[s,::]=[i,j,RL,H2O,10] #last column = 10 tonnes per block.
             
     
     def I2D(self,x,y,z):
+        
+        #interpolation function for block (x,y,z)
         value=0
         gradesum=0
         dsum=0
@@ -80,14 +87,14 @@ class automodel():
         
         for v in range(n_seeds):
             
-            d=np.sqrt((self.seeds[v,0]-x)**2+(self.seeds[v,1]-y)**2+(self.seeds[v,2]-z)**2)
+            d=np.sqrt((self.seeds[v,0]-x)**2+(self.seeds[v,1]-y)**2+(self.seeds[v,2]-z)**2) #cartesian distance for interpolation
             
             if d == 0:
                 incrementalvalue[::,::] =[self.seeds[v,3], 1/n_seeds]
                 break
 
             elif d<(np.sqrt(self._I**2+self._J**2+self.RL**2)/2):
-                incrementalvalue[v,::]=[(self.seeds[v,3]/d), 1/d]
+                incrementalvalue[v,::]=[(self.seeds[v,3]/d), 1/d] #v/d interpolation
                            
             else:
                 incrementalvalue[v,::]=[0.001,1]
@@ -99,6 +106,8 @@ class automodel():
        
      
     def interpolate_excel(self):
+        
+        #deprecated
         
         names=np.array(['_I','_J','RL','H2O','Tonnes'])
         data=pd.DataFrame(columns=names)
@@ -116,25 +125,24 @@ class automodel():
     
     def interpolate(self):
         
-        #names=np.array(['_I','_J','RL','H2O','Tonnes'])
-        #data=pd.DataFrame(columns=names)
+        #apply interpolation to create block model.
+        
         geo_array=np.zeros([self._I,self._J,self.RL,3])
         
         for i in range(self._I):
             for j in range(self._J):
                 for k in range(self.RL):
                     
-                    H2O=self.I2D(i,j,k)
-                    #dic={'_I':i,'_J':j,'RL':k,'H2O':H2O,'Tonnes':10}
-                    #data = data.append(dic, True)
-                    
-                    geo_array[i,j,k,0]=H2O
-                    geo_array[i,j,k,1]=10
+                    H2O=self.I2D(i,j,k)                  
+                    geo_array[i,j,k,0]=H2O #grade value interpolated
+                    geo_array[i,j,k,1]=10 #tonnes value kept constant
                                                          
         return geo_array    
                   
 
     def buildmodel_excel(self, ilen,jlen,depth,callnumber):
+        
+        #deprecated
         
         self._I=ilen
         self._J=jlen
@@ -145,9 +153,12 @@ class automodel():
         
         filename= 'BM_auto%s.xlsx' % callnumber
         data.to_excel(filename)     
+ 
         
+ 
     def buildmodel(self):
         
+        #handle function
         
         maxseeds=np.ceil(self._I*self._J*self.RL/150)
         self.seedlocations(random.randint(1,maxseeds))

@@ -15,27 +15,8 @@ class renderbm():
      
     def __init__(self, blockmodel):
         
-        #inputfile="BM_easy10x10x8.xlsx"
-#        self.inputdata=pd.read_excel(inputfile)
-#        self.data=self.inputdata
-#        self.Imin=self.data._I.min()
-#        self.Imax=self.data._I.max()
-#        self.Jmin=self.data._J.min()
-#        self.Jmax=self.data._J.max()
-#        self.RLmin=self.data.RL.min()
-#        self.RLmax=self.data.RL.max()
-#        self.Ilen=self.Imax-self.Imin+1
-#        self.Jlen=self.Jmax-self.Jmin+1
-#        self.RLlen=self.RLmax-self.RLmin+1 #RL counts up as depth increases
-#        self.channels = 2
-        
-#        self.geo_array= np.zeros([self.Ilen, self.Jlen, self.RLlen, self.channels], dtype=float)
-        
-#        for i in self.data.index:
-#            self.geo_array[self.data._I[i]-1,self.data._J[i]-1,self.data.RL[i]-1,0]=self.data.H2O[i]
-#            self.geo_array[self.data._I[i]-1,self.data._J[i]-1,self.data.RL[i]-1,1]=self.data.Tonnes[i]
-               
-#        self.bm=self.geo_array[:,:,:,0]
+        #input block model from environment.
+        #adapted code from https://terbium.io/2017/12/matplotlib-3d/
         
         self.bm = blockmodel
         

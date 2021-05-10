@@ -8,6 +8,7 @@ Created on Fri Nov 20 11:07:33 2020
 from keras.layers import Dense, Input,Conv3D, Dropout, Flatten, MaxPool3D
 from keras.models import Model, Sequential
 
+#tests and shows number of layer connections for different model configurations. Used for optimisation of layer configuration.
 
 state_size=[15,15,7,3]
 action_size=15*15

@@ -24,11 +24,11 @@ import gym
 from stable_baselines import A2C
 from stable_baselines.common.policies import CnnPolicy
 from stable_baselines.common.evaluation import evaluate_policy
-from OPRG3Denv_gym import environment
+from tools.RG3DBMenv import environment
 
 # Create environment
-x=25
-y=25
+x=15
+y=15
 z=6
 batch_size=64
 LR=0.0001

@@ -32,7 +32,7 @@ from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import A2C
-from OPRG3Denv_gym import environment
+from tools.RG3DBMenv import environment
 
 test='CNNA2C'
 
@@ -131,7 +131,7 @@ if __name__ == '__main__':
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
-    scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_rg{rg_s}_cutoff{cutoff_s}_{trialv}')    
+    scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_rg{rg_s}_turnspc{turnspc_s}_{trialv}')    
     callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=scenario, n_eval_episodes=5
                                                                          , deterministic=False, best_model_save_path=scenario)])
     
