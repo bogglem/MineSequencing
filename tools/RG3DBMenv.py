@@ -4,6 +4,7 @@ Created on Thu Sep 24 12:04:45 2020
 
 @author: Tim Pelech
 """
+import os.path
 import numpy as np
 import pandas as pd
 from copy import deepcopy
@@ -18,11 +19,13 @@ from tools.createmodel import automodel
 
 class environment(gym.Env):
     
-    def __init__(self, x,y,z ,gamma, penaltyscalar, rg_prob, turnspc, rendermode='off'):
+    def __init__(self, x,y,z ,gamma, penaltyscalar, rg_prob, turnspc, savepath, rendermode='off'):
         
         self.rendermode=rendermode # on/off display block model in matplotlib
         self.cutoffpenaltyscalar=penaltyscalar #scaling parameter for changing the penalty for taking no action (cutoff).
         self.rg_prob=rg_prob #probability of randomly generating a new environment
+        self.savepath=savepath
+        self.savedenv='%s/environment' % savepath
         #initiating values
         self.framecounter=0
         self.actionslist = list()
@@ -79,9 +82,28 @@ class environment(gym.Env):
         self.init_cutoffpenalty=self.cutoffpenalty() #experimental parameter function. penalises agent for not mining (do nothing), reward for taking action.
 
 
+    def save_env(self, savedenv,array):
+        
+        if (os.path.exists(self.savepath)):
+            np.save("%s"% savedenv, array)
+        
+        else:
+            os.mkdir(self.savepath)
+            np.save("%s"% savedenv, array)
+            
+        
+    def load_env(self, savedenv):
+        
+        self.geo_array=np.load("%s.npy"% savedenv)
+
+        return self.geo_array
+        
 
     def build(self):
                 
+        if (self.rg_prob==0.0) and (os.path.isfile(self.savedenv)):
+              self.load_env(self.savedenv)
+        
         #builds block model and mining sequence constraints dictionary (eg. top must be mined first)
         self.geo_array=self.automodel.buildmodel()
         
@@ -113,7 +135,12 @@ class environment(gym.Env):
         self.construct_block_dic()
         self.block_dic=deepcopy(self.block_dic_init) #deepcopy so dictionary doesnt have to be rebuilt for every new environment.
         self.render_update = self.geo_array[:,:,:,0] #provides data sliced for render function
-        self.bm=renderbm(self.render_update)               
+        self.bm=renderbm(self.render_update)
+
+        #save environment if random generation disabled
+        if self.rg_prob==0.0 and not (os.path.isfile(self.savedenv)):
+            self.save_env(self.savedenv,self.geo_array)
+                  
     
     def construct_block_dic(self):
        
@@ -158,7 +185,7 @@ class environment(gym.Env):
                         self.dep_dic_init["%s"% block]=dep
                
     def construct_eff_dic(self):    
-    #construct_dependencies to determine effectivess of algorithm in digging deeper. experimental function.
+    #construct_dependencies to determine effectivess of algorithm in digging deeper. experimental function, not currently used.
         
         for i in range(self.Ilen):
             for j in range(self.Jlen):
@@ -333,7 +360,7 @@ class environment(gym.Env):
         self.ob_sample[self.i,self.j,self.RL,2]=1 #set to one (mined) for agent observation.
    
     def reset(self):
-        
+                          
         #start new episode.
         if np.random.uniform()>self.rg_prob: #probability to use same environment (not create a random new one)
             self.block_dic=deepcopy(self.block_dic_init) #deepcopy same dependency dictionary as block models have same physical size and constraints.
@@ -377,8 +404,6 @@ class environment(gym.Env):
         pass
    
         
-        
+  
 
-        
-        
         
