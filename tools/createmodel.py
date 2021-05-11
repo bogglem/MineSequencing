@@ -165,4 +165,5 @@ class automodel():
         geo_array=self.interpolate()        
         
         return geo_array
+                
         
