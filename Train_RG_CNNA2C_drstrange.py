@@ -73,7 +73,7 @@ gamma_s=str(gamma).split('.')[1]
 cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
 rg_s=str(float(rg_prob)).split('.')[1]
 turnspc_s=str(turnspc).split('.')[1]
-storagefolder='saved'
+storagefolder='output'
 scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_rg{rg_s}_cutoff{cutoff_s}_{trialv}')    
 savepath='./%s/%s' % (storagefolder ,scenario)
 #savepath='%s/environment' % (savepath)
@@ -140,7 +140,7 @@ if __name__ == '__main__':
 
     #create model with Stable Baselines package.
     model = A2C(CnnPolicy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  verbose=1)#, tensorboard_log=scenario)
-    model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist)
+    model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
     
     
     #create learning curve plot
