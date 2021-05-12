@@ -72,7 +72,7 @@ class environment(gym.Env):
         # Example when using discrete actions:
         #actions are taken on a 2D checkerboard style view of the environement. progress will be made downwards in 3D over time.
         
-        self.action_space = spaces.Discrete((self.Ilen)*(self.Jlen)+1) #+1 action for choosing terminal state.
+        self.action_space = spaces.Discrete((self.Ilen)*(self.Jlen))#+1) #+1 action for choosing terminal state.
 
         #observations are made of the entire environment (3D model with 3 channels, 1 channel represents mined state)
         self.observation_space = spaces.Box(low=-1, high=1,
@@ -319,9 +319,9 @@ class environment(gym.Env):
             self.terminal=True
             self.reward = 0
         
-        elif action>(self.Ilen)*(self.Jlen):
+        elif action>=((self.Ilen)*(self.Jlen)):
             self.terminal=True
-            self.reward = self.unminedOre()     
+            self.reward = -self.unminedOre()     
         
         else:   #normal step process
             self.actcoords(action)
@@ -344,7 +344,7 @@ class environment(gym.Env):
         
         if isMinable==0:             #penalising repetetive useless actions
             
-            self.reward=-5*self.averagereward
+            self.reward=-100*self.averagereward
             
         # elif isEfficient==0: #experimental parameter
         #     self.reward=self.init_cutoffpenalty
@@ -402,7 +402,7 @@ class environment(gym.Env):
             if self.framecounter<=1:
                 self.render_update[self.i, self.j, self.RL]=0
     
-                self.bm.initiate_plot(self.init_cutoffpenalty)
+                self.bm.initiate_plot(self.averagereward)
             
             self.bm.update_mined(self.i, self.j, self.RL)
             self.render_update[self.i, self.j, self.RL]=0 #not really required
