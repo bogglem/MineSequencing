@@ -34,10 +34,10 @@ batch_size=64
 LR=0.0001
 gamma=0.99
 cutoffpenaltyscalar=1.0
-rg_prob=0.01
+rg_prob=0.0
 turnspc=0.6
 test='CNNA2C'
-trialv='1'
+trialv='single_env'
 
 #prepare file naming strings
 LR_s=str(LR).split('.')[1]
@@ -48,7 +48,7 @@ rg_s=str(float(rg_prob)).split('.')[1]
 turnspc_s=str(turnspc).split('.')[1]
 
 scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_rg{rg_s}_cutoff{cutoff_s}_{trialv}')  
-savepath='/.output/%s' % scenario
+savepath='./output/%s' % scenario
 
 turns=round(x*y*z*turnspc)
 

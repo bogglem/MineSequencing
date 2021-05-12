@@ -72,15 +72,14 @@ class environment(gym.Env):
         # Example when using discrete actions:
         #actions are taken on a 2D checkerboard style view of the environement. progress will be made downwards in 3D over time.
         
-        self.action_space = spaces.Discrete((self.Ilen)*(self.Jlen))#+1)#Box(low=0, high=1,
-                                        #shape=((self.Ilen)*(self.Jlen),), dtype=np.float64)
+        self.action_space = spaces.Discrete((self.Ilen)*(self.Jlen)+1) #+1 action for choosing terminal state.
 
         #observations are made of the entire environment (3D model with 3 channels, 1 channel represents mined state)
         self.observation_space = spaces.Box(low=-1, high=1,
                                         shape=(self.Ilen, self.Jlen, self.RLlen,self.channels), dtype=np.float64)
         
         self.init_cutoffpenalty=self.cutoffpenalty() #experimental parameter function. penalises agent for not mining (do nothing), reward for taking action.
-
+        self.averagereward=np.average((np.multiply(self.geo_array[:,:,:,0],self.geo_array[:,:,:,1])))
 
     def save_env(self, savedenv,array):
         
@@ -95,18 +94,20 @@ class environment(gym.Env):
     def load_env(self, savedenv):
         
         self.geo_array=np.load("%s.npy"% savedenv)
-
+        print("loaded environment")
+        
         return self.geo_array
         
 
     def build(self):
-                
-        if (self.rg_prob==0.0) and (os.path.isfile(self.savedenv)):
+        
+        #builds block model and mining sequence constraints dictionary (eg. top must be mined first)         
+        if (self.rg_prob==0.0) and (os.path.isfile('%s.npy' % self.savedenv)):
               self.load_env(self.savedenv)
         
-        #builds block model and mining sequence constraints dictionary (eg. top must be mined first)
-        self.geo_array=self.automodel.buildmodel()
-        
+        else:
+            self.geo_array=self.automodel.buildmodel()
+            
         scaler=MinMaxScaler()
         H2O_init=self.geo_array[:,:,:,0]
         Tonnes_init=self.geo_array[:,:,:,1]
@@ -128,8 +129,8 @@ class environment(gym.Env):
         self.ob_sample=deepcopy(self.norm)
         self.construct_dep_dic()
         self.dep_dic=deepcopy(self.dep_dic_init)
-        self.construct_eff_dic()
-        self.eff_dic=deepcopy(self.eff_dic_init)
+        # self.construct_eff_dic()
+        # self.eff_dic=deepcopy(self.eff_dic_init)
         
         #construct_dependencies blocks with zeros padding to avoid errors around environment edges.
         self.construct_block_dic()
@@ -138,9 +139,9 @@ class environment(gym.Env):
         self.bm=renderbm(self.render_update)
 
         #save environment if random generation disabled
-        if self.rg_prob==0.0 and not (os.path.isfile(self.savedenv)):
+        if self.rg_prob==0.0 and not (os.path.isfile('%s.npy' % self.savedenv)):
             self.save_env(self.savedenv,self.geo_array)
-                  
+                      
     
     def construct_block_dic(self):
        
@@ -184,27 +185,27 @@ class environment(gym.Env):
                         dep=list([dep0,dep1,dep2,dep3,dep4,dep5,dep6,dep7,dep8])
                         self.dep_dic_init["%s"% block]=dep
                
-    def construct_eff_dic(self):    
-    #construct_dependencies to determine effectivess of algorithm in digging deeper. experimental function, not currently used.
+    # def construct_eff_dic(self):    
+    # #construct_dependencies to determine effectivess of algorithm in digging deeper. experimental function, not currently used.
         
-        for i in range(self.Ilen):
-            for j in range(self.Jlen):
-                for k in range(self.RLlen):
+    #     for i in range(self.Ilen):
+    #         for j in range(self.Jlen):
+    #             for k in range(self.RLlen):
                     
-                    block=str(i)+str('_')+str(j)+str('_')+str(k)
+    #                 block=str(i)+str('_')+str(j)+str('_')+str(k)
                        
-                    dep9=str(i-1)+str('_')+str(j+1)+str('_')+str(k)
-                    dep10=str(i)+str('_')+str(j+1)+str('_')+str(k)
-                    dep11=str(i+1)+str('_')+str(j+1)+str('_')+str(k)
-                    dep12=str(i-1)+str('_')+str(j)+str('_')+str(k)
-                    dep13=str(i+1)+str('_')+str(j)+str('_')+str(k)
-                    dep14=str(i-1)+str('_')+str(j-1)+str('_')+str(k)
-                    dep15=str(i)+str('_')+str(j-1)+str('_')+str(k)
-                    dep16=str(i+1)+str('_')+str(j-1)+str('_')+str(k)
+    #                 dep9=str(i-1)+str('_')+str(j+1)+str('_')+str(k)
+    #                 dep10=str(i)+str('_')+str(j+1)+str('_')+str(k)
+    #                 dep11=str(i+1)+str('_')+str(j+1)+str('_')+str(k)
+    #                 dep12=str(i-1)+str('_')+str(j)+str('_')+str(k)
+    #                 dep13=str(i+1)+str('_')+str(j)+str('_')+str(k)
+    #                 dep14=str(i-1)+str('_')+str(j-1)+str('_')+str(k)
+    #                 dep15=str(i)+str('_')+str(j-1)+str('_')+str(k)
+    #                 dep16=str(i+1)+str('_')+str(j-1)+str('_')+str(k)
 
                         
-                    dep=list([dep9,dep10,dep11,dep12,dep13,dep14,dep15,dep16])
-                    self.eff_dic_init["%s"% block]=dep
+    #                 dep=list([dep9,dep10,dep11,dep12,dep13,dep14,dep15,dep16])
+    #                 self.eff_dic_init["%s"% block]=dep
     
     def actcoords(self, action):
         #map coords
@@ -278,9 +279,9 @@ class environment(gym.Env):
         
     
     def cutoffpenalty(self):
-        
+        #set cutoffpenaltyscalar to 0 to disable
         #penalty State = mined blocks updated to 1, (blocks-0.5)*x translates states to cause (-reward) penalty for not mining, reward for mining.
-        #this function needs further development and will result in publishable material.
+        #this function needs further development and may result in publishable material.
         
         penaltystate=(self.ob_sample[:,:,:,2]-0.5)*self.cutoffpenaltyscalar*(1/(self.Ilen*self.Jlen*self.RLlen)) 
         a=np.multiply(self.geo_array[:,:,:,0],self.geo_array[:,:,:,1])
@@ -291,29 +292,37 @@ class environment(gym.Env):
     
     def unminedOre(self):
         
-        #sums remaining ore which is unmined (for future use to determine the cutoff grade)
+        #caluclates penalty for terminating episode early while remaining ore is unmined (for future use to determine the cutoff grade)
         
-        blocks=np.multiply(self.geo_array[:,:,:,0],self.geo_array[:,:,:,1])
-        cutoff=np.add(blocks,self.init_cutoffpenalty) #
-        ore=np.where(cutoff>0,cutoff,0) #
+        blocks=np.multiply(self.ob_sample[:,:,:,0],self.ob_sample[:,:,:,1])
+        remaining=np.multiply(blocks,self.ob_sample[:,:,:,2])
+        #cutoff=np.add(blocks,self.init_cutoffpenalty) #
+        abandonreward=np.sum(np.where(remaining>self.averagereward,remaining,0))/np.sum(self.ob_sample[:,:,:,2]) #this indicator needs work. will be a focus of research.
         
-        mined=np.multiply(self.ob_sample[:,:,:,2],ore) #mined blocks updated to 1, (blocks-0.5)*x translates states to cause penalty for not mining, reward for mining.
-        unmined=np.subtract(ore,mined)
+        # mined=np.multiply(self.ob_sample[:,:,:,2],ore) #mined blocks updated to 1, (blocks-0.5)*x translates states to cause penalty for not mining, reward for mining.
+        # unmined=np.subtract(ore,mined)
         
-        return unmined
+        # blocks=np.multiply(self.geo_array[:,:,:,0],self.geo_array[:,:,:,1])
+        
+        
+        return abandonreward
     
     
     def step(self, action):        
         
         info={} #required for gym.Env class output
-        unmined=self.unminedOre()
-        if (sum(sum(sum(unmined)))<=0): #if all blocks are mined, end episode
+        #unmined=self.unminedOre()
+        if sum(sum(sum(self.ob_sample[:,:,:,2])))>=self.ob_sample[:,:,:,2].size: #if all blocks are mined, end episode
             self.terminal=True
                
         elif (self.turncounter>=self.turns): #if number of turns exceeds limit, end episode
             self.terminal=True
             self.reward = 0
-            
+        
+        elif action>(self.Ilen)*(self.Jlen):
+            self.terminal=True
+            self.reward = self.unminedOre()     
+        
         else:   #normal step process
             self.actcoords(action)
             selected_block=self.select_block()
@@ -335,7 +344,7 @@ class environment(gym.Env):
         
         if isMinable==0:             #penalising repetetive useless actions
             
-            self.reward=5*self.init_cutoffpenalty
+            self.reward=-5*self.averagereward
             
         # elif isEfficient==0: #experimental parameter
         #     self.reward=self.init_cutoffpenalty
@@ -345,10 +354,10 @@ class environment(gym.Env):
             H2O=self.geo_array[self.i,self.j,self.RL,0]
             Tonnes=self.geo_array[self.i, self.j,self.RL,1] 
 
-            if (H2O*Tonnes)+self.init_cutoffpenalty>=0:
-                self.reward=(H2O*Tonnes)
-            else:
-                self.reward=self.init_cutoffpenalty
+            # if (H2O*Tonnes)+self.init_cutoffpenalty>=0: #to be used for experimental determination of cutoff grade
+            self.reward=(H2O*Tonnes)
+            # else:
+            #     self.reward=self.init_cutoffpenalty
                 
         self.discountedmined+=self.reward*self.gamma**(self.turncounter)
         
