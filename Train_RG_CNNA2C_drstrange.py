@@ -35,8 +35,8 @@ from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCa
 from stable_baselines import A2C
 from tools.RG3DBMenv import environment
 
-test='CNNA2C' #test name
-os.environ['CUDA_VISIBLE_DEVICES'] = '4,5'
+test='CNNA2C_32' #test name
+os.environ['CUDA_VISIBLE_DEVICES'] = '2,3'
 
 #idx=int(sys.argv[1]) #required for batch runs on pbs katana
 idx=0
@@ -124,7 +124,7 @@ def make_env(x,y,z, rank, seed=0):
 
 if __name__ == '__main__':
 
-    num_cpu = 1  # Number of processes to use
+    num_cpu = 32  # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
     eval_env=environment(x, y, z, gamma, cutoffpenaltyscalar, rg_prob, turnspc, savepath)
