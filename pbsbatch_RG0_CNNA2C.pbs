@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#PBS -N Job
+#PBS -l select=1:ncpus=15:mem=32gb
+#PBS -l walltime=11:59:00
+#PBS -k eod
+#PBS -j oe
+#PBS -M t.pelech@unsw.edu.au
+#PBS -m ae
+#PBS -J 0-12
+#PBS -o /home/z3333990/Output
+
+ 
+cd $PBS_O_WORKDIR
+
+source tf1.14env/bin/activate 
+python3 Train_RG0_CNNA2C_katana.py ${PBS_ARRAY_INDEX}
