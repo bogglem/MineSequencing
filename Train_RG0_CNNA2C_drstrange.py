@@ -42,7 +42,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '4,5'
 idx=0
 
 #prepare input parameters
-inputarray=pd.read_csv('jobarrays/RG_drstrange_job_input.csv')
+inputarray=pd.read_csv('jobarrays/RG0_drstrange_job_input.csv')
 trialv=inputarray.loc[idx].trialv 
 #LR_critic=inputarray.loc[idx].LR_critic
 LR=inputarray.loc[idx].LR
