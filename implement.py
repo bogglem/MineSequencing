@@ -30,16 +30,26 @@ from tools.RG3DBMenv import environment
 # Create environment
 x=8
 y=8
-z=3
+z=6
 batch_size=64
 LR=0.001
 gamma=0.9
 cutoffpenaltyscalar=1.0
 rg_prob=0.0
 turnspc=0.4
-policy=MlpPolicy
-policyname='MlpPolicy'
-test='MLPA2C'
+
+policyname='CnnPolicy' #change this name to change RL policy type (MlpPolicy/CnnPolicy)
+
+if policyname == 'CnnPolicy':
+    
+    policy=CnnPolicy
+    test='CNNA2C'
+
+elif policyname =='MlpPolicy':
+
+    policy=MlpPolicy
+    test='MLPA2C'
+
 trialv='single_env'
 
 #prepare file naming strings
