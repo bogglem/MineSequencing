@@ -10,10 +10,10 @@
 #PBS -J 0-18
 #PBS -o /home/z3333990/Output
 
- 
-cd ..
+cd /home/z3333990
 
 source tf1.14env/bin/activate 
 
-cd $PBS_O_WORKDIR
+cd /home/z3333990/MineSequencing
+
 python3 Train_RG0_test_katana.py ${PBS_ARRAY_INDEX}
