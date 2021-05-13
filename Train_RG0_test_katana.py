@@ -86,7 +86,7 @@ cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
 rg_s=str(float(rg_prob)).split('.')[1]
 turnspc_s=str(turnspc).split('.')[1]
 storagefolder='output'
-scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_rg{rg_s}_gamma{gamma_s}_{trialv}')    
+scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_batch{batch_size}_{policyname}_{trialv}')    
 savepath='./%s/%s' % (storagefolder ,scenario)
 #savepath='%s/environment' % (savepath)
 
