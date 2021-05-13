@@ -60,9 +60,9 @@ start=time.time()
 end=start+runtime
 
 #block model (environment) dimensions
-x=15
-y=15
-z=6
+x=5
+y=5
+z=3
 
 episodetimesteps=round(x*y*z*turnspc)
 
@@ -74,7 +74,7 @@ cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
 rg_s=str(float(rg_prob)).split('.')[1]
 turnspc_s=str(turnspc).split('.')[1]
 storagefolder='output'
-scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_steps{updatesteps}_cutoff{cutoff_s}_{trialv}')    
+scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_steps{updatesteps}_gamma{gamma}_{trialv}')    
 savepath='./%s/%s' % (storagefolder ,scenario)
 #savepath='%s/environment' % (savepath)
 

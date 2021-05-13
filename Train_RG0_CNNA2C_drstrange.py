@@ -29,13 +29,16 @@ import sys
 import pandas as pd
 import matplotlib.pyplot as plt
 from stable_baselines.common.policies import CnnPolicy
+from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import A2C
 from tools.RG3DBMenv import environment
 
-test='CNNA2C_32' #test name
+test='MLPA2C' #test name
+policy=MlpPolicy
+policyname='MlpPolicy'
 os.environ['CUDA_VISIBLE_DEVICES'] = '2,3'
 
 #idx=int(sys.argv[1]) #required for batch runs on pbs katana
@@ -60,9 +63,9 @@ start=time.time()
 end=start+runtime
 
 #block model (environment) dimensions
-x=15
-y=15
-z=6
+x=8
+y=8
+z=3 #must be greater than 6
 
 episodetimesteps=round(x*y*z*turnspc)
 
@@ -115,7 +118,7 @@ def make_env(x,y,z, rank, seed=0):
     """
     def _init():
         
-        env = environment(x,y,z,gamma, cutoffpenaltyscalar, rg_prob, turnspc, savepath)
+        env = environment(x,y,z,gamma, cutoffpenaltyscalar, rg_prob, turnspc, savepath, policyname)
         env.seed(seed + rank)
         return env
     set_global_seeds(seed)
@@ -124,10 +127,10 @@ def make_env(x,y,z, rank, seed=0):
 
 if __name__ == '__main__':
 
-    num_cpu = 32  # Number of processes to use
+    num_cpu = 1  # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
-    eval_env=environment(x, y, z, gamma, cutoffpenaltyscalar, rg_prob, turnspc, savepath)
+    eval_env=environment(x, y, z, gamma, cutoffpenaltyscalar, rg_prob, turnspc, savepath, policyname)
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
@@ -137,9 +140,8 @@ if __name__ == '__main__':
     callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=savepath, n_eval_episodes=5
                                                                          , deterministic=False, best_model_save_path=savepath)])
     
-
     #create model with Stable Baselines package.
-    model = A2C(CnnPolicy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  verbose=1)#, tensorboard_log=scenario)
+    model = A2C(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  verbose=1)#, tensorboard_log=scenario)
     model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
     
     

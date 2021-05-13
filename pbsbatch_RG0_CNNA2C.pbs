@@ -11,7 +11,9 @@
 #PBS -o /home/z3333990/Output
 
  
-cd $PBS_O_WORKDIR
+cd ..
 
 source tf1.14env/bin/activate 
+
+cd $PBS_O_WORKDIR
 python3 Train_RG0_CNNA2C_katana.py ${PBS_ARRAY_INDEX}
