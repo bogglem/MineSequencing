@@ -19,13 +19,15 @@ from tools.createmodel import automodel
 
 class environment(gym.Env):
     
-    def __init__(self, x,y,z ,gamma, penaltyscalar, rg_prob, turnspc, savepath, rendermode='off'):
+    def __init__(self, x,y,z ,gamma, penaltyscalar, rg_prob, turnspc, savepath, policy, rendermode='off'):
         
         self.rendermode=rendermode # on/off display block model in matplotlib
         self.cutoffpenaltyscalar=penaltyscalar #scaling parameter for changing the penalty for taking no action (cutoff).
         self.rg_prob=rg_prob #probability of randomly generating a new environment
         self.savepath=savepath
         self.savedenv='%s/environment' % savepath
+        self.policy=policy
+        
         #initiating values
         self.framecounter=0
         self.actionslist = list()
@@ -73,11 +75,19 @@ class environment(gym.Env):
         #actions are taken on a 2D checkerboard style view of the environement. progress will be made downwards in 3D over time.
         
         self.action_space = spaces.Discrete((self.Ilen)*(self.Jlen))#+1) #+1 action for choosing terminal state.
-
-        #observations are made of the entire environment (3D model with 3 channels, 1 channel represents mined state)
-        self.observation_space = spaces.Box(low=-1, high=1,
-                                        shape=(self.Ilen, self.Jlen, self.RLlen,self.channels), dtype=np.float64)
         
+        if self.policy=='CnnPolicy':
+        
+            #observations are made of the entire environment (3D model with 3 channels, 1 channel represents mined state)
+            self.observation_space = spaces.Box(low=-1, high=1,
+                                            shape=(self.Ilen, self.Jlen, self.RLlen,self.channels), dtype=np.float64)
+            
+        elif self.policy=='MlpPolicy':
+            #observations are made of the entire environment (3D model with 3 channels, 1 channel represents mined state)
+            self.observation_space = spaces.Box(low=-1, high=1,
+                                            shape=(self.flatlen,), dtype=np.float64)
+            
+                    
         self.init_cutoffpenalty=self.cutoffpenalty() #experimental parameter function. penalises agent for not mining (do nothing), reward for taking action.
         self.averagereward=np.average((np.multiply(self.geo_array[:,:,:,0],self.geo_array[:,:,:,1])))
 
@@ -333,18 +343,20 @@ class environment(gym.Env):
             self.update(selected_block)
             self.turncounter+=1
             self.renderif(self.rendermode)
+            observation=self.ob_sample
         
-        #arr=np.ndarray.flatten(self.ob_sample) #uncomment line for MLP (no CNN) policy
-        #out=arr.reshape([1,len(arr)]) #uncomment line for MLP (no CNN) policy
-                    
-        return self.ob_sample, self.reward, self.terminal, info    
+        if self.policy=='MlpPolicy':
+            arr=np.ndarray.flatten(self.ob_sample) #uncomment line for MLP (not CNN) policy
+            observation=arr.reshape([len(arr)]) #uncomment line for MLP (not CNN) policy
+            
+        return observation, self.reward, self.terminal, info    
     
                  
     def evaluate(self, selected_block, isMinable):
         
         if isMinable==0:             #penalising repetetive useless actions
             
-            self.reward=-100*self.averagereward
+            ore=-10*self.averagereward
             
         # elif isEfficient==0: #experimental parameter
         #     self.reward=self.init_cutoffpenalty
@@ -355,11 +367,11 @@ class environment(gym.Env):
             Tonnes=self.geo_array[self.i, self.j,self.RL,1] 
 
             # if (H2O*Tonnes)+self.init_cutoffpenalty>=0: #to be used for experimental determination of cutoff grade
-            self.reward=(H2O*Tonnes)
+            ore=(H2O*Tonnes)
             # else:
             #     self.reward=self.init_cutoffpenalty
                 
-        self.discountedmined+=self.reward*self.gamma**(self.turncounter)
+        self.reward=ore*self.gamma**(self.turncounter)
         
     def update(self, selected_block):
     
@@ -387,9 +399,13 @@ class environment(gym.Env):
         self.j=-1
         self.RL=-1
         self.actionslist=list()
-        #arr=np.ndarray.flatten(self.ob_sample) #used for MLP policy
-        #out=arr.reshape([1,len(arr)])
-        return self.ob_sample
+        observation=self.ob_sample
+        
+        if self.policy=='MlpPolicy':
+            arr=np.ndarray.flatten(self.ob_sample) #uncomment line for MLP (not CNN) policy
+            observation=arr.reshape([len(arr)]) #uncomment line for MLP (not CNN) policy
+
+        return observation
                     
     
     def renderif(self, mode):      
