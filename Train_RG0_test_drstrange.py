@@ -36,9 +36,9 @@ from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCa
 from stable_baselines import A2C
 from tools.RG3DBMenv import environment
 
-test='MLPA2C' #test name
-policy=MlpPolicy
-policyname='MlpPolicy'
+test='CNNA2C' #test name
+policy=CnnPolicy
+policyname='CnnPolicy'
 os.environ['CUDA_VISIBLE_DEVICES'] = '2,3'
 
 #idx=int(sys.argv[1]) #required for batch runs on pbs katana
@@ -65,7 +65,7 @@ end=start+runtime
 #block model (environment) dimensions
 x=8
 y=8
-z=3 #must be greater than 6
+z=6 #must be greater than 6 for CNN
 
 episodetimesteps=round(x*y*z*turnspc)
 
@@ -127,7 +127,7 @@ def make_env(x,y,z, rank, seed=0):
 
 if __name__ == '__main__':
 
-    num_cpu = 32  # Number of processes to use
+    num_cpu = 1  # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
     eval_env=environment(x, y, z, gamma, cutoffpenaltyscalar, rg_prob, turnspc, savepath, policyname)

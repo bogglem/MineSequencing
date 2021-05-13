@@ -322,6 +322,7 @@ class environment(gym.Env):
         
         info={} #required for gym.Env class output
         #unmined=self.unminedOre()
+        
         if sum(sum(sum(self.ob_sample[:,:,:,2])))>=self.ob_sample[:,:,:,2].size: #if all blocks are mined, end episode
             self.terminal=True
                
@@ -343,11 +344,14 @@ class environment(gym.Env):
             self.update(selected_block)
             self.turncounter+=1
             self.renderif(self.rendermode)
-            observation=self.ob_sample
-        
+            
+            
         if self.policy=='MlpPolicy':
             arr=np.ndarray.flatten(self.ob_sample) #uncomment line for MLP (not CNN) policy
             observation=arr.reshape([len(arr)]) #uncomment line for MLP (not CNN) policy
+                
+        else:
+                observation=self.ob_sample
             
         return observation, self.reward, self.terminal, info    
     
@@ -356,7 +360,7 @@ class environment(gym.Env):
         
         if isMinable==0:             #penalising repetetive useless actions
             
-            ore=-10*self.averagereward
+            ore=-self.averagereward
             
         # elif isEfficient==0: #experimental parameter
         #     self.reward=self.init_cutoffpenalty
@@ -399,11 +403,14 @@ class environment(gym.Env):
         self.j=-1
         self.RL=-1
         self.actionslist=list()
-        observation=self.ob_sample
+
         
         if self.policy=='MlpPolicy':
             arr=np.ndarray.flatten(self.ob_sample) #uncomment line for MLP (not CNN) policy
             observation=arr.reshape([len(arr)]) #uncomment line for MLP (not CNN) policy
+                
+        else:
+                observation=self.ob_sample
 
         return observation
                     
