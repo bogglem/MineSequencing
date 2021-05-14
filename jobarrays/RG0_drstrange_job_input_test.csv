@@ -1,2 +1,2 @@
 LR,gamma,batch_size,runtime,cutoffpenaltyscalar,rg_prob,turnspc,trialv
-0.001,0.9,64,1800,1,0,0.1,no_doublegamma
+0.001,0.9,64,3600,1,0,0.1,no_doublegamma
