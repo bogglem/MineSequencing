@@ -5,7 +5,8 @@ Installation of required environment packages.
 
 python3.6
 tensorflow==1.15
-#stable-baselines (install modified version from link below, this version includes an updated CNN Policy for this project) 
+#stable-baselines (install modified version from link below, this version includes a custom 3D CNN Policy for this project.
+3D CNN is not otherwise available in stable-baselines) 
 pip install git+https://github.com/bogglem/stable-baselines.git
 sklearn
 
@@ -13,7 +14,7 @@ matplotlib (comes with stable baselines)
 pandas (comes with stable baselines)
 numpy (comes with tensorflow)
 
-this MineSequencing module can be found at;
+the MineSequencing module can be found at;
 https://github.com/bogglem/MineSequencing.git
 
 

@@ -34,9 +34,9 @@ from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import A2C
-from tools.RG3DBMenv import environment
+from tools.RG3DBMenv_nodoublegamma import environment
 
-policyname='CnnPolicy' #change this name to change RL policy type (MlpPolicy/CnnPolicy)
+policyname='MlpPolicy' #change this name to change RL policy type (MlpPolicy/CnnPolicy)
 
 if policyname == 'CnnPolicy':
     
@@ -138,7 +138,7 @@ def make_env(x,y,z, rank, seed=0):
 
 if __name__ == '__main__':
 
-    num_cpu = 1  # Number of processes to use
+    num_cpu = 16  # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
     eval_env=environment(x, y, z, gamma, cutoffpenaltyscalar, rg_prob, turnspc, savepath, policyname)
