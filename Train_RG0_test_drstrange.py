@@ -89,6 +89,8 @@ storagefolder='output'
 scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_rg{rg_s}_cutoff{cutoff_s}_{trialv}')    
 savepath='./%s/%s' % (storagefolder ,scenario)
 #savepath='%s/environment' % (savepath)
+if (os.path.exists(savepath)!=True):
+    os.mkdir(savepath) #make directory prior to multiprocessing to avoid broken pipe error
 
 class TimeLimit(BaseCallback):
     """

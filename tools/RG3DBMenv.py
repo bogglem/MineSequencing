@@ -96,7 +96,7 @@ class environment(gym.Env):
         if (os.path.exists(self.savepath)):
             np.save("%s"% savedenv, array)
         
-        else:
+        elif (os.path.exists(self.savepath)!=True):
             os.mkdir(self.savepath)
             np.save("%s"% savedenv, array)
             
