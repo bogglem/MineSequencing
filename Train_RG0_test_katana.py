@@ -34,7 +34,7 @@ from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import A2C
-from tools.RG3DBMenv import environment
+from tools.RG3DBMenv_nodoublegamma import environment
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '2,3'
 
