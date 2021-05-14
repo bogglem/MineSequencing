@@ -90,6 +90,9 @@ scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_batch{batch_size}_{policyname}_{tr
 savepath='./%s/%s' % (storagefolder ,scenario)
 #savepath='%s/environment' % (savepath)
 
+if (os.path.exists(savepath)!=True):
+    os.mkdir(savepath) #make directory prior to multiprocessing to avoid broken pipe error
+
 class TimeLimit(BaseCallback):
     """
     Callback for saving a model (the check is done every ``check_freq`` steps)
@@ -135,7 +138,7 @@ def make_env(x,y,z, rank, seed=0):
 
 if __name__ == '__main__':
 
-    num_cpu = 16  # Number of processes to use
+    num_cpu = 15  # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
     eval_env=environment(x, y, z, gamma, cutoffpenaltyscalar, rg_prob, turnspc, savepath, policyname)
