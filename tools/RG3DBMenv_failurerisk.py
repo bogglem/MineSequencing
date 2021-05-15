@@ -139,8 +139,8 @@ class environment(gym.Env):
         self.ob_sample=deepcopy(self.norm)
         self.construct_dep_dic()
         self.dep_dic=deepcopy(self.dep_dic_init)
-        # self.construct_eff_dic()
-        # self.eff_dic=deepcopy(self.eff_dic_init)
+        self.construct_eff_dic()
+        self.eff_dic=deepcopy(self.eff_dic_init)
         
         #construct_dependencies blocks with zeros padding to avoid errors around environment edges.
         self.construct_block_dic()
