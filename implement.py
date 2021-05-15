@@ -28,8 +28,8 @@ from stable_baselines.common.evaluation import evaluate_policy
 from tools.RG3DBMenv import environment
 
 # Create environment
-x=8
-y=8
+x=15
+y=15
 z=6
 batch_size=64
 LR=0.001
@@ -50,7 +50,7 @@ elif policyname =='MlpPolicy':
     policy=MlpPolicy
     test='MLPA2C'
 
-trialv='single_env'
+trialv='no_doublegamma'
 
 #prepare file naming strings
 LR_s=str(LR).split('.')[1]
@@ -60,7 +60,7 @@ cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
 rg_s=str(float(rg_prob)).split('.')[1]
 turnspc_s=str(turnspc).split('.')[1]
 
-scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_rg{rg_s}_cutoff{cutoff_s}_{trialv}')  
+scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_rg{rg_s}_{policyname}_{trialv}')  
 savepath='./output/%s' % scenario
 
 turns=round(x*y*z*turnspc)
@@ -71,7 +71,7 @@ env = environment(x,y,z,gamma, cutoffpenaltyscalar, rg_prob, turnspc, savepath, 
 model = A2C(policy, env, gamma=gamma, n_steps=batch_size, learning_rate=LR,  verbose=1)
 
 # Load the trained agent
-model = A2C.load("./%s/best_model" % savepath)
+model = A2C.load("%s/best_model" % savepath)
 
 # Evaluate the agent
 mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=10)

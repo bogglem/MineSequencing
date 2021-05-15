@@ -195,27 +195,28 @@ class environment(gym.Env):
                         dep=list([dep0,dep1,dep2,dep3,dep4,dep5,dep6,dep7,dep8])
                         self.dep_dic_init["%s"% block]=dep
                
-    # def construct_eff_dic(self):    
-    # #construct_dependencies to determine effectivess of algorithm in digging deeper. experimental function, not currently used.
+    def construct_eff_dic(self):    
+    #construct_dependencies to encourange algorithm in digging deeper. experimental function, not currently used.
         
-    #     for i in range(self.Ilen):
-    #         for j in range(self.Jlen):
-    #             for k in range(self.RLlen):
+        for i in range(self.Ilen):
+            for j in range(self.Jlen):
+                for k in range(self.RLlen):
                     
-    #                 block=str(i)+str('_')+str(j)+str('_')+str(k)
+                    block=str(i)+str('_')+str(j)+str('_')+str(k)
                        
-    #                 dep9=str(i-1)+str('_')+str(j+1)+str('_')+str(k)
-    #                 dep10=str(i)+str('_')+str(j+1)+str('_')+str(k)
-    #                 dep11=str(i+1)+str('_')+str(j+1)+str('_')+str(k)
-    #                 dep12=str(i-1)+str('_')+str(j)+str('_')+str(k)
-    #                 dep13=str(i+1)+str('_')+str(j)+str('_')+str(k)
-    #                 dep14=str(i-1)+str('_')+str(j-1)+str('_')+str(k)
-    #                 dep15=str(i)+str('_')+str(j-1)+str('_')+str(k)
-    #                 dep16=str(i+1)+str('_')+str(j-1)+str('_')+str(k)
+                    dep9=str(i-1)+str('_')+str(j+1)+str('_')+str(k)
+                    dep10=str(i)+str('_')+str(j+1)+str('_')+str(k)
+                    dep11=str(i+1)+str('_')+str(j+1)+str('_')+str(k)
+                    dep12=str(i-1)+str('_')+str(j)+str('_')+str(k)
+                    dep13=str(i+1)+str('_')+str(j)+str('_')+str(k)
+                    dep14=str(i-1)+str('_')+str(j-1)+str('_')+str(k)
+                    dep15=str(i)+str('_')+str(j-1)+str('_')+str(k)
+                    dep16=str(i+1)+str('_')+str(j-1)+str('_')+str(k)
 
                         
-    #                 dep=list([dep9,dep10,dep11,dep12,dep13,dep14,dep15,dep16])
-    #                 self.eff_dic_init["%s"% block]=dep
+                    dep=list([dep9,dep10,dep11,dep12,dep13,dep14,dep15,dep16])
+                    self.eff_dic_init["%s"% block]=dep
+                    
     
     def actcoords(self, action):
         #map coords
@@ -267,25 +268,25 @@ class environment(gym.Env):
                    
         return isMinable
     
-    # def isEfficient(self,selected_block):
+    def isEfficient(self,selected_block):
         
-    #     #experimental indicator function. not generally required.
+        #experimental indicator function to encourage mining adjacent blocks rather than spread out.
         
-    #     deplist = self.eff_dic["%s"% selected_block]
-    #     efficientlogic=np.zeros(len(deplist))
+        deplist = self.eff_dic["%s"% selected_block]
+        efficientlogic=np.zeros(len(deplist))
         
-    #     for d in range(len(deplist)):
-    #         depstr=deplist[d]
+        for d in range(len(deplist)):
+            depstr=deplist[d]
             
-    #         if depstr=='':
-    #             efficientlogic[d]=1
+            if depstr=='':
+                efficientlogic[d]=1
                
-    #         else: #if not surface then check dependencies
-    #             efficientlogic[d]=self.block_dic["%s"% depstr]
+            else: #if not surface then check dependencies
+                efficientlogic[d]=self.block_dic["%s"% depstr]
         
-    #     isEfficient=efficientlogic.max()
+        isEfficient=efficientlogic.max() #if any blocks are mined (value 1), the adjacent block is considered efficient excavation.
                    
-    #     return isEfficient        
+        return isEfficient        
         
     
     def cutoffpenalty(self):
@@ -321,26 +322,35 @@ class environment(gym.Env):
     def step(self, action):        
         
         info={} #required for gym.Env class output
-        #unmined=self.unminedOre()
+
+        failurerisk = np.random.uniform(0,self.turns)*(self.turncounter/self.turns)
+        
+        if failurerisk>=1:
+            self.terminal=True
+            self.reward = 0       
+            observation=self.ob_sample
         
         if sum(sum(sum(self.ob_sample[:,:,:,2])))>=self.ob_sample[:,:,:,2].size: #if all blocks are mined, end episode
             self.terminal=True
+            observation=self.ob_sample
                
         elif (self.turncounter>=self.turns): #if number of turns exceeds limit, end episode
             self.terminal=True
             self.reward = 0
+            observation=self.ob_sample
         
         elif action>=((self.Ilen)*(self.Jlen)):
             self.terminal=True
-            self.reward = -self.unminedOre()     
+            self.reward = -self.unminedOre()  
+            observation=self.ob_sample
         
         else:   #normal step process
             self.actcoords(action)
             selected_block=self.select_block()
-            minable=self.isMinable(selected_block)
-            #efficient=self.isEfficient(selected_block) #experimental parameter
+            isMinable=self.isMinable(selected_block)
+            isEfficient=self.isEfficient(selected_block)
             
-            self.evaluate(selected_block, minable)
+            self.evaluate(selected_block, isMinable, isEfficient)
             self.update(selected_block)
             self.turncounter+=1
             self.renderif(self.rendermode)
@@ -356,14 +366,14 @@ class environment(gym.Env):
         return observation, self.reward, self.terminal, info    
     
                  
-    def evaluate(self, selected_block, isMinable):
+    def evaluate(self, selected_block, isMinable, isEfficient):
         
         if isMinable==0:             #penalising repetetive useless actions
             
             ore=-self.averagereward
             
-        # elif isEfficient==0: #experimental parameter
-        #     self.reward=self.init_cutoffpenalty
+        elif isEfficient==0: #penalising high entropy policies spreading out and randomly picking.
+            ore=-self.averagereward
                 
         else:
             
@@ -375,7 +385,7 @@ class environment(gym.Env):
             # else:
             #     self.reward=self.init_cutoffpenalty
                 
-        self.reward=ore#*self.gamma**(self.turncounter)
+        self.reward=ore
         
     def update(self, selected_block):
     

@@ -372,8 +372,8 @@ class environment(gym.Env):
             
             ore=-self.averagereward
             
-        # elif isEfficient==0: #penalising high entropy policies spreading out and randomly picking.
-        #     ore=-self.averagereward
+        elif isEfficient==0: #penalising high entropy policies spreading out and randomly picking.
+            ore=-self.averagereward
                 
         else:
             
