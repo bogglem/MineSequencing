@@ -436,7 +436,8 @@ class environment(gym.Env):
                 self.render_update[self.i, self.j, self.RL]=0
     
                 self.bm.initiate_plot(self.averagereward)
-            
+                self.bm.plot()
+                
             self.bm.update_mined(self.i, self.j, self.RL)
             self.render_update[self.i, self.j, self.RL]=0 #not really required
                     

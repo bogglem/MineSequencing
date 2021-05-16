@@ -32,13 +32,13 @@ x=15
 y=15
 z=6
 batch_size=64
-LR=0.01
+LR=0.001
 gamma=0.9
 cutoffpenaltyscalar=1.0
-rg_prob=0.1
+rg_prob=0.0
 turnspc=0.2
 
-policyname='CnnPolicy' #change this name to change RL policy type (MlpPolicy/CnnPolicy)
+policyname='MlpPolicy' #change this name to change RL policy type (MlpPolicy/CnnPolicy)
 
 if policyname == 'CnnPolicy':
     
@@ -50,7 +50,7 @@ elif policyname =='MlpPolicy':
     policy=MlpPolicy
     test='MLPA2C'
 
-trialv='failurerisk'
+trialv='efficiency'
 
 #prepare file naming strings
 LR_s=str(LR).split('.')[1]
