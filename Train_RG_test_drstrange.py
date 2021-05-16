@@ -34,9 +34,22 @@ from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import A2C
-from tools.RG3DBMenv_nodoublegamma import environment
+from tools.RG3DBMenv import environment
 
-policyname='MlpPolicy' #change this name to change RL policy type (MlpPolicy/CnnPolicy)
+os.environ['CUDA_VISIBLE_DEVICES'] = '2,3'
+
+#idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
+idx=0
+
+#prepare input parameters
+inputarray=pd.read_csv('jobarrays/RG_drstrange_job_input.csv')
+
+#block model (environment) dimensions
+x=inputarray.loc[idx].x
+y=inputarray.loc[idx].y
+z=inputarray.loc[idx].z #must be greater than 6 for CNN
+
+policyname=inputarray.loc[idx].policyname  #change this name to change RL policy type (MlpPolicy/CnnPolicy)
 
 if policyname == 'CnnPolicy':
     
@@ -48,34 +61,21 @@ elif policyname =='MlpPolicy':
     policy=MlpPolicy
     test='MLPA2C'
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '2,3'
-
-#idx=int(sys.argv[1]) #required for batch runs on pbs katana
-idx=0
-
-#prepare input parameters
-inputarray=pd.read_csv('jobarrays/RG0_drstrange_job_input_test.csv')
 trialv=inputarray.loc[idx].trialv 
 #LR_critic=inputarray.loc[idx].LR_critic
 LR=inputarray.loc[idx].LR
-batch_size=int(inputarray.loc[idx].batch_size)
+#batch_size=int(inputarray.loc[idx].batch_size)
 #memcap=int(inputarray.loc[idx].memcap)
 #inputfile=inputarray.loc[idx].inputfile
 gamma=inputarray.loc[idx].gamma
 #dropout=float(inputarray.loc[idx].dropout)
 runtime=inputarray.loc[idx].runtime
-cutoffpenaltyscalar=inputarray.loc[idx].cutoffpenaltyscalar
+cutoffpenaltyscalar=inputarray.loc[idx].cutoffpenaltyscalar #not currently implemented
 rg_prob=inputarray.loc[idx].rg_prob
 turnspc=inputarray.loc[idx].turnspc
 
 start=time.time()
 end=start+runtime
-
-#block model (environment) dimensions
-x=8
-y=8
-z=6 #must be greater than 6 for CNN
-
 episodetimesteps=round(x*y*z*turnspc)
 
 #prepare file naming strings
@@ -86,9 +86,10 @@ cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
 rg_s=str(float(rg_prob)).split('.')[1]
 turnspc_s=str(turnspc).split('.')[1]
 storagefolder='output'
-scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_rg{rg_s}_cutoff{cutoff_s}_{trialv}')    
+scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_rg{rg_s}_{policyname}_{trialv}')    
 savepath='./%s/%s' % (storagefolder ,scenario)
 #savepath='%s/environment' % (savepath)
+
 if (os.path.exists(savepath)!=True):
     os.mkdir(savepath) #make directory prior to multiprocessing to avoid broken pipe error
 
@@ -115,8 +116,7 @@ class TimeLimit(BaseCallback):
                 self.incomplete = False
                         
         return self.incomplete
-    
-    
+     
 
 def make_env(x,y,z, rank, seed=0):
     """
@@ -138,7 +138,7 @@ def make_env(x,y,z, rank, seed=0):
 
 if __name__ == '__main__':
 
-    num_cpu = 32  # Number of processes to use
+    num_cpu = 1  # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
     eval_env=environment(x, y, z, gamma, cutoffpenaltyscalar, rg_prob, turnspc, savepath, policyname)

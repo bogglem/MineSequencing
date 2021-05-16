@@ -34,7 +34,7 @@ from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import A2C
-from tools.RG3DBMenv import environment
+from tools.RG3DBMenv_efficiency import environment
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '2,3'
 
@@ -42,7 +42,7 @@ idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
 #idx=0
 
 #prepare input parameters
-inputarray=pd.read_csv('jobarrays/RG0_katana_job_input.csv')
+inputarray=pd.read_csv('jobarrays/RG_katana_job_input.csv')
 
 #block model (environment) dimensions
 x=inputarray.loc[idx].x
