@@ -11,7 +11,9 @@
 #PBS -o /home/z3333990/Output
 
  
-cd $PBS_O_WORKDIR
+cd /home/z3333990/
 
-source tf1.14env/bin/activate 
+source tf1.14env/bin/activate
+
+cd /home/z3333990/MineSequencing
 python3 Train_RG_ACER_katana.py ${PBS_ARRAY_INDEX}
