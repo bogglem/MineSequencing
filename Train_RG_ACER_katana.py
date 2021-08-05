@@ -33,13 +33,13 @@ from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
-from stable_baselines import A2C
+from stable_baselines import ACER
 from tools.RG3DBMenv import environment
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '2,3'
 
-#idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
-idx=0
+idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
+#idx=0
 
 #prepare input parameters
 inputarray=pd.read_csv('jobarrays/RG_katana_job_input.csv')
@@ -138,7 +138,7 @@ def make_env(x,y,z, rank, seed=0):
 
 if __name__ == '__main__':
 
-    num_cpu = 1  # Number of processes to use
+    num_cpu = 15  # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
     eval_env=environment(x, y, z, gamma, cutoffpenaltyscalar, rg_prob, turnspc, savepath, policyname)
@@ -152,7 +152,7 @@ if __name__ == '__main__':
                                                                          , deterministic=False, best_model_save_path=savepath)])
     
     #create model with Stable Baselines package.
-    model = A2C(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  verbose=1)#, tensorboard_log=scenario)
+    model = ACER(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  verbose=1)#, tensorboard_log=scenario)
     model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
     
     
