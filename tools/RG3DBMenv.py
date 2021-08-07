@@ -25,7 +25,10 @@ class environment(gym.Env):
         self.cutoffpenaltyscalar=penaltyscalar #scaling parameter for changing the penalty for taking no action (cutoff).
         self.rg_prob=rg_prob #probability of randomly generating a new environment
         self.savepath=savepath
+        self.savedgeo='%s/geology' % savepath
         self.savedenv='%s/environment' % savepath
+        self.saveddepdict='%s/depdict' % savepath
+        self.savedeffdict='%s/effdict' % savepath
         self.policy=policy
         
         #initiating values
@@ -56,7 +59,7 @@ class environment(gym.Env):
         
         
         #initiating block dependency dictionaries
-        self.block_dic={}
+        #self.block_dic={}
         self.block_dic_init={}
         self.dep_dic={}
         self.dep_dic_init={}
@@ -91,19 +94,33 @@ class environment(gym.Env):
         self.init_cutoffpenalty=self.cutoffpenalty() #experimental parameter function. penalises agent for not mining (do nothing), reward for taking action.
         self.averagereward=np.average((np.multiply(self.geo_array[:,:,:,0],self.geo_array[:,:,:,1])))
 
-    def save_env(self, savedenv,array):
+
+    def save_env(self, idnumber):
+            
         
         if (os.path.exists(self.savepath)):
-            np.save("%s"% savedenv, array)
+            np.save("%s/%s"% (self.savedgeo, idnumber), self.geo_array)
+            np.save("%s/%s"% (self.savedenv, idnumber), self.ob_sample)
+            np.save("%s/%s"% (self.saveddepdict, idnumber), self.dep_dict)
+            np.save("%s/%s"% (self.savedeffdict, idnumber), self.eff_dict)
         
         elif (os.path.exists(self.savepath)!=True):
             os.mkdir(self.savepath)
-            np.save("%s"% savedenv, array)
+            np.save("%s/%s"% (self.savedgeo, idnumber), self.geo_array)
+            np.save("%s/%s"% (self.savedenv, idnumber), self.ob_sample)
+            np.save("%s/%s"% (self.saveddepdict, idnumber), self.dep_dict)
+            np.save("%s/%s"% (self.savedeffdict, idnumber), self.eff_dict)
             
         
-    def load_env(self, savedenv):
+    def load_env(self): #idnumber
         
-        self.geo_array=np.load("%s.npy"% savedenv)
+        self.geo_array=np.load("%s.npy"% self.savedenv)
+        #self.geo_array=np.load("%s/%s.npy"% (self.savedgeo, idnumber), allow_pickle='True').flat[0]
+        #self.ob_sample=np.load("%s/%s.npy"% (self.savedenv, idnumber), allow_pickle='True').flat[0]
+        #self.dep_dic=np.load("%s/%s.npy"% (self.saveddepdict, idnumber), allow_pickle='True').flat[0]
+        #self.eff_dic=np.load("%s/%s.npy"% (self.savedeffdict, idnumber), allow_pickle='True').flat[0]
+        
+        
         print("loaded environment")
         
         return self.geo_array

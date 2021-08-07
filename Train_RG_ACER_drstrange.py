@@ -152,7 +152,8 @@ if __name__ == '__main__':
                                                                          , deterministic=False, best_model_save_path=savepath)])
     
     #create model with Stable Baselines package.
-    model = ACER(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  verbose=1)#, tensorboard_log=scenario)
+    #model = ACER(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  verbose=1)#, tensorboard_log=scenario)
+    model = ACER.load("%s/best_model" % savepath, env)
     model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
     
     

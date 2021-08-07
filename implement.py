@@ -21,7 +21,7 @@ tf.get_logger().setLevel(logging.ERROR)
 
 import gym
 
-from stable_baselines import A2C
+from stable_baselines import ACER
 from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.policies import CnnPolicy
 from stable_baselines.common.evaluation import evaluate_policy
@@ -33,9 +33,9 @@ y=15
 z=6
 batch_size=64
 LR=0.001
-gamma=0.9
+gamma=0.99
 cutoffpenaltyscalar=1.0
-rg_prob=0.0
+rg_prob=1.0
 turnspc=0.2
 
 policyname='MlpPolicy' #change this name to change RL policy type (MlpPolicy/CnnPolicy)
@@ -43,21 +43,21 @@ policyname='MlpPolicy' #change this name to change RL policy type (MlpPolicy/Cnn
 if policyname == 'CnnPolicy':
     
     policy=CnnPolicy
-    test='CNNA2C'
+    test='CNNACER'
 
 elif policyname =='MlpPolicy':
 
     policy=MlpPolicy
-    test='MLPA2C'
+    test='MLPACER'
 
-trialv='efficiency'
+trialv='rg1'
 
 #prepare file naming strings
 LR_s=str(LR).split('.')[1]
 inputfile_s='RG_%s_%s_%s' % (x,y,z)
 gamma_s=str(gamma).split('.')[1]
 cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
-rg_s=str(float(rg_prob)).split('.')[1]
+rg_s=max(str(float(rg_prob)).split('.'))
 turnspc_s=str(turnspc).split('.')[1]
 
 scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_rg{rg_s}_{policyname}_{trialv}')  
@@ -68,10 +68,10 @@ turns=round(x*y*z*turnspc)
 env = environment(x,y,z,gamma, cutoffpenaltyscalar, rg_prob, turnspc, savepath, policyname)
 
 # Instantiate the agent
-model = A2C(policy, env, gamma=gamma, n_steps=batch_size, learning_rate=LR,  verbose=1)
+model = ACER(policy, env, gamma=gamma, n_steps=batch_size, learning_rate=LR,  verbose=1)
 
 # Load the trained agent
-model = A2C.load("%s/best_model" % savepath)
+model = ACER.load("%s/best_model" % savepath)
 
 # Evaluate the agent
 mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=10)
