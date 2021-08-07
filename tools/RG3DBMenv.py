@@ -27,8 +27,8 @@ class environment(gym.Env):
         self.savepath=savepath
         self.savedgeo='%s/geology' % savepath
         self.savedenv='%s/environment' % savepath
-        self.saveddepdict='%s/depdict' % savepath
-        self.savedeffdict='%s/effdict' % savepath
+        self.saveddepdic='%s/depdict' % savepath
+        self.savedeffdic='%s/effdict' % savepath
         self.policy=policy
         
         #initiating values
@@ -49,6 +49,7 @@ class environment(gym.Env):
         self.RLmax=z
         self.mined=-1
         self.callnumber=1
+        self.resetnumber=0
         
         #sizing the block model environment
         self.Ilen=self.Imax-self.Imin 
@@ -95,32 +96,77 @@ class environment(gym.Env):
         self.averagereward=np.average((np.multiply(self.geo_array[:,:,:,0],self.geo_array[:,:,:,1])))
 
 
-    def save_env(self, idnumber):
+    def save_multi_env(self):
             
+        #create dir        
+        if (os.path.exists(self.savepath)!=True):
+            os.mkdir(self.savepath)
+        
+        #save geo array   
+        if (os.path.exists(self.savedgeo)):
+            np.save("%s/%s_geo_array"% (self.savedgeo, self.resetnumber), self.geo_array)
+          
+        
+        elif (os.path.exists(self.savedgeo)!=True):
+            os.mkdir(self.savedgeo)
+            np.save("%s/%s_geo_array"% (self.savedgeo, self.resetnumber), self.geo_array)
+        
+        #save normalised ob_sample       
+        if (os.path.exists(self.savedenv)):
+            np.save("%s/%s_ob_sample"% (self.savedenv, self.resetnumber), self.ob_sample)
+          
+        
+        elif (os.path.exists(self.savedenv)!=True):
+            os.mkdir(self.savedenv)
+            np.save("%s/%s_ob_sample"% (self.savedenv, self.resetnumber), self.ob_sample)     
+        
+      
+        #save dep_dic  
+        if (os.path.exists(self.saveddepdic)):
+            np.save("%s/%s_dep_dic"% (self.saveddepdic, self.resetnumber), self.dep_dic)
+          
+        
+        elif (os.path.exists(self.saveddepdic)!=True):
+            os.mkdir(self.saveddepdic)
+            np.save("%s/%s_dep_dic"% (self.saveddepdic, self.resetnumber), self.dep_dic)
+        
+        
+         #save eff_dic   
+        if (os.path.exists(self.savedeffdic)):
+            np.save("%s/%s_eff_dic"% (self.savedeffdic, self.resetnumber), self.eff_dic)
+          
+        
+        elif (os.path.exists(self.savedeffdic)!=True):
+            os.mkdir(self.savedeffdic)
+            np.save("%s/%s_eff_dic"% (self.savedeffdic, self.resetnumber), self.eff_dic)   
+        
+    
+        
+    def load_multi_env(self, resetnumber):
+        
+        #self.geo_array=np.load("%s.npy"% self.savedenv)
+        self.geo_array=np.load("%s/%s_geo_array.npy"% (self.savedgeo, resetnumber))
+        self.ob_sample=np.load("%s/%s_ob_sample.npy"% (self.savedenv, resetnumber))
+        self.dep_dic=np.load("%s/%s_dep_dic.npy"% (self.saveddepdic, resetnumber), allow_pickle='True').flat[0]
+        self.eff_dic=np.load("%s/%s_eff_dic.npy"% (self.savedeffdic, resetnumber), allow_pickle='True').flat[0]
+                
+        print("loaded environment")
+        
+        return self.geo_array        
+        
+    def save_env(self, savedenv,array):
         
         if (os.path.exists(self.savepath)):
-            np.save("%s/%s"% (self.savedgeo, idnumber), self.geo_array)
-            np.save("%s/%s"% (self.savedenv, idnumber), self.ob_sample)
-            np.save("%s/%s"% (self.saveddepdict, idnumber), self.dep_dict)
-            np.save("%s/%s"% (self.savedeffdict, idnumber), self.eff_dict)
+            np.save("%s"% savedenv, array)
         
         elif (os.path.exists(self.savepath)!=True):
             os.mkdir(self.savepath)
-            np.save("%s/%s"% (self.savedgeo, idnumber), self.geo_array)
-            np.save("%s/%s"% (self.savedenv, idnumber), self.ob_sample)
-            np.save("%s/%s"% (self.saveddepdict, idnumber), self.dep_dict)
-            np.save("%s/%s"% (self.savedeffdict, idnumber), self.eff_dict)
-            
-        
-    def load_env(self): #idnumber
+            np.save("%s"% savedenv, array)    
+    
+    def load_env(self):
+        #to be deprecated once all saved environments include dicts and ob_sample
         
         self.geo_array=np.load("%s.npy"% self.savedenv)
-        #self.geo_array=np.load("%s/%s.npy"% (self.savedgeo, idnumber), allow_pickle='True').flat[0]
-        #self.ob_sample=np.load("%s/%s.npy"% (self.savedenv, idnumber), allow_pickle='True').flat[0]
-        #self.dep_dic=np.load("%s/%s.npy"% (self.saveddepdict, idnumber), allow_pickle='True').flat[0]
-        #self.eff_dic=np.load("%s/%s.npy"% (self.savedeffdict, idnumber), allow_pickle='True').flat[0]
-        
-        
         print("loaded environment")
         
         return self.geo_array
@@ -412,7 +458,8 @@ class environment(gym.Env):
         self.ob_sample[self.i,self.j,self.RL,2]=1 #set to one (mined) for agent observation.
    
     def reset(self):
-                          
+        
+        self.resetnumber+=1
         #start new episode.
         if np.random.uniform()>self.rg_prob: #probability to use same environment (not create a random new one)
             self.block_dic=deepcopy(self.block_dic_init) #deepcopy same dependency dictionary as block models have same physical size and constraints.
@@ -430,7 +477,6 @@ class environment(gym.Env):
         self.j=-1
         self.RL=-1
         self.actionslist=list()
-
         
         if self.policy=='MlpPolicy':
             arr=np.ndarray.flatten(self.ob_sample) #uncomment line for MLP (not CNN) policy
