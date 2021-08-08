@@ -384,6 +384,17 @@ class environment(gym.Env):
         return abandonreward
     
     
+    
+    def equip_failure(self):
+        x=self.turncounter
+        prob_fail=1-np.exp(-x*0.00001)
+        
+        if random.random()<prob_fail:
+            equip_failure = True
+        else:
+            equip_failure= False
+        return equip_failure
+    
     def step(self, action):        
         
         info={} #required for gym.Env class output
@@ -399,8 +410,9 @@ class environment(gym.Env):
         #     self.terminal=True
         #     self.reward = 0       
         #     observation=self.ob_sample
+        equip_failure = self.equip_failure()
         
-        if sum(sum(sum(self.ob_sample[:,:,:,2])))>=self.ob_sample[:,:,:,2].size: #if all blocks are mined, end episode
+        if  (equip_failure==True) or (sum(sum(sum(self.ob_sample[:,:,:,2])))>=self.ob_sample[:,:,:,2].size): #if all blocks are mined, end episode
             self.terminal=True
             observation=self.ob_sample
                

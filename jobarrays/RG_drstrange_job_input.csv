@@ -1,2 +1,2 @@
 x,y,z,policyname,LR,gamma,batch_size,runtime,cutoffpenaltyscalar,rg_prob,turnspc,trialv
-30,30,6,MlpPolicy,0.001,0.995,N/A,82800,1,1,0.02,rg1
+30,30,6,MlpPolicy,0.001,0.995,N/A,82800,1,rg,0.02,rg1
