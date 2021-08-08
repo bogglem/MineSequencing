@@ -2,3 +2,6 @@ x,y,z,policyname,LR,gamma,batch_size,runtime,cutoffpenaltyscalar,rg_prob,turnspc
 15,15,6,MlpPolicy,0.001,1,1,41400,1,rg,0.08,reliability_gamma1
 15,15,6,MlpPolicy,0.001,0.7,1,41400,1,rg,0.08,reliability_gamma07
 15,15,6,MlpPolicy,0.001,0,1,41400,1,rg,0.08,reliability_gamma0
+15,15,6,MlpPolicy,0.0001,1,1,41400,1,rg,0.08,reliability_gamma1
+15,15,6,MlpPolicy,0.0001,0.7,1,41400,1,rg,0.08,reliability_gamma07
+15,15,6,MlpPolicy,0.0001,0,1,41400,1,rg,0.08,reliability_gamma0
