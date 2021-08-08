@@ -36,7 +36,7 @@ from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCa
 from stable_baselines import ACER
 from tools.RG3DBMenv import environment
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '4'
+os.environ['CUDA_VISIBLE_DEVICES'] = '5'
 
 #idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
 idx=0
@@ -83,7 +83,7 @@ LR_s=str(LR).split('.')[1]
 inputfile_s='RG_%s_%s_%s' % (x,y,z)
 gamma_s=str(gamma).split('.')[1]
 cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
-rg_s=max(str(float(rg_prob)).split('.'))
+rg_s=rg_prob #max(str(float(rg_prob)).split('.'))
 turnspc_s=str(turnspc).split('.')[1]
 storagefolder='output'
 scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_rg{rg_s}_{policyname}_{trialv}')    
