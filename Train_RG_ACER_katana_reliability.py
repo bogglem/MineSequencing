@@ -129,7 +129,7 @@ def make_env(x,y,z, rank, seed=0):
     """
     def _init():
         
-        env = environment(x,y,z,gamma, cutoffpenaltyscalar, turnspc, savepath, rg_prob, policyname)
+        env = environment(x,y,z,gamma, cutoffpenaltyscalar, turnspc, savepath, policy, rg_prob, policyname)
         env.seed(seed + rank)
         return env
     set_global_seeds(seed)

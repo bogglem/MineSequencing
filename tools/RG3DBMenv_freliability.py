@@ -180,7 +180,7 @@ class environment(gym.Env):
         if (self.rg_prob=='loadenv') and (os.path.isfile('%s.npy' % self.savedenv)):
               self.load_env(self.savedenv)
         
-        elif (self.rg_prob=='rg'):
+        else: #self.rg_prob=='rg':
             self.geo_array=self.automodel.buildmodel()
             
         scaler=MinMaxScaler()
@@ -389,7 +389,7 @@ class environment(gym.Env):
         x=self.turncounter
         prob_fail=1-np.exp(-x*0.00001)
         
-        if random.random()<prob_fail:
+        if random.random()>prob_fail:
             equip_failure = True
         else:
             equip_failure= False
