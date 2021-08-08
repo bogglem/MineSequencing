@@ -129,7 +129,7 @@ def make_env(x,y,z, rank, seed=0):
     """
     def _init():
         
-        env = environment(x,y,z,gamma, cutoffpenaltyscalar, turnspc, savepath, policy, rg_prob, policyname)
+        env = environment(x,y,z,gamma, cutoffpenaltyscalar, turnspc, savepath, policyname, rg_prob)
         env.seed(seed + rank)
         return env
     set_global_seeds(seed)
@@ -141,7 +141,7 @@ if __name__ == '__main__':
     num_cpu = 15  # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
-    eval_env=environment(x, y, z, gamma, cutoffpenaltyscalar, turnspc, savepath,rg_prob, policyname)
+    eval_env=environment(x, y, z, gamma, cutoffpenaltyscalar, turnspc, savepath, policyname, rg_prob)
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
