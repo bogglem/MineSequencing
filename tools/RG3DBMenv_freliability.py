@@ -103,6 +103,14 @@ class environment(gym.Env):
         #create dir        
         if (os.path.exists('./environments')!=True):
             os.mkdir('./environments')
+        if (os.path.exists('./environments/geology')!=True):
+            os.mkdir('./environments/geology')
+        if (os.path.exists('./environments/environment')!=True):
+            os.mkdir('./environments/environment')
+        if (os.path.exists('./environments/depdict')!=True):
+            os.mkdir('./environments/depdict')
+        if (os.path.exists('./environments/effdict')!=True):
+            os.mkdir('./environments/effdict')            
         
         #save geo array   
         if (os.path.exists(self.savedgeo)):
