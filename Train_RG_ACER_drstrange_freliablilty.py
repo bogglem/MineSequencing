@@ -34,7 +34,7 @@ from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import ACER
-from tools.RG3DBMenv_loadmulti import environment
+from tools.RG3DBMenv_freliability import environment
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
@@ -42,7 +42,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 idx=0
 
 #prepare input parameters
-inputarray=pd.read_csv('jobarrays/RG_drstrange_job_input.csv')
+inputarray=pd.read_csv('jobarrays/RG_drstrange_freliability_input.csv')
 
 #block model (environment) dimensions
 x=inputarray.loc[idx].x

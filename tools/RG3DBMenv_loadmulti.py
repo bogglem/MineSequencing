@@ -421,7 +421,7 @@ class environment(gym.Env):
 
         #failurerisk = np.random.uniform(0,self.turns)*(self.turncounter/self.turns)
         
-        if (random.random()<0.0001): #every 10 00 steps randomly save episode 
+        if (random.random()<0.00001): #every 10 000 steps randomly save episode 
             self.maxloadid+=1
             self.save_multi_env()
             

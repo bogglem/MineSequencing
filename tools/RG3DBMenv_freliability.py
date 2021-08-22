@@ -154,15 +154,21 @@ class environment(gym.Env):
         
     def load_multi_env(self, loadid):
         
-        #self.geo_array=np.load("%s.npy"% self.savedenv)
-        self.geo_array=np.load("%s/%s_geo_array.npy"% (self.savedgeo, loadid))
-        self.ob_sample=np.load("%s/%s_ob_sample.npy"% (self.savedenv, loadid))
-        self.dep_dic=np.load("%s/%s_dep_dic.npy"% (self.saveddepdic, loadid), allow_pickle='True').flat[0]
-        self.eff_dic=np.load("%s/%s_eff_dic.npy"% (self.savedeffdic, loadid), allow_pickle='True').flat[0]
-                
-        print("loaded environment")
+        try:
+            #self.geo_array=np.load("%s.npy"% self.savedenv)
+            self.geo_array=np.load("%s/%s_geo_array.npy"% (self.savedgeo, loadid))
+            self.ob_sample=np.load("%s/%s_ob_sample.npy"% (self.savedenv, loadid))
+            self.dep_dic=np.load("%s/%s_dep_dic.npy"% (self.saveddepdic, loadid), allow_pickle='True').flat[0]
+            self.eff_dic=np.load("%s/%s_eff_dic.npy"% (self.savedeffdic, loadid), allow_pickle='True').flat[0]
         
-        return self.geo_array        
+        except:
+            self.geo_array=np.load("%s/%s_geo_array.npy"% (self.savedgeo, loadid+1))
+            self.ob_sample=np.load("%s/%s_ob_sample.npy"% (self.savedenv, loadid+1))
+            self.dep_dic=np.load("%s/%s_dep_dic.npy"% (self.saveddepdic, loadid+1), allow_pickle='True').flat[0]
+            self.eff_dic=np.load("%s/%s_eff_dic.npy"% (self.savedeffdic, loadid+1), allow_pickle='True').flat[0]            
+
+        
+        return self.geo_array          
         
     def save_env(self, savedenv,array):
         
@@ -407,7 +413,7 @@ class environment(gym.Env):
         
         info={} #required for gym.Env class output
        
-        if (random.random()<0.0001): #every 10 00 steps randomly save environment 
+        if (random.random()<0.00001): #every 10 000 steps randomly save environment 
             self.maxloadid+=1
             self.save_multi_env()
         
@@ -435,6 +441,7 @@ class environment(gym.Env):
             self.update(selected_block)
             self.turncounter+=1
             self.renderif(self.rendermode)
+            self.equip_failure() #terminates episode based on random failure of equipment
             
             
         if self.policy=='MlpPolicy':
@@ -442,9 +449,9 @@ class environment(gym.Env):
             observation=arr.reshape([len(arr)]) #uncomment line for MLP (not CNN) policy
                 
         else:
-                observation=self.ob_sample
+            observation=self.ob_sample
         
-        self.equip_failure()
+        
         
         return observation, self.reward, self.terminal, info    
     
