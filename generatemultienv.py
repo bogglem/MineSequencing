@@ -4,7 +4,7 @@ Created on Sat Aug  7 11:14:46 2021
 
 @author: Tim Pelech
 """
-
+import os
 import time
 import gym
 import numpy as np
