@@ -66,7 +66,7 @@ env = environment(x,y,z,gamma, turnspc, savepath, policyname)
 
 for i in range(100):
 
-    env.reset()
+    env.build()
     env.save_multi_env()
 
     
