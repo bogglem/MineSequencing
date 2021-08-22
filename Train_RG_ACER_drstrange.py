@@ -34,7 +34,7 @@ from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import ACER
-from tools.RG3DBMenv import environment
+from tools.RG3DBMenv_loadmulti import environment
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '5'
 
@@ -70,8 +70,8 @@ LR=inputarray.loc[idx].LR
 gamma=inputarray.loc[idx].gamma
 #dropout=float(inputarray.loc[idx].dropout)
 runtime=inputarray.loc[idx].runtime
-cutoffpenaltyscalar=inputarray.loc[idx].cutoffpenaltyscalar #not currently implemented
-rg_prob=inputarray.loc[idx].rg_prob
+#cutoffpenaltyscalar=inputarray.loc[idx].cutoffpenaltyscalar #not currently implemented
+#rg_prob=inputarray.loc[idx].rg_prob
 turnspc=inputarray.loc[idx].turnspc
 
 start=time.time()
@@ -82,11 +82,11 @@ episodetimesteps=round(x*y*z*turnspc)
 LR_s=str(LR).split('.')[1]
 inputfile_s='RG_%s_%s_%s' % (x,y,z)
 gamma_s=str(gamma).split('.')[1]
-cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
-rg_s=rg_prob #max(str(float(rg_prob)).split('.'))
+#cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
+#rg_s=rg_prob #max(str(float(rg_prob)).split('.'))
 turnspc_s=str(turnspc).split('.')[1]
 storagefolder='output'
-scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_rg{rg_s}_{policyname}_{trialv}')    
+scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_{policyname}_{trialv}')    
 savepath='./%s/%s' % (storagefolder ,scenario)
 #savepath='%s/environment' % (savepath)
 
@@ -129,7 +129,7 @@ def make_env(x,y,z, rank, seed=0):
     """
     def _init():
         
-        env = environment(x, y, z, gamma, cutoffpenaltyscalar, turnspc, savepath, policyname, rg_prob)
+        env = environment(x, y, z, gamma, turnspc, savepath, policyname)
         env.seed(seed + rank)
         return env
     set_global_seeds(seed)
@@ -141,7 +141,7 @@ if __name__ == '__main__':
     num_cpu = 64  # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
-    eval_env=environment(x, y, z, gamma, cutoffpenaltyscalar, turnspc, savepath, policyname, rg_prob)
+    eval_env=environment(x, y, z, gamma, turnspc, savepath, policyname)
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
