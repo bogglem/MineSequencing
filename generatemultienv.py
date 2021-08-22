@@ -12,6 +12,8 @@ import sys
 import pandas as pd
 from tools.RG3DBMenv_loadmulti import environment
 
+os.environ['CUDA_VISIBLE_DEVICES'] = '5'
+
 idx=0
 
 #prepare input parameters
