@@ -100,7 +100,9 @@ class environment(gym.Env):
 
 
     def save_multi_env(self):
-            
+        
+        self.savenumber=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])+1
+        
         #create dir        
         if (os.path.exists('./environments')!=True):
             os.mkdir('./environments')
@@ -151,7 +153,7 @@ class environment(gym.Env):
             os.mkdir(self.savedeffdic)
             np.save("%s/%s_eff_dic"% (self.savedeffdic, self.savenumber), self.eff_dic)   
         
-        self.savenumber=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])+1
+        
     
         
     def load_multi_env(self, loadid):
