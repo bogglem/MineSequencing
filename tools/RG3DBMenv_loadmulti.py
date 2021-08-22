@@ -161,7 +161,7 @@ class environment(gym.Env):
         self.dep_dic=np.load("%s/%s_dep_dic.npy"% (self.saveddepdic, loadid), allow_pickle='True').flat[0]
         self.eff_dic=np.load("%s/%s_eff_dic.npy"% (self.savedeffdic, loadid), allow_pickle='True').flat[0]
                 
-        print("loaded environment")
+        #print("loaded environment")
         
         return self.geo_array        
         
