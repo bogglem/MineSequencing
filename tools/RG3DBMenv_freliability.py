@@ -394,33 +394,24 @@ class environment(gym.Env):
     
     
     def equip_failure(self):
-        x=self.turncounter
-        prob_fail=1-np.exp(-x*0.00001)
+        #x=self.turncounter
+        #prob_fail= #1-np.exp(-x*0.00001)
         
-        if random.random()>prob_fail:
-            equip_failure = True
+        if random.random()>0.995**self.turncounter: #probability of success
+            self.terminal=True
         else:
-            equip_failure= False
-        return equip_failure
+            self.terminal=False
+        return
     
     def step(self, action):        
         
         info={} #required for gym.Env class output
-
-        #failurerisk = np.random.uniform(0,self.turns)*(self.turncounter/self.turns)
-        
-        if (self.rg_prob=='loadenv') and (random.random()<0.00001): #every 10 000 randomly save episode
-            self.savenumber+=1
-            self.save_multi_env()
-            
        
-        # if failurerisk>=1:
-        #     self.terminal=True
-        #     self.reward = 0       
-        #     observation=self.ob_sample
-        equip_failure = self.equip_failure()
+        if (random.random()<0.0001): #every 10 00 steps randomly save environment 
+            self.maxloadid+=1
+            self.save_multi_env()
         
-        if  (equip_failure==True) or (sum(sum(sum(self.ob_sample[:,:,:,2])))>=self.ob_sample[:,:,:,2].size): #if all blocks are mined, end episode
+        if sum(sum(sum(self.ob_sample[:,:,:,2])))>=self.ob_sample[:,:,:,2].size: #if all blocks are mined, end episode
             self.terminal=True
             observation=self.ob_sample
                
@@ -452,7 +443,9 @@ class environment(gym.Env):
                 
         else:
                 observation=self.ob_sample
-            
+        
+        self.equip_failure()
+        
         return observation, self.reward, self.terminal, info    
     
                  

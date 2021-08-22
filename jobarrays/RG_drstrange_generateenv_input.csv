@@ -1,2 +1,2 @@
 x,y,z,policyname,LR,gamma,batch_size,runtime,turnspc,trialv
-15,15,6,MlpPolicy,0.001,0.995,N/A,21600,0.07,genenv
+15,15,6,MlpPolicy,0.001,0.995,N/A,14400,0.07,genenv
