@@ -50,8 +50,9 @@ class environment(gym.Env):
         self.RLmax=z
         self.mined=-1
         self.callnumber=1
-        self.savenumber=0
+        
         self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
+        self.savenumber=self.maxloadid+1
         
         #sizing the block model environment
         self.Ilen=self.Imax-self.Imin 
@@ -150,7 +151,7 @@ class environment(gym.Env):
             os.mkdir(self.savedeffdic)
             np.save("%s/%s_eff_dic"% (self.savedeffdic, self.savenumber), self.eff_dic)   
         
-        self.savenumber+=1
+        self.savenumber=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])+1
     
         
     def load_multi_env(self, loadid):
