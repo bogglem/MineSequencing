@@ -158,13 +158,19 @@ class environment(gym.Env):
         
     def load_multi_env(self, loadid):
         
-        #self.geo_array=np.load("%s.npy"% self.savedenv)
-        self.geo_array=np.load("%s/%s_geo_array.npy"% (self.savedgeo, loadid))
-        self.ob_sample=np.load("%s/%s_ob_sample.npy"% (self.savedenv, loadid))
-        self.dep_dic=np.load("%s/%s_dep_dic.npy"% (self.saveddepdic, loadid), allow_pickle='True').flat[0]
-        self.eff_dic=np.load("%s/%s_eff_dic.npy"% (self.savedeffdic, loadid), allow_pickle='True').flat[0]
-                
-        #print("loaded environment")
+        try:
+            #self.geo_array=np.load("%s.npy"% self.savedenv)
+            self.geo_array=np.load("%s/%s_geo_array.npy"% (self.savedgeo, loadid))
+            self.ob_sample=np.load("%s/%s_ob_sample.npy"% (self.savedenv, loadid))
+            self.dep_dic=np.load("%s/%s_dep_dic.npy"% (self.saveddepdic, loadid), allow_pickle='True').flat[0]
+            self.eff_dic=np.load("%s/%s_eff_dic.npy"% (self.savedeffdic, loadid), allow_pickle='True').flat[0]
+        
+        except:
+            self.geo_array=np.load("%s/%s_geo_array.npy"% (self.savedgeo, loadid+1))
+            self.ob_sample=np.load("%s/%s_ob_sample.npy"% (self.savedenv, loadid+1))
+            self.dep_dic=np.load("%s/%s_dep_dic.npy"% (self.saveddepdic, loadid+1), allow_pickle='True').flat[0]
+            self.eff_dic=np.load("%s/%s_eff_dic.npy"% (self.savedeffdic, loadid+1), allow_pickle='True').flat[0]            
+
         
         return self.geo_array        
         
