@@ -191,11 +191,11 @@ class environment(gym.Env):
     def build(self):
         
         #builds block model and mining sequence constraints dictionary (eg. top must be mined first)         
-        if (os.path.isfile('%s.npy' % self.savedenv)): #(self.rg_prob=='loadenv') and
-              self.load_env()
+        # if (os.path.isfile('%s.npy' % self.savedenv)): #(self.rg_prob=='loadenv') and
+        #       self.load_env()
         
-        else:
-            self.geo_array=self.automodel.buildmodel()
+        # else:
+        self.geo_array=self.automodel.buildmodel()
             #self.save_env(self.savedenv,self.geo_array)
             
         scaler=MinMaxScaler()

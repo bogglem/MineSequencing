@@ -403,15 +403,15 @@ class environment(gym.Env):
     
     
     
-    def equip_failure(self):
-        x=self.turncounter
-        prob_fail=1-np.exp(-x*0.00001)
+    # def equip_failure(self):
+    #     x=self.turncounter
+    #     prob_fail=1-np.exp(-x*0.00001)
         
-        if random.random()>prob_fail:
-            equip_failure = True
-        else:
-            equip_failure= False
-        return equip_failure
+    #     if random.random()>prob_fail:
+    #         equip_failure = True
+    #     else:
+    #         equip_failure= False
+    #     return equip_failure
     
     
     def step(self, action):        
