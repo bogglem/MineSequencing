@@ -36,7 +36,7 @@ from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCa
 from stable_baselines import ACER
 from tools.RG3DBMenv_loadmulti import environment
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '2'
+os.environ['CUDA_VISIBLE_DEVICES'] = '3'
 
 #idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
 idx=0
