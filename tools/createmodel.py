@@ -65,7 +65,7 @@ class automodel():
         mu = 0#mean location (-1-0.1)
         kappa =4 #dilation y (range 1-3)
         alpha = 20 #dilation x (range 10-20)
-        self.seeds=np.zeros([numseedlocations,5])
+        self.seeds=np.zeros([numseedlocations,4])
         
         for s in range(numseedlocations):
             
@@ -73,7 +73,7 @@ class automodel():
             j = random.randint(2, self._J-2)
             RL = random.randint(1, self.RL-2)
             H2O= random.vonmisesvariate(mu, kappa)/alpha #ore grade distribution
-            self.seeds[s,::]=[i,j,RL,H2O,10] #last column = 10 tonnes per block.
+            self.seeds[s,::]=[i,j,RL,H2O] #,10 #last column = 10 tonnes per block.
             
     
     def I2D(self,x,y,z):
@@ -127,7 +127,7 @@ class automodel():
         
         #apply interpolation to create block model.
         
-        geo_array=np.zeros([self._I,self._J,self.RL,3])
+        geo_array=np.zeros([self._I,self._J,self.RL,2]) #2 channels one for h20, one for mined state.
         
         for i in range(self._I):
             for j in range(self._J):
@@ -135,7 +135,7 @@ class automodel():
                     
                     H2O=self.I2D(i,j,k)                  
                     geo_array[i,j,k,0]=H2O #grade value interpolated
-                    geo_array[i,j,k,1]=10 #tonnes value kept constant
+                    #geo_array[i,j,k,1]=10 #tonnes value kept constant
                                                          
         return geo_array    
                   

@@ -58,7 +58,7 @@ class environment(gym.Env):
         self.Ilen=self.Imax-self.Imin 
         self.Jlen=self.Jmax-self.Jmin
         self.RLlen=self.RLmax-self.RLmin #RL (z coordinate) counts up as depth increases
-        self.channels = 3
+        self.channels = 2
         self.flatlen=self.Ilen*self.Jlen*self.RLlen*self.channels
         
         
@@ -195,31 +195,31 @@ class environment(gym.Env):
     def build(self):
         
         #builds block model and mining sequence constraints dictionary (eg. top must be mined first)         
-        if (os.path.isfile('%s.npy' % self.savedenv)): #(self.rg_prob=='loadenv') and
-              self.load_env()
+        # if (os.path.isfile('%s.npy' % self.savedenv)): #(self.rg_prob=='loadenv') and
+        #       self.load_env()
         
-        else:
-            self.geo_array=self.automodel.buildmodel()
+        # else:
+        self.geo_array=self.automodel.buildmodel()
             #self.save_env(self.savedenv,self.geo_array)
             
         scaler=MinMaxScaler()
         H2O_init=self.geo_array[:,:,:,0]
-        Tonnes_init=self.geo_array[:,:,:,1]
-        State_init=self.geo_array[:,:,:,2]
+        #Tonnes_init=self.geo_array[:,:,:,1]
+        State_init=self.geo_array[:,:,:,1]
         
         H2O_reshaped=H2O_init.reshape([-1,1])
-        Tonnes_reshaped=Tonnes_init.reshape([-1,1])
+        #Tonnes_reshaped=Tonnes_init.reshape([-1,1])
         State_reshaped=State_init.reshape([-1,1])
         
         H2O_scaled=scaler.fit_transform(H2O_reshaped)
-        Tonnes_scaled=scaler.fit_transform(Tonnes_reshaped)
+        #Tonnes_scaled=scaler.fit_transform(Tonnes_reshaped)
         
         a=H2O_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
-        b=Tonnes_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
+        #b=Tonnes_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
         c=State_reshaped.reshape([self.Ilen, self.Jlen, self.RLlen,1])
                
-        self.norm=np.append(a, b, axis=3)
-        self.norm=np.append(self.norm,c, axis=3)
+        self.norm=np.append(a, c, axis=3)
+        #self.norm=np.append(self.norm,c, axis=3)
         self.ob_sample=deepcopy(self.norm)
         self.construct_dep_dic()
         self.dep_dic=deepcopy(self.dep_dic_init)
@@ -229,8 +229,7 @@ class environment(gym.Env):
         #construct_dependencies blocks with zeros padding to avoid errors around environment edges.
         self.construct_block_dic()
         self.block_dic=deepcopy(self.block_dic_init) #deepcopy so dictionary doesnt have to be rebuilt for every new environment.
-        self.render_update = self.geo_array[:,:,:,0] #provides data sliced for render function
-        self.bm=renderbm(self.render_update)
+
 
         # #save environment if random generation disabled
         # if self.rg_prob==0.0 and not (os.path.isfile('%s.npy' % self.savedenv)):
@@ -419,9 +418,9 @@ class environment(gym.Env):
         
         info={} #required for gym.Env class output
         
-        # if (random.random()<0.00001): #every 10 000 steps randomly save episode 
-        #     self.maxloadid+=1
-        #     self.save_multi_env()
+        if (random.random()<0.00001): #every 10 000 steps randomly save episode 
+            self.maxloadid+=1
+            self.save_multi_env()
                 
         if sum(sum(sum(self.ob_sample[:,:,:,2])))>=self.ob_sample[:,:,:,2].size: #if all blocks are mined, end episode
             self.terminal=True
@@ -532,8 +531,9 @@ class environment(gym.Env):
             self.render_update[self.i, self.j, self.RL]=0 #not really required
                     
             if (self.framecounter % 10 == 0): #replot every 10 action frames.
-                              
-                 self.bm.plot()
+                self.render_update = self.geo_array[:,:,:,0] #provides data sliced for render function
+                self.bm=renderbm(self.render_update)                              
+                self.bm.plot()
         pass
    
         
