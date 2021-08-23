@@ -418,19 +418,11 @@ class environment(gym.Env):
     def step(self, action):        
         
         info={} #required for gym.Env class output
-
-        #failurerisk = np.random.uniform(0,self.turns)*(self.turncounter/self.turns)
         
-        if (random.random()<0.00001): #every 10 000 steps randomly save episode 
-            self.maxloadid+=1
-            self.save_multi_env()
-            
-       
-        # if failurerisk>=1:
-        #     self.terminal=True
-        #     self.reward = 0       
-        #     observation=self.ob_sample
-        
+        # if (random.random()<0.00001): #every 10 000 steps randomly save episode 
+        #     self.maxloadid+=1
+        #     self.save_multi_env()
+                
         if sum(sum(sum(self.ob_sample[:,:,:,2])))>=self.ob_sample[:,:,:,2].size: #if all blocks are mined, end episode
             self.terminal=True
             observation=self.ob_sample
