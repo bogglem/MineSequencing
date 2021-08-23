@@ -81,7 +81,7 @@ episodetimesteps=round(x*y*z*turnspc)
 #prepare file naming strings
 LR_s=str(LR).split('.')[1]
 inputfile_s='RG_%s_%s_%s' % (x,y,z)
-gamma_s=str(gamma).split('.')[1]
+gamma_s=str(gamma).replace('.','_')
 cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
 rg_s=rg_prob #str(float(rg_prob)).split('.')[1]
 turnspc_s=str(turnspc).split('.')[1]

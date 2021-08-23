@@ -81,12 +81,12 @@ episodetimesteps=round(x*y*z*turnspc)
 #prepare file naming strings
 LR_s=str(LR).split('.')[1]
 inputfile_s='RG_%s_%s_%s' % (x,y,z)
-gamma_s=str(gamma).split('.')[1]
+gamma_s=str(gamma).replace('.','_')
 #cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
 #rg_s=rg_prob #max(str(float(rg_prob)).split('.'))
 turnspc_s=str(turnspc).split('.')[1]
 storagefolder='output'
-scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_{policyname}_{trialv}')    
+scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}_{policyname}_{trialv}')    
 savepath='./%s/%s' % (storagefolder ,scenario)
 #savepath='%s/environment' % (savepath)
 
