@@ -389,9 +389,9 @@ class environment(gym.Env):
         #caluclates penalty for terminating episode early while remaining ore is unmined (for future use to determine the cutoff grade)
         
         blocks=np.multiply(self.ob_sample[:,:,:,0],self.ob_sample[:,:,:,1])
-        remaining=np.multiply(blocks,self.ob_sample[:,:,:,2])
+        remaining=np.multiply(blocks,self.ob_sample[:,:,:,1])
         #cutoff=np.add(blocks,self.init_cutoffpenalty) #
-        abandonreward=np.sum(np.where(remaining>self.averagereward,remaining,0))/np.sum(self.ob_sample[:,:,:,2]) #this indicator needs work. will be a focus of research.
+        abandonreward=np.sum(np.where(remaining>self.averagereward,remaining,0))/np.sum(self.ob_sample[:,:,:,1]) #this indicator needs work. will be a focus of research.
         
         # mined=np.multiply(self.ob_sample[:,:,:,2],ore) #mined blocks updated to 1, (blocks-0.5)*x translates states to cause penalty for not mining, reward for mining.
         # unmined=np.subtract(ore,mined)
@@ -422,7 +422,7 @@ class environment(gym.Env):
             self.maxloadid+=1
             self.save_multi_env()
                 
-        if sum(sum(sum(self.ob_sample[:,:,:,2])))>=self.ob_sample[:,:,:,2].size: #if all blocks are mined, end episode
+        if sum(sum(sum(self.ob_sample[:,:,:,1])))>=self.ob_sample[:,:,:,1].size: #if all blocks are mined, end episode
             self.terminal=True
             observation=self.ob_sample
                
@@ -483,7 +483,7 @@ class environment(gym.Env):
         #updates observation environment and minable block dependencies.
         
         self.block_dic["%s"% selected_block]=1 #set to one (mined). required for dependency logical multiplication
-        self.ob_sample[self.i,self.j,self.RL,2]=1 #set to one (mined) for agent observation.
+        self.ob_sample[self.i,self.j,self.RL,1]=1 #set to one (mined) for agent observation.
    
     def reset(self):
 

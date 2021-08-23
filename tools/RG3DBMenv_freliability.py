@@ -57,7 +57,7 @@ class environment(gym.Env):
         self.Ilen=self.Imax-self.Imin 
         self.Jlen=self.Jmax-self.Jmin
         self.RLlen=self.RLmax-self.RLmin #RL (z coordinate) counts up as depth increases
-        self.channels = 3
+        self.channels = 2
         self.flatlen=self.Ilen*self.Jlen*self.RLlen*self.channels
         
         
@@ -200,22 +200,22 @@ class environment(gym.Env):
             
         scaler=MinMaxScaler()
         H2O_init=self.geo_array[:,:,:,0]
-        Tonnes_init=self.geo_array[:,:,:,1]
-        State_init=self.geo_array[:,:,:,2]
+       # Tonnes_init=self.geo_array[:,:,:,1]
+        State_init=self.geo_array[:,:,:,1]
         
         H2O_reshaped=H2O_init.reshape([-1,1])
-        Tonnes_reshaped=Tonnes_init.reshape([-1,1])
+        #Tonnes_reshaped=Tonnes_init.reshape([-1,1])
         State_reshaped=State_init.reshape([-1,1])
         
         H2O_scaled=scaler.fit_transform(H2O_reshaped)
-        Tonnes_scaled=scaler.fit_transform(Tonnes_reshaped)
+        #Tonnes_scaled=scaler.fit_transform(Tonnes_reshaped)
         
         a=H2O_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
-        b=Tonnes_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
+        #b=Tonnes_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
         c=State_reshaped.reshape([self.Ilen, self.Jlen, self.RLlen,1])
                
-        self.norm=np.append(a, b, axis=3)
-        self.norm=np.append(self.norm,c, axis=3)
+        self.norm=np.append(a, c, axis=3)
+        #self.norm=np.append(self.norm,c, axis=3)
         self.ob_sample=deepcopy(self.norm)
         self.construct_dep_dic()
         self.dep_dic=deepcopy(self.dep_dic_init)
@@ -385,9 +385,9 @@ class environment(gym.Env):
         #caluclates penalty for terminating episode early while remaining ore is unmined (for future use to determine the cutoff grade)
         
         blocks=np.multiply(self.ob_sample[:,:,:,0],self.ob_sample[:,:,:,1])
-        remaining=np.multiply(blocks,self.ob_sample[:,:,:,2])
+        #remaining=np.multiply(blocks,self.ob_sample[:,:,:,1])
         #cutoff=np.add(blocks,self.init_cutoffpenalty) #
-        abandonreward=np.sum(np.where(remaining>self.averagereward,remaining,0))/np.sum(self.ob_sample[:,:,:,2]) #this indicator needs work. will be a focus of research.
+        abandonreward=np.sum(np.where(blocks>self.averagereward,blocks,0))/np.sum(self.ob_sample[:,:,:,1]) #this indicator needs work. will be a focus of research.
         
         # mined=np.multiply(self.ob_sample[:,:,:,2],ore) #mined blocks updated to 1, (blocks-0.5)*x translates states to cause penalty for not mining, reward for mining.
         # unmined=np.subtract(ore,mined)
@@ -417,7 +417,7 @@ class environment(gym.Env):
             self.maxloadid+=1
             self.save_multi_env()
         
-        if sum(sum(sum(self.ob_sample[:,:,:,2])))>=self.ob_sample[:,:,:,2].size: #if all blocks are mined, end episode
+        if sum(sum(sum(self.ob_sample[:,:,:,1])))>=self.ob_sample[:,:,:,1].size: #if all blocks are mined, end episode
             self.terminal=True
             observation=self.ob_sample
                
@@ -482,7 +482,7 @@ class environment(gym.Env):
         #updates observation environment and minable block dependencies.
         
         self.block_dic["%s"% selected_block]=1 #set to one (mined). required for dependency logical multiplication
-        self.ob_sample[self.i,self.j,self.RL,2]=1 #set to one (mined) for agent observation.
+        self.ob_sample[self.i,self.j,self.RL,1]=1 #set to one (mined) for agent observation.
    
     def reset(self):
         
