@@ -51,7 +51,7 @@ class environment(gym.Env):
         self.mined=-1
         self.callnumber=1
         self.savenumber=0
-        self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
+        self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])-1
         
         #sizing the block model environment
         self.Ilen=self.Imax-self.Imin 
@@ -95,11 +95,14 @@ class environment(gym.Env):
             
                     
         #self.init_cutoffpenalty=self.cutoffpenalty() #experimental parameter function. penalises agent for not mining (do nothing), reward for taking action.
-        self.averagereward=np.average((np.multiply(self.geo_array[:,:,:,0],self.geo_array[:,:,:,1])))
+       
 
 
     def save_multi_env(self):
-            
+         
+        self.savenumber=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])+1
+        
+        
         #create dir        
         if (os.path.exists('./environments')!=True):
             os.mkdir('./environments')
@@ -167,6 +170,7 @@ class environment(gym.Env):
             self.dep_dic=np.load("%s/%s_dep_dic.npy"% (self.saveddepdic, loadid+1), allow_pickle='True').flat[0]
             self.eff_dic=np.load("%s/%s_eff_dic.npy"% (self.savedeffdic, loadid+1), allow_pickle='True').flat[0]            
 
+        self.averagereward=np.average(self.geo_array[:,:,:,0])
         
         return self.geo_array          
         
@@ -213,7 +217,9 @@ class environment(gym.Env):
         a=H2O_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
         #b=Tonnes_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
         c=State_reshaped.reshape([self.Ilen, self.Jlen, self.RLlen,1])
-               
+         
+        self.averagereward=np.average(self.geo_array[:,:,:,0])
+         
         self.norm=np.append(a, c, axis=3)
         #self.norm=np.append(self.norm,c, axis=3)
         self.ob_sample=deepcopy(self.norm)
@@ -403,7 +409,7 @@ class environment(gym.Env):
         #x=self.turncounter
         #prob_fail= #1-np.exp(-x*0.00001)
         
-        if random.random()>0.995**self.turncounter: #probability of success
+        if random.random()>0.9995**self.turncounter: #probability of success
             self.terminal=True
         else:
             self.terminal=False
@@ -413,9 +419,9 @@ class environment(gym.Env):
         
         info={} #required for gym.Env class output
        
-        if (random.random()<0.00001): #every 10 000 steps randomly save environment 
-            self.maxloadid+=1
-            self.save_multi_env()
+        # if (random.random()<0.00001): #every 10 000 steps randomly save environment 
+        #     self.maxloadid+=1
+        #     self.save_multi_env()
         
         if sum(sum(sum(self.ob_sample[:,:,:,1])))>=self.ob_sample[:,:,:,1].size: #if all blocks are mined, end episode
             self.terminal=True
@@ -467,11 +473,11 @@ class environment(gym.Env):
                 
         else:
             
-            H2O=self.geo_array[self.i,self.j,self.RL,0]
-            Tonnes=self.geo_array[self.i, self.j,self.RL,1] 
+            H2O=self.ob_sample[self.i,self.j,self.RL,0]
+            #Tonnes=self.geo_array[self.i, self.j,self.RL,1] 
 
             # if (H2O*Tonnes)+self.init_cutoffpenalty>=0: #to be used for experimental determination of cutoff grade
-            ore=(H2O*Tonnes)
+            ore=H2O
             # else:
             #     self.reward=self.init_cutoffpenalty
                 

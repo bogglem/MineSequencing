@@ -39,7 +39,7 @@ from tools.RG3DBMenv_freliability import environment
 os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
 #idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
-idx=0
+idx=1
 
 #prepare input parameters
 inputarray=pd.read_csv('jobarrays/RG_drstrange_freliability_input.csv')

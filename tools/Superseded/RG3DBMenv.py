@@ -7,6 +7,7 @@ Created on Thu Sep 24 12:04:45 2020
 import os.path
 import numpy as np
 import pandas as pd
+import random
 from copy import deepcopy
 from sklearn.preprocessing import MinMaxScaler
 import gym
@@ -19,18 +20,21 @@ from tools.createmodel import automodel
 
 class environment(gym.Env):
     
-    def __init__(self, x,y,z ,gamma, penaltyscalar, rg_prob, turnspc, savepath, policy, rendermode='off'):
+    def __init__(self, x,y,z ,gamma, turnspc, savepath, policy, rendermode='off'):
         
         self.rendermode=rendermode # on/off display block model in matplotlib
-        self.cutoffpenaltyscalar=penaltyscalar #scaling parameter for changing the penalty for taking no action (cutoff).
-        self.rg_prob=rg_prob #probability of randomly generating a new environment
+        #self.cutoffpenaltyscalar=penaltyscalar #scaling parameter for changing the penalty for taking no action (cutoff).
+        #self.rg_prob=rg_prob #rg for randomly generated, loadenv for loading premade envionments
         self.savepath=savepath
-        self.savedenv='%s/environment' % savepath
+        self.savedgeo='./environments/geology'
+        self.savedenv='./environments/environment'
+        self.saveddepdic='./environments/depdict' 
+        self.savedeffdic='./environments/effdict' 
         self.policy=policy
         
         #initiating values
         self.framecounter=0
-        self.actionslist = list()
+        #self.actionslist = list()
         self.reward=0
         self.discountedmined=0
         self.turncounter=1
@@ -46,6 +50,8 @@ class environment(gym.Env):
         self.RLmax=z
         self.mined=-1
         self.callnumber=1
+        self.savenumber=0
+        self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
         
         #sizing the block model environment
         self.Ilen=self.Imax-self.Imin 
@@ -56,7 +62,7 @@ class environment(gym.Env):
         
         
         #initiating block dependency dictionaries
-        self.block_dic={}
+        #self.block_dic={}
         self.block_dic_init={}
         self.dep_dic={}
         self.dep_dic_init={}
@@ -88,9 +94,68 @@ class environment(gym.Env):
                                             shape=(self.flatlen,), dtype=np.float64)
             
                     
-        self.init_cutoffpenalty=self.cutoffpenalty() #experimental parameter function. penalises agent for not mining (do nothing), reward for taking action.
+        #self.init_cutoffpenalty=self.cutoffpenalty() #experimental parameter function. penalises agent for not mining (do nothing), reward for taking action.
         self.averagereward=np.average((np.multiply(self.geo_array[:,:,:,0],self.geo_array[:,:,:,1])))
 
+
+    def save_multi_env(self):
+            
+        #create dir        
+        if (os.path.exists('./environments')!=True):
+            os.mkdir('./environments')
+        
+        #save geo array   
+        if (os.path.exists(self.savedgeo)):
+            np.save("%s/%s_geo_array"% (self.savedgeo, self.savenumber), self.geo_array)
+          
+        
+        elif (os.path.exists(self.savedgeo)!=True):
+            os.mkdir(self.savedgeo)
+            np.save("%s/%s_geo_array"% (self.savedgeo, self.savenumber), self.geo_array)
+        
+        #save normalised ob_sample       
+        if (os.path.exists(self.savedenv)):
+            np.save("%s/%s_ob_sample"% (self.savedenv, self.savenumber), self.ob_sample)
+          
+        
+        elif (os.path.exists(self.savedenv)!=True):
+            os.mkdir(self.savedenv)
+            np.save("%s/%s_ob_sample"% (self.savedenv, self.savenumber), self.ob_sample)     
+        
+      
+        #save dep_dic  
+        if (os.path.exists(self.saveddepdic)):
+            np.save("%s/%s_dep_dic"% (self.saveddepdic, self.savenumber), self.dep_dic)
+          
+        
+        elif (os.path.exists(self.saveddepdic)!=True):
+            os.mkdir(self.saveddepdic)
+            np.save("%s/%s_dep_dic"% (self.saveddepdic, self.savenumber), self.dep_dic)
+        
+        
+         #save eff_dic   
+        if (os.path.exists(self.savedeffdic)):
+            np.save("%s/%s_eff_dic"% (self.savedeffdic, self.savenumber), self.eff_dic)
+          
+        
+        elif (os.path.exists(self.savedeffdic)!=True):
+            os.mkdir(self.savedeffdic)
+            np.save("%s/%s_eff_dic"% (self.savedeffdic, self.savenumber), self.eff_dic)   
+        
+    
+        
+    def load_multi_env(self, loadid):
+        
+        #self.geo_array=np.load("%s.npy"% self.savedenv)
+        self.geo_array=np.load("%s/%s_geo_array.npy"% (self.savedgeo, loadid))
+        self.ob_sample=np.load("%s/%s_ob_sample.npy"% (self.savedenv, loadid))
+        self.dep_dic=np.load("%s/%s_dep_dic.npy"% (self.saveddepdic, loadid), allow_pickle='True').flat[0]
+        self.eff_dic=np.load("%s/%s_eff_dic.npy"% (self.savedeffdic, loadid), allow_pickle='True').flat[0]
+                
+        print("loaded environment")
+        
+        return self.geo_array        
+        
     def save_env(self, savedenv,array):
         
         if (os.path.exists(self.savepath)):
@@ -98,12 +163,12 @@ class environment(gym.Env):
         
         elif (os.path.exists(self.savepath)!=True):
             os.mkdir(self.savepath)
-            np.save("%s"% savedenv, array)
-            
+            np.save("%s"% savedenv, array)    
+    
+    def load_env(self):
+        #to be deprecated once all saved environments include dicts and ob_sample
         
-    def load_env(self, savedenv):
-        
-        self.geo_array=np.load("%s.npy"% savedenv)
+        self.geo_array=np.load("%s.npy"% self.savedenv)
         print("loaded environment")
         
         return self.geo_array
@@ -112,11 +177,11 @@ class environment(gym.Env):
     def build(self):
         
         #builds block model and mining sequence constraints dictionary (eg. top must be mined first)         
-        if (self.rg_prob==0.0) and (os.path.isfile('%s.npy' % self.savedenv)):
-              self.load_env(self.savedenv)
+        # if (self.rg_prob=='loadenv') and (os.path.isfile('%s.npy' % self.savedenv)):
+        #       self.load_env(self.savedenv)
         
-        else:
-            self.geo_array=self.automodel.buildmodel()
+        # elif (self.rg_prob=='rg'):
+        self.geo_array=self.automodel.buildmodel()
             
         scaler=MinMaxScaler()
         H2O_init=self.geo_array[:,:,:,0]
@@ -149,8 +214,8 @@ class environment(gym.Env):
         self.bm=renderbm(self.render_update)
 
         #save environment if random generation disabled
-        if self.rg_prob==0.0 and not (os.path.isfile('%s.npy' % self.savedenv)):
-            self.save_env(self.savedenv,self.geo_array)
+        # if self.rg_prob==0.0 and not (os.path.isfile('%s.npy' % self.savedenv)):
+        #     self.save_env(self.savedenv,self.geo_array)
                       
     
     def construct_block_dic(self):
@@ -289,17 +354,17 @@ class environment(gym.Env):
         return isEfficient        
         
     
-    def cutoffpenalty(self):
-        #set cutoffpenaltyscalar to 0 to disable
-        #penalty State = mined blocks updated to 1, (blocks-0.5)*x translates states to cause (-reward) penalty for not mining, reward for mining.
-        #this function needs further development and may result in publishable material.
+    # def cutoffpenalty(self):
+    #     #set cutoffpenaltyscalar to 0 to disable
+    #     #penalty State = mined blocks updated to 1, (blocks-0.5)*x translates states to cause (-reward) penalty for not mining, reward for mining.
+    #     #this function needs further development and may result in publishable material.
         
-        penaltystate=(self.ob_sample[:,:,:,2]-0.5)*self.cutoffpenaltyscalar*(1/(self.Ilen*self.Jlen*self.RLlen)) 
-        a=np.multiply(self.geo_array[:,:,:,0],self.geo_array[:,:,:,1])
-        b=np.multiply(a,penaltystate)
-        totalpenalty=sum(sum(sum(b))) #sums penalty states across entire environment
+    #     penaltystate=(self.ob_sample[:,:,:,2]-0.5)*self.cutoffpenaltyscalar*(1/(self.Ilen*self.Jlen*self.RLlen)) 
+    #     a=np.multiply(self.geo_array[:,:,:,0],self.geo_array[:,:,:,1])
+    #     b=np.multiply(a,penaltystate)
+    #     totalpenalty=sum(sum(sum(b))) #sums penalty states across entire environment
         
-        return totalpenalty
+    #     return totalpenalty
     
     def unminedOre(self):
         
@@ -323,8 +388,13 @@ class environment(gym.Env):
         
         info={} #required for gym.Env class output
 
-        failurerisk = np.random.uniform(0,self.turns)*(self.turncounter/self.turns)
+        #failurerisk = np.random.uniform(0,self.turns)*(self.turncounter/self.turns)
         
+        # if (self.rg_prob=='loadenv') and (random.random()<0.00001): #every 10 000 randomly save episode
+        #     self.savenumber+=1
+        #     self.save_multi_env()
+            
+       
         # if failurerisk>=1:
         #     self.terminal=True
         #     self.reward = 0       
@@ -372,8 +442,8 @@ class environment(gym.Env):
             
             ore=-self.averagereward
             
-        # elif isEfficient==0: #penalising high entropy policies spreading out and randomly picking.
-        #     ore=-self.averagereward
+        elif isEfficient==0: #penalising high entropy policies spreading out and randomly picking.
+            ore=-self.averagereward
                 
         else:
             
@@ -395,15 +465,20 @@ class environment(gym.Env):
         self.ob_sample[self.i,self.j,self.RL,2]=1 #set to one (mined) for agent observation.
    
     def reset(self):
-                          
+        
+        #self.savenumber+=1
         #start new episode.
-        if np.random.uniform()>self.rg_prob: #probability to use same environment (not create a random new one)
-            self.block_dic=deepcopy(self.block_dic_init) #deepcopy same dependency dictionary as block models have same physical size and constraints.
-            self.ob_sample=deepcopy(self.norm)
+        # if (self.rg_prob=='loadenv'): #probability to use same environment (not create a random new one)
+            
+        #     loadid = round(random.random()*self.maxloadid)
+        #     self.load_multi_env(self, loadid)
+        
+            #self.block_dic=deepcopy(self.block_dic_init) #deepcopy same dependency dictionary as block models have same physical size and constraints.
+            #self.ob_sample=deepcopy(self.norm)
             #self.render_update=deepcopy(self.geo_array[:,:,:,0])
         
-        else:
-            self.build()
+        # else:
+        self.build()
             
         self.reward=0
         self.discountedmined=0
@@ -412,8 +487,7 @@ class environment(gym.Env):
         self.i=-1
         self.j=-1
         self.RL=-1
-        self.actionslist=list()
-
+        #self.actionslist=list()
         
         if self.policy=='MlpPolicy':
             arr=np.ndarray.flatten(self.ob_sample) #uncomment line for MLP (not CNN) policy
@@ -436,7 +510,8 @@ class environment(gym.Env):
                 self.render_update[self.i, self.j, self.RL]=0
     
                 self.bm.initiate_plot(self.averagereward)
-            
+                self.bm.plot()
+                
             self.bm.update_mined(self.i, self.j, self.RL)
             self.render_update[self.i, self.j, self.RL]=0 #not really required
                     

@@ -57,7 +57,7 @@ class environment(gym.Env):
         self.Ilen=self.Imax-self.Imin 
         self.Jlen=self.Jmax-self.Jmin
         self.RLlen=self.RLmax-self.RLmin #RL (z coordinate) counts up as depth increases
-        self.channels = 3
+        self.channels = 2
         self.flatlen=self.Ilen*self.Jlen*self.RLlen*self.channels
         
         
@@ -95,7 +95,7 @@ class environment(gym.Env):
             
                     
         #self.init_cutoffpenalty=self.cutoffpenalty() #experimental parameter function. penalises agent for not mining (do nothing), reward for taking action.
-        self.averagereward=np.average((np.multiply(self.geo_array[:,:,:,0],self.geo_array[:,:,:,1])))
+        self.averagereward=np.average(self.geo_array[:,:,:,0])
 
 
     def save_multi_env(self):
@@ -185,22 +185,22 @@ class environment(gym.Env):
             
         scaler=MinMaxScaler()
         H2O_init=self.geo_array[:,:,:,0]
-        Tonnes_init=self.geo_array[:,:,:,1]
-        State_init=self.geo_array[:,:,:,2]
+        #Tonnes_init=self.geo_array[:,:,:,1]
+        State_init=self.geo_array[:,:,:,1]
         
         H2O_reshaped=H2O_init.reshape([-1,1])
-        Tonnes_reshaped=Tonnes_init.reshape([-1,1])
+        #Tonnes_reshaped=Tonnes_init.reshape([-1,1])
         State_reshaped=State_init.reshape([-1,1])
         
         H2O_scaled=scaler.fit_transform(H2O_reshaped)
-        Tonnes_scaled=scaler.fit_transform(Tonnes_reshaped)
+        #Tonnes_scaled=scaler.fit_transform(Tonnes_reshaped)
         
         a=H2O_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
-        b=Tonnes_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
+        #b=Tonnes_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
         c=State_reshaped.reshape([self.Ilen, self.Jlen, self.RLlen,1])
                
-        self.norm=np.append(a, b, axis=3)
-        self.norm=np.append(self.norm,c, axis=3)
+        self.norm=np.append(a, c, axis=3)
+        #self.norm=np.append(self.norm,c, axis=3)
         self.ob_sample=deepcopy(self.norm)
         self.construct_dep_dic()
         self.dep_dic=deepcopy(self.dep_dic_init)
@@ -387,18 +387,11 @@ class environment(gym.Env):
     def step(self, action):        
         
         info={} #required for gym.Env class output
-
-        #failurerisk = np.random.uniform(0,self.turns)*(self.turncounter/self.turns)
-        
+       
         # if (self.rg_prob=='loadenv') and (random.random()<0.00001): #every 10 000 randomly save episode
         #     self.savenumber+=1
         #     self.save_multi_env()
             
-       
-        # if failurerisk>=1:
-        #     self.terminal=True
-        #     self.reward = 0       
-        #     observation=self.ob_sample
         
         if sum(sum(sum(self.ob_sample[:,:,:,2])))>=self.ob_sample[:,:,:,2].size: #if all blocks are mined, end episode
             self.terminal=True
@@ -448,10 +441,10 @@ class environment(gym.Env):
         else:
             
             H2O=self.geo_array[self.i,self.j,self.RL,0]
-            Tonnes=self.geo_array[self.i, self.j,self.RL,1] 
+            #Tonnes=self.geo_array[self.i, self.j,self.RL,1] 
 
             # if (H2O*Tonnes)+self.init_cutoffpenalty>=0: #to be used for experimental determination of cutoff grade
-            ore=(H2O*Tonnes)
+            ore=H2O #*Tonnes
             # else:
             #     self.reward=self.init_cutoffpenalty
                 

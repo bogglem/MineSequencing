@@ -51,7 +51,7 @@ class environment(gym.Env):
         self.mined=-1
         self.callnumber=1
         
-        self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
+        self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])-1
         self.savenumber=self.maxloadid+1
         
         #sizing the block model environment
@@ -96,7 +96,7 @@ class environment(gym.Env):
             
                     
        #self.init_cutoffpenalty=self.cutoffpenalty() #experimental parameter function. penalises agent for not mining (do nothing), reward for taking action.
-        self.averagereward=np.average((np.multiply(self.geo_array[:,:,:,0],self.geo_array[:,:,:,1])))
+
 
 
     def save_multi_env(self):
@@ -171,6 +171,7 @@ class environment(gym.Env):
             self.dep_dic=np.load("%s/%s_dep_dic.npy"% (self.saveddepdic, loadid+1), allow_pickle='True').flat[0]
             self.eff_dic=np.load("%s/%s_eff_dic.npy"% (self.savedeffdic, loadid+1), allow_pickle='True').flat[0]            
 
+        self.averagereward=np.average(self.ob_sample[:,:,:,0])
         
         return self.geo_array        
         
@@ -230,7 +231,7 @@ class environment(gym.Env):
         self.construct_block_dic()
         self.block_dic=deepcopy(self.block_dic_init) #deepcopy so dictionary doesnt have to be rebuilt for every new environment.
 
-
+        self.averagereward=np.average(self.ob_sample[:,:,:,0])
         # #save environment if random generation disabled
         # if self.rg_prob==0.0 and not (os.path.isfile('%s.npy' % self.savedenv)):
         #     self.save_env(self.savedenv,self.geo_array)
@@ -418,9 +419,9 @@ class environment(gym.Env):
         
         info={} #required for gym.Env class output
         
-        if (random.random()<0.00001): #every 10 000 steps randomly save episode 
-            self.maxloadid+=1
-            self.save_multi_env()
+        # if (random.random()<0.00001): #every 10 000 steps randomly save episode 
+        #     self.maxloadid+=1
+        #     self.save_multi_env()
                 
         if sum(sum(sum(self.ob_sample[:,:,:,1])))>=self.ob_sample[:,:,:,1].size: #if all blocks are mined, end episode
             self.terminal=True
@@ -468,11 +469,11 @@ class environment(gym.Env):
                 
         else:
             
-            H2O=self.geo_array[self.i,self.j,self.RL,0]
-            Tonnes=self.geo_array[self.i, self.j,self.RL,1] 
+            H2O=self.ob_sample[self.i,self.j,self.RL,0]
+            #Tonnes=self.geo_array[self.i, self.j,self.RL,1] 
 
             # if (H2O*Tonnes)+self.init_cutoffpenalty>=0: #to be used for experimental determination of cutoff grade
-            ore=(H2O*Tonnes)
+            ore=H2O
             # else:
             #     self.reward=self.init_cutoffpenalty
                 
