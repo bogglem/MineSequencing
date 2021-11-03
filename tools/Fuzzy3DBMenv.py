@@ -58,7 +58,7 @@ class environment(gym.Env):
         self.Ilen=self.Imax-self.Imin 
         self.Jlen=self.Jmax-self.Jmin
         self.RLlen=self.RLmax-self.RLmin #RL (z coordinate) counts up as depth increases
-        self.channels = 2
+        self.channels = 3 #H2O mean, mined state, Standard deviation
         self.flatlen=self.Ilen*self.Jlen*self.RLlen*self.channels
         
         
@@ -224,7 +224,7 @@ class environment(gym.Env):
         H2O_reshaped=H2O_init.reshape([-1,1])
         #Tonnes_reshaped=Tonnes_init.reshape([-1,1])
         State_reshaped=State_init.reshape([-1,1])
-        SDev_reshaped=State_init.reshape([-1,1])
+        SDev_reshaped=SDev_init.reshape([-1,1])
         
         H2O_scaled=scaler.fit_transform(H2O_reshaped)
         SDev_scaled=scaler.fit_transform(SDev_reshaped)
@@ -499,11 +499,11 @@ class environment(gym.Env):
         
         #start new episode.
             
-        loadid = round(random.random()*self.maxloadid)
-        self.load_multi_env(loadid)
+        # loadid = round(random.random()*self.maxloadid)
+        # self.load_multi_env(loadid)
         
         #else:
-        #    self.build()
+        self.build()
             
         self.reward=0
         self.discountedmined=0
@@ -519,7 +519,7 @@ class environment(gym.Env):
             observation=arr.reshape([len(arr)]) #uncomment line for MLP (not CNN) policy
                 
         else:
-                observation=self.ob_sample
+            observation=self.ob_sample
 
         return observation
                     
