@@ -33,9 +33,7 @@ y=15
 z=6
 batch_size=64
 LR=0.001
-gamma=0.995
-cutoffpenaltyscalar=1.0
-rg_prob=1.0
+gamma=1.0
 turnspc=0.2
 
 policyname='MlpPolicy' #change this name to change RL policy type (MlpPolicy/CnnPolicy)
@@ -50,14 +48,14 @@ elif policyname =='MlpPolicy':
     policy=MlpPolicy
     test='MLPACER'
 
-trialv='loadmulti'
+trialv='freliability'
 
 #prepare file naming strings
 LR_s=str(LR).split('.')[1]
 inputfile_s='RG_%s_%s_%s' % (x,y,z)
 gamma_s=str(gamma).split('.')[1]
-cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
-rg_s=max(str(float(rg_prob)).split('.'))
+#cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
+#rg_s=max(str(float(rg_prob)).split('.'))
 turnspc_s=str(turnspc).split('.')[1]
 
 scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_{policyname}_{trialv}')  
