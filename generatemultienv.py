@@ -12,7 +12,7 @@ import sys
 import pandas as pd
 from tools.Fuzzy3DBMenv import environment
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '5'
+os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
 idx=0
 
