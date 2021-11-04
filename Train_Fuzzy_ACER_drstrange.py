@@ -86,7 +86,7 @@ gamma_s=str(gamma).replace('.','_')
 #rg_s=rg_prob #max(str(float(rg_prob)).split('.'))
 turnspc_s=str(turnspc).split('.')[1]
 storagefolder='output'
-scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}_{policyname}_{trialv}')    
+scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}_{trialv}')    
 savepath='./%s/%s' % (storagefolder ,scenario)
 #savepath='%s/environment' % (savepath)
 
@@ -138,7 +138,7 @@ def make_env(x,y,z, rank, seed=0):
 
 if __name__ == '__main__':
 
-    num_cpu = 1 # Number of processes to use
+    num_cpu = 20 # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
     eval_env=environment(x, y, z, gamma, turnspc, savepath, policyname)
