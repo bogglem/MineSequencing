@@ -10,14 +10,14 @@ import gym
 import numpy as np
 import sys
 import pandas as pd
-from tools.RG3DBMenv_loadmulti import environment
+from tools.Fuzzy3DBMenv import environment
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '5'
 
 idx=0
 
 #prepare input parameters
-inputarray=pd.read_csv('jobarrays/RG_drstrange_generateenv_input.csv')
+inputarray=pd.read_csv('jobarrays/Fuzzy_drstrange_generateenv_input.csv')
 
 #block model (environment) dimensions
 x=inputarray.loc[idx].x
@@ -50,7 +50,7 @@ episodetimesteps=round(x*y*z*turnspc)
 
 #prepare file naming strings
 LR_s=str(LR).split('.')[1]
-inputfile_s='RG_%s_%s_%s' % (x,y,z)
+inputfile_s='Fuzzy_%s_%s_%s' % (x,y,z)
 gamma_s=str(gamma).split('.')[1]
 #cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
 #rg_s=max(str(float(rg_prob)).split('.'))
@@ -64,7 +64,7 @@ savepath='./%s' % (storagefolder)
 env = environment(x,y,z,gamma, turnspc, savepath, policyname)
 
 
-for i in range(5000):
+for i in range(6000):
  
     env.build()
     env.save_multi_env()

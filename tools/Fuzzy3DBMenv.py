@@ -173,18 +173,20 @@ class environment(gym.Env):
             #self.geo_array=np.load("%s.npy"% self.savedenv)
             self.geo_array=np.load("%s/%s_geo_array.npy"% (self.savedgeo, loadid))
             self.ob_sample=np.load("%s/%s_ob_sample.npy"% (self.savedenv, loadid))
+            self.truth_array=np.load("%s/%s_truth_array.npy"% (self.savedtruth, loadid))
             self.dep_dic=np.load("%s/%s_dep_dic.npy"% (self.saveddepdic, loadid), allow_pickle='True').flat[0]
             self.eff_dic=np.load("%s/%s_eff_dic.npy"% (self.savedeffdic, loadid), allow_pickle='True').flat[0]
         
         except:
             self.geo_array=np.load("%s/%s_geo_array.npy"% (self.savedgeo, loadid+1))
             self.ob_sample=np.load("%s/%s_ob_sample.npy"% (self.savedenv, loadid+1))
+            self.truth_array=np.load("%s/%s_truth_array.npy"% (self.savedtruth, loadid+1))
             self.dep_dic=np.load("%s/%s_dep_dic.npy"% (self.saveddepdic, loadid+1), allow_pickle='True').flat[0]
             self.eff_dic=np.load("%s/%s_eff_dic.npy"% (self.savedeffdic, loadid+1), allow_pickle='True').flat[0]            
 
         self.averagereward=np.average(self.geo_array[:,:,:,0])
         
-        return self.geo_array          
+      
         
     def save_env(self, savedenv,array):
         
@@ -499,11 +501,11 @@ class environment(gym.Env):
         
         #start new episode.
             
-        # loadid = round(random.random()*self.maxloadid)
-        # self.load_multi_env(loadid)
+        loadid = round(random.random()*self.maxloadid)
+        self.load_multi_env(loadid)
         
         #else:
-        self.build()
+        #self.build()
             
         self.reward=0
         self.discountedmined=0
