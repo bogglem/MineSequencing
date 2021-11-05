@@ -25,16 +25,16 @@ from stable_baselines import ACER
 from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.policies import CnnPolicy
 from stable_baselines.common.evaluation import evaluate_policy
-from tools.RG3DBMenv_freliability import environment
+from tools.Fuzzy3DBMenv import environment
 
 # Create environment
-x=15
-y=15
+x=20
+y=20
 z=6
 batch_size=64
 LR=0.001
-gamma=1.0
-turnspc=0.2
+gamma=1
+turnspc=0.1
 
 policyname='MlpPolicy' #change this name to change RL policy type (MlpPolicy/CnnPolicy)
 
@@ -48,17 +48,17 @@ elif policyname =='MlpPolicy':
     policy=MlpPolicy
     test='MLPACER'
 
-trialv='freliability'
+trialv='13kenv'
 
 #prepare file naming strings
 LR_s=str(LR).split('.')[1]
-inputfile_s='RG_%s_%s_%s' % (x,y,z)
-gamma_s=str(gamma).split('.')[1]
+inputfile_s='Fuzzy_%s_%s_%s' % (x,y,z)
+gamma_s=str(gamma).replace('.','_')
 #cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
 #rg_s=max(str(float(rg_prob)).split('.'))
 turnspc_s=str(turnspc).split('.')[1]
 
-scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_{policyname}_{trialv}')  
+scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}_{trialv}')  
 savepath='./output/%s' % scenario
 
 turns=round(x*y*z*turnspc)
@@ -79,4 +79,7 @@ obs = env.reset()
 for i in range(turns):
     action, _states = model.predict(obs)
     obs, rewards, dones, info = env.step(action)
+    print(action, rewards, dones)
     env.renderif('on')
+    if dones == True:
+        break

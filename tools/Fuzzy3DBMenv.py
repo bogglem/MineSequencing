@@ -26,11 +26,12 @@ class environment(gym.Env):
        # self.cutoffpenaltyscalar=penaltyscalar #scaling parameter for changing the penalty for taking no action (cutoff).
         #self.rg_prob=rg_prob #rg for randomly generated, loadenv for loading premade envionments
         self.savepath=savepath
-        self.savedgeo='./environments/geology'
-        self.savedtruth='./environments/truth'
-        self.savedenv='./environments/environment'
-        self.saveddepdic='./environments/depdict' 
-        self.savedeffdic='./environments/effdict' 
+        path='./environments'
+        self.savedgeo='%s/geology' % path
+        self.savedtruth='%s/truth' % path
+        self.savedenv='%s/environment' % path
+        self.saveddepdic='%s/depdict' % path
+        self.savedeffdic='%s/effdict' % path
         self.policy=policy
         
         #initiating values
@@ -52,7 +53,7 @@ class environment(gym.Env):
         self.mined=-1
         self.callnumber=1
         self.savenumber=0
-        self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])-1
+        self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
         
         #sizing the block model environment
         self.Ilen=self.Imax-self.Imin 
@@ -209,11 +210,12 @@ class environment(gym.Env):
     def build(self):
         
         #builds block model and mining sequence constraints dictionary (eg. top must be mined first)         
-        # if (os.path.isfile('%s.npy' % self.savedenv)): #(self.rg_prob=='loadenv') and
-        #       self.load_env()
+        if self.maxloadid>0: #(self.rg_prob=='loadenv') and
+            loadid = round(random.random()*self.maxloadid)      
+            self.load_multi_env(loadid)
         
-        # else:
-        self.geo_array, self.truth_array=self.model.buildmodel()
+        else:
+            self.geo_array, self.truth_array=self.model.buildmodel()
             #self.save_env(self.savedenv,self.geo_array)
         
             
@@ -542,7 +544,7 @@ class environment(gym.Env):
             self.bm.update_mined(self.i, self.j, self.RL)
             self.render_update[self.i, self.j, self.RL]=0 #not really required
                     
-            if (self.framecounter % 10 == 0): #replot every 10 action frames.
+            if (self.framecounter % 5 == 0): #replot every 2 action frames.
                               
                  self.bm.plot()
         pass

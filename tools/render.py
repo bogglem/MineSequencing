@@ -113,7 +113,7 @@ class renderbm():
         ax.set_ylim(top=eqscale*2)
         ax.set_zlim(top=eqscale*2)
 
-        #ax.invert_zaxis()
+        ax.invert_zaxis()
         ax.voxels(x, y, z, self.filled, facecolors=self.facecolours, edgecolors='none', shade=False)
         ax.set(xlabel='X',ylabel='Y',zlabel='Z')
 
@@ -129,7 +129,7 @@ class renderbm():
         ax.set_ylim(top=eqscale*2)
         ax.set_zlim(top=eqscale*2)
         ax.set(xlabel='X',ylabel='Y',zlabel='Z')
-
+        ax.invert_zaxis()
         
         if xx>0:
             self.filled = self.facecolours_x[:,:,:,-1]# != 0     #hide voxels not = 0
