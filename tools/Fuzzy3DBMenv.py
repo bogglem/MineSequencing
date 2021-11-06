@@ -503,7 +503,7 @@ class environment(gym.Env):
         
         #start new episode.
             
-        loadid = round(random.random()*self.maxloadid)
+        loadid = np.ceil(random.random()*self.maxloadid)
         self.load_multi_env(loadid)
         
         #else:
