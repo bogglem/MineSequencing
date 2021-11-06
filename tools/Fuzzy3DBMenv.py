@@ -26,12 +26,12 @@ class environment(gym.Env):
        # self.cutoffpenaltyscalar=penaltyscalar #scaling parameter for changing the penalty for taking no action (cutoff).
         #self.rg_prob=rg_prob #rg for randomly generated, loadenv for loading premade envionments
         self.savepath=savepath
-        path='./environments'
-        self.savedgeo='%s/geology' % path
-        self.savedtruth='%s/truth' % path
-        self.savedenv='%s/environment' % path
-        self.saveddepdic='%s/depdict' % path
-        self.savedeffdic='%s/effdict' % path
+        envpath='./environments/test'
+        self.savedgeo='%s/geology' % envpath
+        self.savedtruth='%s/truth' % envpath
+        self.savedenv='%s/environment' % envpath
+        self.saveddepdic='%s/depdict' % envpath
+        self.savedeffdic='%s/effdict' % envpath
         self.policy=policy
         
         #initiating values
@@ -53,7 +53,7 @@ class environment(gym.Env):
         self.mined=-1
         self.callnumber=1
         self.savenumber=0
-        self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
+        self.maxloadid=1#len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
         
         #sizing the block model environment
         self.Ilen=self.Imax-self.Imin 
