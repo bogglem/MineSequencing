@@ -53,7 +53,7 @@ class environment(gym.Env):
         self.mined=-1
         self.callnumber=1
         self.savenumber=0
-        self.maxloadid=1#len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
+        self.maxloadid=100#len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
         
         #sizing the block model environment
         self.Ilen=self.Imax-self.Imin 
