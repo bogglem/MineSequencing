@@ -138,7 +138,7 @@ def make_env(x,y,z, rank, seed=0):
 
 if __name__ == '__main__':
 
-    num_cpu = 5 # Number of processes to use
+    num_cpu = 20 # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
     eval_env=environment(x, y, z, gamma, turnspc, savepath, policyname)
@@ -151,11 +151,21 @@ if __name__ == '__main__':
     callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=savepath, n_eval_episodes=30
                                                                          ,eval_freq=50000, deterministic=False, best_model_save_path=savepath)])
     
-    #create model with Stable Baselines package.
-    model = ACER(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  verbose=1)#, tensorboard_log=scenario)
-    #model = ACER.load("%s/best_model" % savepath, env)
-    model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
-    
+    if (os.path.exists("%s/best_model.zip" % savepath)):
+        # Instantiate the agent
+        model = ACER(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  verbose=1)
+        # Load the trained agent
+        model = ACER.load("%s/best_model" % savepath, env=env)
+        print('loaded agent')
+        model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
+        
+        
+    else:
+        #create model with Stable Baselines package.
+        model = ACER(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  verbose=1)#, tensorboard_log=scenario)
+        #model = ACER.load("%s/best_model" % savepath, env)
+        model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
+            
     
     #create learning curve plot
     evaluations= './%s/%s/evaluations.npz' % (storagefolder,scenario)

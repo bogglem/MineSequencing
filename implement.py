@@ -33,7 +33,7 @@ y=20
 z=6
 batch_size=64
 LR=0.001
-gamma=0.95
+gamma=1.0
 turnspc=0.1
 
 policyname='MlpPolicy' #change this name to change RL policy type (MlpPolicy/CnnPolicy)
@@ -48,7 +48,7 @@ elif policyname =='MlpPolicy':
     policy=MlpPolicy
     test='MLPACER'
 
-trialv='100-env'
+trialv='13kenv-d'
 
 #prepare file naming strings
 LR_s=str(LR).split('.')[1]
