@@ -39,7 +39,7 @@ from tools.NFuzzy3DBMenv import environment
 os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
 #idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
-idx=3
+idx=0
 
 #prepare input parameters
 inputarray=pd.read_csv('jobarrays/Fuzzy_drstrange_job_input.csv')
@@ -138,7 +138,7 @@ def make_env(x,y,z, rank, seed=0):
 
 if __name__ == '__main__':
 
-    num_cpu = 15 # Number of processes to use
+    num_cpu = 20 # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
     eval_env=environment(x, y, z, gamma, turnspc, savepath, policyname)
@@ -148,8 +148,8 @@ if __name__ == '__main__':
 
     
     #create callbacks to record data, initiate events during training.
-    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=savepath, n_eval_episodes=5
-                                                                         , deterministic=False, best_model_save_path=savepath)])
+    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=savepath, n_eval_episodes=30
+                                                                         ,eval_freq=50000, deterministic=False, best_model_save_path=savepath)])
     
     #create model with Stable Baselines package.
     model = ACER(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  verbose=1)#, tensorboard_log=scenario)

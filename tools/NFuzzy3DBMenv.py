@@ -26,7 +26,7 @@ class environment(gym.Env):
        # self.cutoffpenaltyscalar=penaltyscalar #scaling parameter for changing the penalty for taking no action (cutoff).
         #self.rg_prob=rg_prob #rg for randomly generated, loadenv for loading premade envionments
         self.savepath=savepath
-        envpath='./environments'
+        envpath='./environments/'
         self.savedgeo='%s/geology' % envpath
         self.savedtruth='%s/truth' % envpath
         self.savedenv='%s/environment' % envpath
@@ -53,7 +53,7 @@ class environment(gym.Env):
         self.mined=-1
         self.callnumber=1
         self.savenumber=0
-        self.maxloadid=100#len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
+        self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
         
         #sizing the block model environment
         self.Ilen=self.Imax-self.Imin 
@@ -475,10 +475,10 @@ class environment(gym.Env):
         
         if isMinable==0:             #penalising repetetive useless actions
             
-            ore=-self.averagereward
+            ore=-self.averagereward*10
             
         elif isEfficient==0: #penalising high entropy policies spreading out and randomly picking.
-            ore=-self.averagereward
+            ore=-self.averagereward*10
                 
         else:
             
@@ -490,7 +490,7 @@ class environment(gym.Env):
             # else:
             #     self.reward=self.init_cutoffpenalty
                 
-        self.reward=ore
+        self.reward=ore*10
         
     def update(self, selected_block):
     
