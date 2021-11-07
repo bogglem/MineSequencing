@@ -1,5 +1,5 @@
 x,y,z,policyname,LR,gamma,batch_size,runtime,turnspc,trialv
-20,20,6,MlpPolicy,0.001,1,N/A,21600,0.05,13kenv-d
+20,20,6,MlpPolicy,0.001,1,N/A,21600,0.05,13kenv-e-5cpu
 20,20,6,MlpPolicy,0.001,1,N/A,43200,0.05,100-env
 20,20,6,MlpPolicy,0.001,0.95,N/A,43200,0.05,100-env
 20,20,6,MlpPolicy,0.001,1,N/A,43200,0.05,single-env
