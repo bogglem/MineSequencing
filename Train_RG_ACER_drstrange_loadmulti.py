@@ -34,7 +34,7 @@ from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import ACER
-from tools.NFuzzy3DBMenv import environment
+from tools.RG3DBMenv_loadmulti import environment
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
@@ -42,7 +42,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 idx=0
 
 #prepare input parameters
-inputarray=pd.read_csv('jobarrays/Fuzzy_drstrange_job_input.csv')
+inputarray=pd.read_csv('jobarrays/RG_drstrange_job_input.csv')
 
 #block model (environment) dimensions
 x=inputarray.loc[idx].x
@@ -80,7 +80,7 @@ episodetimesteps=round(x*y*z*turnspc)
 
 #prepare file naming strings
 LR_s=str(LR).split('.')[1]
-inputfile_s='NFuzzy_%s_%s_%s' % (x,y,z)
+inputfile_s='RG_%s_%s_%s' % (x,y,z)
 gamma_s=str(gamma).replace('.','_')
 #cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
 #rg_s=rg_prob #max(str(float(rg_prob)).split('.'))
@@ -138,7 +138,7 @@ def make_env(x,y,z, rank, seed=0):
 
 if __name__ == '__main__':
 
-    num_cpu = 20 # Number of processes to use
+    num_cpu = 1  # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
     eval_env=environment(x, y, z, gamma, turnspc, savepath, policyname)
@@ -148,24 +148,14 @@ if __name__ == '__main__':
 
     
     #create callbacks to record data, initiate events during training.
-    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=savepath, n_eval_episodes=20
-                                                                         ,eval_freq=5000, deterministic=False, best_model_save_path=savepath)])
+    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=savepath, n_eval_episodes=5
+                                                                         , deterministic=False, best_model_save_path=savepath)])
     
-    if (os.path.exists("%s/best_model.zip" % savepath)):
-        # Instantiate the agent
-        model = ACER(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  verbose=1)
-        # Load the trained agent
-        model = ACER.load("%s/best_model" % savepath, env=env)
-        print('loaded agent')
-        model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
-        
-        
-    else:
-        #create model with Stable Baselines package.
-        model = ACER(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  verbose=1)#, tensorboard_log=scenario)
-        #model = ACER.load("%s/best_model" % savepath, env)
-        model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
-            
+    #create model with Stable Baselines package.
+    model = ACER(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  verbose=1)#, tensorboard_log=scenario)
+    #model = ACER.load("%s/best_model" % savepath, env)
+    model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
+    
     
     #create learning curve plot
     evaluations= './%s/%s/evaluations.npz' % (storagefolder,scenario)
