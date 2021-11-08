@@ -1,3 +1,4 @@
 x,y,z,policyname,LR,gamma,batch_size,runtime,turnspc,trialv
 12,12,6,MlpPolicy,0.001,1,N/A,21600,0.05,truth
+12,12,6,MlpPolicy,0.001,1,N/A,21600,0.05,notruth
 15,15,6,MlpPolicy,0.001,1,N/A,7200,0.06,freliability

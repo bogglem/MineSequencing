@@ -160,7 +160,7 @@ class automodel():
         
         #handle function
         
-        maxseeds=np.ceil(self._I*self._J*self.RL/150)
+        maxseeds=np.ceil(self._I*self._J*self.RL/100)
         self.seedlocations(random.randint(1,maxseeds))
         geo_array=self.interpolate()        
         

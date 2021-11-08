@@ -34,12 +34,12 @@ from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import ACER
-from tools.RG3DBMenv_truth import environment
+from tools.RG3DBMenv_notruth import environment
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
 #idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
-idx=0
+idx=1
 
 #prepare input parameters
 inputarray=pd.read_csv('jobarrays/RG_drstrange_job_input.csv')
@@ -138,7 +138,7 @@ def make_env(x,y,z, rank, seed=0):
 
 if __name__ == '__main__':
 
-    num_cpu = 20  # Number of processes to use
+    num_cpu = 1  # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
     eval_env=environment(x, y, z, gamma, turnspc, savepath, policyname)
