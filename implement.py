@@ -25,7 +25,7 @@ from stable_baselines import ACER
 from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.policies import CnnPolicy
 from stable_baselines.common.evaluation import evaluate_policy
-from tools.RG3DBMenv_notruth import environment
+from tools.RG3DBMenv_truth import environment
 
 # Create environment
 x=12
@@ -33,8 +33,8 @@ y=12
 z=6
 batch_size=64
 LR=0.001
-gamma=1
-turnspc=0.1
+gamma=0.95
+turnspc=0.05
 
 policyname='MlpPolicy' #change this name to change RL policy type (MlpPolicy/CnnPolicy)
 
@@ -48,7 +48,7 @@ elif policyname =='MlpPolicy':
     policy=MlpPolicy
     test='MLPACER'
 
-trialv='notruth'
+trialv='truth'
 
 #prepare file naming strings
 LR_s=str(LR).split('.')[1]
