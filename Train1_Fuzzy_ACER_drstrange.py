@@ -111,6 +111,7 @@ class TimeLimit(BaseCallback):
     def _on_step(self) -> bool:
         if self.n_calls % self.check_freq == 0:
             if time.time()<end:
+                model.save("%s/final_model" % savepath)
                 self.incomplete = True
             else:
                 self.incomplete = False
