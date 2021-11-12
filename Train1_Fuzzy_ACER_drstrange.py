@@ -168,7 +168,7 @@ if __name__ == '__main__':
             
     
     #create learning curve plot
-    evaluations= './%s/%s/evaluations.npz' % (storagefolder,scenario)
+    evaluations = './%s/%s/evaluations.npz' % (storagefolder,scenario)
     data=np.load(evaluations)
     results=data['results']
     y=np.average(results, axis=1)
