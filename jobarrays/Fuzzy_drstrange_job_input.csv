@@ -1,6 +1,6 @@
 x,y,z,policyname,LR,gamma,batch_size,runtime,turnspc,trialv
-20,20,6,MlpPolicy,0.001,0.95,N/A,46800,0.05,13kenv
-20,20,6,CnnPolicy,0.001,0.95,N/A,46800,0.05,13kenv
+20,20,6,MlpPolicy,0.001,0.95,N/A,86400,0.05,13kenv
+20,20,6,CnnPolicy,0.001,0.95,N/A,86400,0.05,13kenv
 20,20,6,MlpPolicy,0.001,0.95,N/A,43200,0.05,100-env
 20,20,6,MlpPolicy,0.001,1,N/A,43200,0.05,single-env
 20,20,6,MlpPolicy,0.001,0.95,N/A,43200,0.05,single-env
