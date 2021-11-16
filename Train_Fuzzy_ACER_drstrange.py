@@ -140,7 +140,7 @@ def make_env(x,y,z, rank, seed=0):
 
 if __name__ == '__main__':
 
-    num_cpu = 20 # Number of processes to use
+    num_cpu = 5 # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
     eval_env=environment(x, y, z, gamma, turnspc, savepath, policyname)
@@ -150,7 +150,7 @@ if __name__ == '__main__':
 
     
     #create callbacks to record data, initiate events during training.
-    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=savepath, n_eval_episodes=10
+    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=savepath, n_eval_episodes=20
                                                                          ,eval_freq=2000, deterministic=False, best_model_save_path=savepath)])
     
     if (os.path.exists("%s/best_model.zip" % savepath)):
