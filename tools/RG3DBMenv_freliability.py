@@ -494,11 +494,11 @@ class environment(gym.Env):
         
         #start new episode.
             
-        loadid = round(random.random()*self.maxloadid)
-        self.load_multi_env(loadid)
+        #loadid = round(random.random()*self.maxloadid)
+        #self.load_multi_env(loadid)
         
         #else:
-        #    self.build()
+        self.build()
             
         self.reward=0
         self.discountedmined=0
@@ -514,7 +514,7 @@ class environment(gym.Env):
             observation=arr.reshape([len(arr)]) #uncomment line for MLP (not CNN) policy
                 
         else:
-                observation=self.ob_sample
+            observation=self.ob_sample
 
         return observation
                     

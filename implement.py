@@ -25,7 +25,7 @@ from stable_baselines import ACER
 from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.policies import CnnPolicy
 from stable_baselines.common.evaluation import evaluate_policy
-from tools.Fuzzy3DBMenv import environment
+from tools.FuzzySingle3DBMenv import environment
 
 # Create environment
 x=20
@@ -33,7 +33,7 @@ y=20
 z=6
 batch_size=64
 LR=0.001
-gamma=0.95
+gamma=1.0
 turnspc=0.05
 
 policyname='MlpPolicy' #change this name to change RL policy type (MlpPolicy/CnnPolicy)
@@ -41,14 +41,14 @@ policyname='MlpPolicy' #change this name to change RL policy type (MlpPolicy/Cnn
 if policyname == 'CnnPolicy':
     
     policy=CnnPolicy
-    test='CNNACER'
+    test='CNNA2C'
 
 elif policyname =='MlpPolicy':
 
     policy=MlpPolicy
-    test='MLPACER'
+    test='MLPA2C'
 
-trialv='13kenv'
+trialv='single-env'
 
 #prepare file naming strings
 LR_s=str(LR).split('.')[1]
@@ -69,7 +69,7 @@ env = environment(x,y,z,gamma, turnspc, savepath, policyname)
 model = ACER(policy, env, gamma=gamma, n_steps=batch_size, learning_rate=LR,  verbose=1)
 
 # Load the trained agent
-model = ACER.load("%s/best_model" % savepath)
+model = ACER.load("%s/final_model" % savepath)
 
 # Evaluate the agent
 mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=10)
