@@ -25,30 +25,30 @@ from stable_baselines import ACER
 from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.policies import CnnPolicy
 from stable_baselines.common.evaluation import evaluate_policy
-from tools.FuzzySingle3DBMenv import environment
+from tools.Fuzzy3DBMenv import environment
 
 # Create environment
 x=20
 y=20
 z=6
 batch_size=64
-LR=0.001
-gamma=1.0
+LR=0.0001
+gamma=0.95
 turnspc=0.05
 
-policyname='MlpPolicy' #change this name to change RL policy type (MlpPolicy/CnnPolicy)
+policyname='CnnPolicy' #change this name to change RL policy type (MlpPolicy/CnnPolicy)
 
 if policyname == 'CnnPolicy':
     
     policy=CnnPolicy
-    test='CNNA2C'
+    test='CNNACER'
 
 elif policyname =='MlpPolicy':
 
     policy=MlpPolicy
-    test='MLPA2C'
+    test='MLPACER'
 
-trialv='single-env'
+trialv='13kenv'
 
 #prepare file naming strings
 LR_s=str(LR).split('.')[1]
