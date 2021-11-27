@@ -36,7 +36,7 @@ from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCa
 from stable_baselines import ACER
 from tools.NFuzzy3DBMenv import environment
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '2'
+os.environ['CUDA_VISIBLE_DEVICES'] = '6'
 
 #idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
 idx=0
@@ -89,6 +89,7 @@ storagefolder='output'
 scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}_{trialv}')    
 savepath='./%s/%s' % (storagefolder ,scenario)
 #savepath='%s/environment' % (savepath)
+ncpu=inputarray.loc[idx].ncpu
 
 if (os.path.exists(savepath)!=True):
     os.mkdir(savepath) #make directory prior to multiprocessing to avoid broken pipe error
@@ -138,7 +139,7 @@ def make_env(x,y,z, rank, seed=0):
 
 if __name__ == '__main__':
 
-    num_cpu = 20 # Number of processes to use
+    num_cpu = ncpu # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
     eval_env=environment(x, y, z, gamma, turnspc, savepath, policyname)

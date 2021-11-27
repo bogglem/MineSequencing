@@ -51,7 +51,7 @@ elif policyname =='MlpPolicy':
     policy=MlpPolicy
     test='MLPACER'
 
-trialv='13kenv'
+trialv='13kenv-20cpu'
 
 #prepare file naming strings
 LR_s=str(LR).split('.')[1]

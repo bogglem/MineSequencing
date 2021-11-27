@@ -384,6 +384,16 @@ class environment(gym.Env):
         
         return abandonreward
     
+    def equip_failure(self):
+        #x=self.turncounter
+        #prob_fail= #1-np.exp(-x*0.00001)
+        
+        if random.random()>0.9995**self.turncounter: #probability of success
+            self.terminal=True
+        else:
+            self.terminal=False
+        return
+    
     
     def step(self, action):        
         
@@ -418,6 +428,7 @@ class environment(gym.Env):
             self.update(selected_block)
             self.turncounter+=1
             self.renderif(self.rendermode)
+            self.equip_failure() #terminates episode based on random failure of equipment
             
             
         if self.policy=='MlpPolicy':
@@ -449,7 +460,7 @@ class environment(gym.Env):
             # else:
             #     self.reward=self.init_cutoffpenalty
                 
-        self.reward=ore
+        self.reward=ore*10
         
     def update(self, selected_block):
     
