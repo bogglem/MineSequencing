@@ -34,7 +34,7 @@ from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import A2C
-from tools.Fuzzy3DBMenv import environment
+from tools.NFuzzy3DBMenv import environment
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
@@ -80,7 +80,7 @@ episodetimesteps=round(x*y*z*turnspc)
 
 #prepare file naming strings
 LR_s=str(LR).split('.')[1]
-inputfile_s='Fuzzy_%s_%s_%s' % (x,y,z)
+inputfile_s='NFuzzy_%s_%s_%s' % (x,y,z)
 gamma_s=str(gamma).replace('.','_')
 #cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
 #rg_s=rg_prob #max(str(float(rg_prob)).split('.'))

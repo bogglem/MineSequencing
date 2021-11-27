@@ -26,7 +26,7 @@ class environment(gym.Env):
        # self.cutoffpenaltyscalar=penaltyscalar #scaling parameter for changing the penalty for taking no action (cutoff).
         #self.rg_prob=rg_prob #rg for randomly generated, loadenv for loading premade envionments
         self.savepath=savepath
-        envpath='./environments'
+        envpath='./environments/unique'
         self.savedgeo='%s/geology' % envpath
         self.savedtruth='%s/truth' % envpath
         self.savedenv='%s/environment' % envpath
@@ -475,10 +475,10 @@ class environment(gym.Env):
         
         if isMinable==0:             #penalising repetetive useless actions
             
-            ore=-self.averagereward*10
+            ore=-self.averagereward
             
         elif isEfficient==0: #penalising high entropy policies spreading out and randomly picking.
-            ore=-self.averagereward*10
+            ore=-self.averagereward
                 
         else:
             

@@ -21,11 +21,13 @@ tf.get_logger().setLevel(logging.ERROR)
 
 import gym
 
+from stable_baselines import A2C
 from stable_baselines import ACER
 from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.policies import CnnPolicy
 from stable_baselines.common.evaluation import evaluate_policy
 from tools.Fuzzy3DBMenv import environment
+#from tools.RG3DBMenv import environment
 
 # Create environment
 x=20
@@ -35,8 +37,9 @@ batch_size=64
 LR=0.0001
 gamma=0.95
 turnspc=0.05
+episodetimesteps=round(x*y*z*turnspc)
 
-policyname='CnnPolicy' #change this name to change RL policy type (MlpPolicy/CnnPolicy)
+policyname='MlpPolicy' #change this name to change RL policy type (MlpPolicy/CnnPolicy)
 
 if policyname == 'CnnPolicy':
     
@@ -66,20 +69,24 @@ turns=round(x*y*z*turnspc)
 env = environment(x,y,z,gamma, turnspc, savepath, policyname)
 
 # Instantiate the agent
-model = ACER(policy, env, gamma=gamma, n_steps=batch_size, learning_rate=LR,  verbose=1)
-
+model = ACER(policy, env, gamma=gamma, learning_rate=LR,n_steps=episodetimesteps,   verbose=1)
+#
 # Load the trained agent
-model = ACER.load("%s/final_model" % savepath)
+model = ACER.load("%s/best_model" % savepath)
+print('loaded agent %s' % savepath)
 
 # Evaluate the agent
-mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=10)
+mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=20, deterministic=False)
+print('mean_reward = %s +/- %s' %(mean_reward,std_reward))
 
 # Enjoy trained agent
 obs = env.reset()
+cumreward=0
 for i in range(turns):
-    action, _states = model.predict(obs)
+    action, _states = model.predict(obs, deterministic=False)
     obs, rewards, dones, info = env.step(action)
-    print(action, rewards, dones)
+    cumreward+=rewards
+    print(action, rewards, dones, cumreward)
     env.renderif('on')
     if dones == True:
         break

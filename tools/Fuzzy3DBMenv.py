@@ -102,22 +102,23 @@ class environment(gym.Env):
 
     def save_multi_env(self):
          
-        self.savenumber=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])+1
-        
-        
+              
         #create dir        
         if (os.path.exists('./environments')!=True):
             os.mkdir('./environments')
-        if (os.path.exists('./environments/geology')!=True):
-            os.mkdir('./environments/geology')
-        if (os.path.exists('./environments/truth')!=True):
-            os.mkdir('./environments/truth')
-        if (os.path.exists('./environments/environment')!=True):
-            os.mkdir('./environments/environment')
-        if (os.path.exists('./environments/depdict')!=True):
-            os.mkdir('./environments/depdict')
-        if (os.path.exists('./environments/effdict')!=True):
-            os.mkdir('./environments/effdict')            
+        if (os.path.exists('%s' %self.savedgeo)!=True):
+            os.mkdir('%s' %self.savedgeo)
+        if (os.path.exists('%s' %self.savedtruth)!=True):
+            os.mkdir('%s' %self.savedtruth)
+        if (os.path.exists('%s' %self.savedenv)!=True):
+            os.mkdir('%s' %self.savedenv)
+        if (os.path.exists('%s' %self.saveddepdic)!=True):
+            os.mkdir('%s' %self.saveddepdic)
+        if (os.path.exists('%s' %self.savedeffdic)!=True):
+            os.mkdir('%s' %self.savedeffdic)       
+        
+        self.savenumber=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])+1
+        
         
         #save geo array   
         if (os.path.exists(self.savedgeo)):
@@ -475,10 +476,10 @@ class environment(gym.Env):
         
         if isMinable==0:             #penalising repetetive useless actions
             
-            ore=-self.averagereward*10
+            ore=-self.averagereward
             
         elif isEfficient==0: #penalising high entropy policies spreading out and randomly picking.
-            ore=-self.averagereward*10
+            ore=-self.averagereward
                 
         else:
             
@@ -503,11 +504,11 @@ class environment(gym.Env):
         
         #start new episode.
             
-        loadid = int(np.ceil(random.random()*self.maxloadid))
-        self.load_multi_env(loadid)
+        #loadid = int(np.ceil(random.random()*self.maxloadid))
+        #self.load_multi_env(loadid)
         
         #else:
-        #self.build()
+        self.build()
             
         self.reward=0
         self.discountedmined=0

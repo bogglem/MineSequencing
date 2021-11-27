@@ -73,6 +73,7 @@ runtime=inputarray.loc[idx].runtime
 #cutoffpenaltyscalar=inputarray.loc[idx].cutoffpenaltyscalar #not currently implemented
 #rg_prob=inputarray.loc[idx].rg_prob
 turnspc=inputarray.loc[idx].turnspc
+ncpu=inputarray.loc[idx].ncpu
 
 start=time.time()
 end=start+runtime
@@ -111,7 +112,6 @@ class TimeLimit(BaseCallback):
     def _on_step(self) -> bool:
         if self.n_calls % self.check_freq == 0:
             if time.time()<end:
-                
                 self.incomplete = True
             else:
                 model.save("%s/final_model" % savepath)
@@ -140,7 +140,7 @@ def make_env(x,y,z, rank, seed=0):
 
 if __name__ == '__main__':
 
-    num_cpu = 5 # Number of processes to use
+    num_cpu = ncpu # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
     eval_env=environment(x, y, z, gamma, turnspc, savepath, policyname)

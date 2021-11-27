@@ -480,10 +480,10 @@ class environment(gym.Env):
         
         if isMinable==0:             #penalising repetetive useless actions
             
-            ore=-self.averagereward*10
+            ore=-self.averagereward
             
         elif isEfficient==0: #penalising high entropy policies spreading out and randomly picking.
-            ore=-self.averagereward*10
+            ore=-self.averagereward
                 
         else:
             
