@@ -20,13 +20,13 @@ from tools.createmodel import fuzzymodel
 
 class environment(gym.Env):
     
-    def __init__(self, x,y,z ,gamma, turnspc, savepath, policy, rendermode='off'):
+    def __init__(self, x,y,z ,gamma, turnspc, savepath, policy,rg_prob='loadenv', rendermode='off'):
         
         self.rendermode=rendermode # on/off display block model in matplotlib
        # self.cutoffpenaltyscalar=penaltyscalar #scaling parameter for changing the penalty for taking no action (cutoff).
-        #self.rg_prob=rg_prob #rg for randomly generated, loadenv for loading premade envionments
+        self.rg_prob=rg_prob #rg for randomly generated, loadenv for loading premade envionments
         self.savepath=savepath
-        envpath='./environments'
+        envpath='./environments/none'
         self.savedgeo='%s/geology' % envpath
         self.savedtruth='%s/truth' % envpath
         self.savedenv='%s/environment' % envpath
@@ -53,8 +53,11 @@ class environment(gym.Env):
         self.mined=-1
         self.callnumber=1
         self.savenumber=0
-        self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
-        
+        try:
+            self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
+        except:
+            self.maxloadid=0
+            
         #sizing the block model environment
         self.Ilen=self.Imax-self.Imin 
         self.Jlen=self.Jmax-self.Jmin
@@ -211,7 +214,7 @@ class environment(gym.Env):
     def build(self):
         
         #builds block model and mining sequence constraints dictionary (eg. top must be mined first)         
-        if self.maxloadid>0: #(self.rg_prob=='loadenv') and
+        if (self.rg_prob=='loadenv'):# and self.maxloadid>0: 
             loadid = round(random.random()*self.maxloadid)      
             self.load_multi_env(loadid)
         
