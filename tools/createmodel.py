@@ -159,7 +159,7 @@ class automodel():
         
         #handle function
         
-        maxseeds=np.ceil(self._I*self._J*self.RL/100)
+        maxseeds=np.ceil(self._I*self._J*self.RL/200)
         self.seedlocations(random.randint(1,maxseeds))
         geo_array=self.interpolate()        
         
@@ -292,7 +292,7 @@ class fuzzymodel():
         
         #handle function
         
-        maxseeds=np.ceil(self._I*self._J*self.RL/100)
+        maxseeds=np.ceil(self._I*self._J*self.RL/200)
         self.seedlocations(random.randint(1,maxseeds))
         geo_array=self.interpolate()        
         truth_array=self.discretize()
@@ -427,7 +427,7 @@ class fuzzymodel2():
         
         #handle function
         
-        maxseeds=np.ceil(self._I*self._J*self.RL/100)
+        maxseeds=np.ceil(self._I*self._J*self.RL/200)
         self.seedlocations(random.randint(1,maxseeds))
         geo_array=self.interpolate()        
         truth_array=self.discretize()

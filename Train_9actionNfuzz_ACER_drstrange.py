@@ -34,15 +34,15 @@ from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import ACER
-from tools.RG3DBMenv import environment
+from tools.NFuzzy3DBMenv_9action import environment
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '6'
 
 #idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
-idx=5
+idx=4
 
 #prepare input parameters
-inputarray=pd.read_csv('jobarrays/RG_drstrange_job_input.csv')
+inputarray=pd.read_csv('jobarrays/Fuzzy_drstrange_job_input.csv')
 
 #block model (environment) dimensions
 x=inputarray.loc[idx].x
@@ -81,7 +81,7 @@ episodetimesteps=round(x*y*z*turnspc)
 
 #prepare file naming strings
 LR_s=str(LR).split('.')[1]
-inputfile_s='RG_%s_%s_%s' % (x,y,z)
+inputfile_s='Fuzzy_%s_%s_%s' % (x,y,z)
 gamma_s=str(gamma).replace('.','_')
 #cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
 #rg_s=rg_prob #max(str(float(rg_prob)).split('.'))
@@ -89,6 +89,7 @@ turnspc_s=str(turnspc).split('.')[1]
 storagefolder='output'
 scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}_{trialv}')    
 savepath='./%s/%s' % (storagefolder ,scenario)
+
 #savepath='%s/environment' % (savepath)
 
 if (os.path.exists(savepath)!=True):
@@ -114,6 +115,7 @@ class TimeLimit(BaseCallback):
             if time.time()<end:
                 self.incomplete = True
             else:
+                model.save("%s/final_model" % savepath)
                 self.incomplete = False
                         
         return self.incomplete
@@ -130,7 +132,7 @@ def make_env(x,y,z, rank, seed=0):
     """
     def _init():
         
-        env = environment(x, y, z, gamma, turnspc, savepath, policyname)
+        env = environment(x, y, z, gamma, turnspc, savepath, policyname, rg_prob='rg')
         env.seed(seed + rank)
         return env
     set_global_seeds(seed)
@@ -139,18 +141,19 @@ def make_env(x,y,z, rank, seed=0):
 
 if __name__ == '__main__':
 
-    num_cpu = ncpu  # Number of processes to use
+    num_cpu = ncpu # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
-    eval_env=environment(x, y, z, gamma, turnspc, savepath, policyname)
+    eval_env=environment(x, y, z, gamma, turnspc, savepath, policyname, rg_prob='rg')
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
 
     
     #create callbacks to record data, initiate events during training.
-    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=savepath, n_eval_episodes=20, eval_freq=2000
-                                                                         , deterministic=False, best_model_save_path=savepath)])
+    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=savepath, n_eval_episodes=20
+                                                                         ,eval_freq=2000, deterministic=False, best_model_save_path=savepath)])
+    
     if (os.path.exists("%s/best_model.zip" % savepath)):
         # Instantiate the agent
         model = ACER(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  buffer_size=500*episodetimesteps,  verbose=1)

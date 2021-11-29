@@ -13,7 +13,7 @@ from sklearn.preprocessing import MinMaxScaler
 import gym
 from gym import spaces
 from tools.render import renderbm
-from tools.createmodel import fuzzymodel
+from tools.createmodel import automodel
 
 
 #inherits gym.Env to create a new gym environment (orebody block model) type for stable-baselines
@@ -75,7 +75,7 @@ class environment(gym.Env):
         self.eff_dic_init={}
         
         #create block model
-        self.model=fuzzymodel(self.Ilen,self.Jlen,self.RLlen)
+        self.model=automodel(self.Ilen,self.Jlen,self.RLlen)
         self.build()
         
         self.turns=round(len(self.dep_dic)*turnspc,0) #set max number of turns (actions) in each episode based on percentage of block model size.
@@ -220,7 +220,8 @@ class environment(gym.Env):
             self.load_multi_env(loadid)
         
         else:
-            self.geo_array, self.truth_array=self.model.buildmodel()
+            #self.geo_array, self.truth_array=self.model.buildmodel()
+            self.geo_array=self.model.buildmodel()
             #self.save_env(self.savedenv,self.geo_array)
         
             
@@ -552,7 +553,7 @@ class environment(gym.Env):
                 
         else:
             
-            H2O=self.truth_array[self.i,self.j,self.RL,0]
+            H2O=self.geo_array[self.i,self.j,self.RL,0]
             #Tonnes=self.geo_array[self.i, self.j,self.RL,1] 
 
             # if (H2O*Tonnes)+self.init_cutoffpenalty>=0: #to be used for experimental determination of cutoff grade

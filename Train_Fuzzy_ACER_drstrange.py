@@ -39,7 +39,7 @@ from tools.Fuzzy3DBMenv import environment
 os.environ['CUDA_VISIBLE_DEVICES'] = '6'
 
 #idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
-idx=0
+idx=8
 
 #prepare input parameters
 inputarray=pd.read_csv('jobarrays/Fuzzy_drstrange_job_input.csv')

@@ -26,17 +26,17 @@ from stable_baselines import ACER
 from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.policies import CnnPolicy
 from stable_baselines.common.evaluation import evaluate_policy
-from tools.Fuzzy3DBMenv_9action import environment
+from tools.RG3DBMenv import environment
 #from tools.RG3DBMenv import environment
 
 # Create environment
-x=20
-y=20
+x=16
+y=16
 z=6
 batch_size=64
 LR=0.001
 gamma=0.95
-turnspc=0.05
+turnspc=0.06
 episodetimesteps=round(x*y*z*turnspc)
 
 policyname='MlpPolicy' #change this name to change RL policy type (MlpPolicy/CnnPolicy)
@@ -51,11 +51,11 @@ elif policyname =='MlpPolicy':
     policy=MlpPolicy
     test='MLPACER'
 
-trialv='9act'
+trialv='truth'
 
 #prepare file naming strings
 LR_s=str(LR).split('.')[1]
-inputfile_s='Fuzzy_%s_%s_%s' % (x,y,z)
+inputfile_s='RG_%s_%s_%s' % (x,y,z)
 gamma_s=str(gamma).replace('.','_')
 #cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
 #rg_s=max(str(float(rg_prob)).split('.'))
@@ -81,12 +81,13 @@ print('mean_reward = %s +/- %s' %(mean_reward,std_reward))
 
 # Enjoy trained agent
 obs = env.reset()
+env.rendermode='on'
 cumreward=0
 for i in range(turns):
     action, _states = model.predict(obs, deterministic=False)
     obs, rewards, dones, info = env.step(action)
     cumreward+=rewards
     print(action, rewards, dones, cumreward)
-    env.renderif('on')
+    #env.renderif('on')
     if dones == True:
         break

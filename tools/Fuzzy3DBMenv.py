@@ -20,7 +20,7 @@ from tools.createmodel import fuzzymodel
 
 class environment(gym.Env):
     
-    def __init__(self, x,y,z ,gamma, turnspc, savepath, policy,rg_prob='loadenv', rendermode='off'):
+    def __init__(self, x,y,z ,gamma, turnspc, savepath, policy,rg_prob='rg', rendermode='off'):
         
         self.rendermode=rendermode # on/off display block model in matplotlib
        # self.cutoffpenaltyscalar=penaltyscalar #scaling parameter for changing the penalty for taking no action (cutoff).
