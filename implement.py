@@ -22,11 +22,13 @@ tf.get_logger().setLevel(logging.ERROR)
 import gym
 
 from stable_baselines import A2C
+from stable_baselines import DQN
 from stable_baselines import ACER
 from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.policies import CnnPolicy
 from stable_baselines.common.evaluation import evaluate_policy
-from tools.Fuzzy3DBMenv import environment
+from tools.FuzzySingle3DBMenv import environment
+#from tools.Fuzzy3DBMenv import environment
 #from tools.RG3DBMenv import environment
 #from tools.Fuzzy3DBMenv_9action import environment
 
@@ -50,9 +52,9 @@ if policyname == 'CnnPolicy':
 elif policyname =='MlpPolicy':
 
     policy=MlpPolicy
-    test='MLPACER'
+    test='MLPDQN'
 
-trialv='Rgfuzz'
+trialv='single'
 
 #prepare file naming strings
 LR_s=str(LR).split('.')[1]
@@ -70,14 +72,16 @@ turns=round(x*y*z*turnspc)
 env = environment(x,y,z,gamma, turnspc, savepath, policyname)
 
 # Instantiate the agent
-model = ACER(policy, env, gamma=gamma, learning_rate=LR,n_steps=episodetimesteps,   verbose=1)
+#model = ACER(policy, env, gamma=gamma, learning_rate=LR,n_steps=episodetimesteps,   verbose=1)
+model = DQN('MlpPolicy', env, learning_rate=LR, prioritized_replay=True, verbose=1)
 #
 # Load the trained agent
-model = ACER.load("%s/best_model" % savepath)
+#model = ACER.load("%s/best_model" % savepath)
+model = DQN.load("%s/best_model" % savepath)
 print('loaded agent %s' % savepath)
 
 # Evaluate the agent
-mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=20, deterministic=False)
+mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=20, deterministic=True)
 print('mean_reward = %s +/- %s' %(mean_reward,std_reward))
 
 # Enjoy trained agent
@@ -85,7 +89,7 @@ obs = env.reset()
 env.rendermode='on'
 cumreward=0
 for i in range(turns):
-    action, _states = model.predict(obs, deterministic=False)
+    action, _states = model.predict(obs, deterministic=True)
     obs, rewards, dones, info = env.step(action)
     cumreward+=rewards
     print(action, rewards, dones, cumreward)

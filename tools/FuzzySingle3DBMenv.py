@@ -20,20 +20,19 @@ from tools.createmodel import fuzzymodel
 
 class environment(gym.Env):
     
-    def __init__(self, x,y,z ,gamma, turnspc, savepath, policy, rendermode='off'):
+    def __init__(self, x,y,z ,gamma, turnspc, savepath, policy,rg_prob='loadenv', rendermode='off'):
         
         self.rendermode=rendermode # on/off display block model in matplotlib
        # self.cutoffpenaltyscalar=penaltyscalar #scaling parameter for changing the penalty for taking no action (cutoff).
-        #self.rg_prob=rg_prob #rg for randomly generated, loadenv for loading premade envionments
+        self.rg_prob=rg_prob #rg for randomly generated, loadenv for loading premade envionments
         self.savepath=savepath
-        self.envpath='./%s/environments' % savepath
-        self.savedgeo='%s/geology' % self.envpath
-        self.savedtruth='%s/truth' % self.envpath
-        self.savedenv='%s/environment' % self.envpath
-        self.saveddepdic='%s/depdict' % self.envpath
-        self.savedeffdic='%s/effdict' % self.envpath
+        envpath='./environments/single'
+        self.savedgeo='%s/geology' % envpath
+        self.savedtruth='%s/truth' % envpath
+        self.savedenv='%s/environment' % envpath
+        self.saveddepdic='%s/depdict' % envpath
+        self.savedeffdic='%s/effdict' % envpath
         self.policy=policy
-        self.createdirectories()
         
         #initiating values
         self.framecounter=0
@@ -54,8 +53,11 @@ class environment(gym.Env):
         self.mined=-1
         self.callnumber=1
         self.savenumber=0
-        self.maxloadid=1#len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
-        
+        try:
+            self.maxloadid=1#len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
+        except:
+            self.maxloadid=0
+            
         #sizing the block model environment
         self.Ilen=self.Imax-self.Imin 
         self.Jlen=self.Jmax-self.Jmin
@@ -72,9 +74,8 @@ class environment(gym.Env):
         self.eff_dic_init={}
         
         #create block model
-        self.model=fuzzymodel(self.Ilen,self.Jlen,self.RLlen)       
+        self.model=fuzzymodel(self.Ilen,self.Jlen,self.RLlen)
         self.build()
-
         
         self.turns=round(len(self.dep_dic)*turnspc,0) #set max number of turns (actions) in each episode based on percentage of block model size.
         
@@ -100,28 +101,27 @@ class environment(gym.Env):
                     
         #self.init_cutoffpenalty=self.cutoffpenalty() #experimental parameter function. penalises agent for not mining (do nothing), reward for taking action.
        
-    def createdirectories(self):
-        
-        #create dir       
-        if (os.path.exists(self.savepath)!=True):
-            os.mkdir(self.savepath)
-        if (os.path.exists(self.envpath)!=True):
-            os.mkdir(self.envpath)
-        if (os.path.exists(self.savedgeo)!=True):
-            os.mkdir(self.savedgeo)
-        if (os.path.exists(self.savedtruth)!=True):
-            os.mkdir(self.savedtruth)
-        if (os.path.exists(self.savedenv)!=True):
-            os.mkdir(self.savedenv)
-        if (os.path.exists(self.saveddepdic)!=True):
-            os.mkdir(self.saveddepdic)
-        if (os.path.exists(self.savedeffdic)!=True):
-            os.mkdir(self.savedeffdic)            
-        
+
 
     def save_multi_env(self):
          
+              
+        #create dir        
+        if (os.path.exists('./environments/single')!=True):
+            os.mkdir('./environments/single')
+        if (os.path.exists('%s' %self.savedgeo)!=True):
+            os.mkdir('%s' %self.savedgeo)
+        if (os.path.exists('%s' %self.savedtruth)!=True):
+            os.mkdir('%s' %self.savedtruth)
+        if (os.path.exists('%s' %self.savedenv)!=True):
+            os.mkdir('%s' %self.savedenv)
+        if (os.path.exists('%s' %self.saveddepdic)!=True):
+            os.mkdir('%s' %self.saveddepdic)
+        if (os.path.exists('%s' %self.savedeffdic)!=True):
+            os.mkdir('%s' %self.savedeffdic)       
+        
         self.savenumber=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])+1
+        
         
         #save geo array   
         if (os.path.exists(self.savedgeo)):
@@ -214,13 +214,12 @@ class environment(gym.Env):
     def build(self):
         
         #builds block model and mining sequence constraints dictionary (eg. top must be mined first)         
-        if (self.maxloadid>0) and (os.path.exists("%s/%s_ob_sample.npy"% (self.savedenv, 1))): #(self.rg_prob=='loadenv') and
+        if (self.rg_prob=='loadenv'):
             loadid = 1#round(random.random()*self.maxloadid)      
             self.load_multi_env(loadid)
         
         else:
             self.geo_array, self.truth_array=self.model.buildmodel()
-            
             #self.save_env(self.savedenv,self.geo_array)
         
             
@@ -260,9 +259,9 @@ class environment(gym.Env):
         self.render_update = self.geo_array[:,:,:,0] #provides data sliced for render function
         self.bm=renderbm(self.render_update)
 
-         #save environment
-        if (os.path.exists("%s/%s_ob_sample.npy"% (self.savedenv, 1)))!=True:
-             self.save_multi_env()
+        # #save environment if random generation disabled
+        # if self.rg_prob==0.0 and not (os.path.isfile('%s.npy' % self.savedenv)):
+        #     self.save_env(self.savedenv,self.geo_array)
     
     def construct_block_dic(self):
        
@@ -508,11 +507,11 @@ class environment(gym.Env):
         
         #start new episode.
             
-        loadid = int(np.ceil(random.random()*self.maxloadid))
-        self.load_multi_env(loadid)
+        #loadid = int(np.ceil(random.random()*self.maxloadid))
+        #self.load_multi_env(loadid)
         
         #else:
-        #self.build()
+        self.build()
             
         self.reward=0
         self.discountedmined=0
