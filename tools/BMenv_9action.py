@@ -20,12 +20,12 @@ from tools.createmodel import automodel
 
 class environment(gym.Env):
     
-    def __init__(self, x,y,z ,gamma, turnspc, savepath, policy,rg_prob='loadenv', rendermode='off'):
+    def __init__(self, x,y,z ,gamma, turnspc, policy, rg_prob='loadenv', rendermode='off'):
         
         self.rendermode=rendermode # on/off display block model in matplotlib
        # self.cutoffpenaltyscalar=penaltyscalar #scaling parameter for changing the penalty for taking no action (cutoff).
         self.rg_prob=rg_prob #rg for randomly generated, loadenv for loading premade envionments
-        self.savepath=savepath
+        #self.savepath=savepath
         envpath='./environments'
         self.savedgeo='%s/geology' % envpath
         self.savedtruth='%s/truth' % envpath
@@ -112,8 +112,8 @@ class environment(gym.Env):
             os.mkdir('./environments')
         if (os.path.exists('%s' %self.savedgeo)!=True):
             os.mkdir('%s' %self.savedgeo)
-        if (os.path.exists('%s' %self.savedtruth)!=True):
-            os.mkdir('%s' %self.savedtruth)
+        # if (os.path.exists('%s' %self.savedtruth)!=True):
+        #     os.mkdir('%s' %self.savedtruth)
         if (os.path.exists('%s' %self.savedenv)!=True):
             os.mkdir('%s' %self.savedenv)
         if (os.path.exists('%s' %self.saveddepdic)!=True):
@@ -142,9 +142,9 @@ class environment(gym.Env):
             os.mkdir(self.savedenv)
             np.save("%s/%s_ob_sample"% (self.savedenv, self.savenumber), self.ob_sample)     
    
-        #save truth_array       
-        if (os.path.exists(self.savedtruth)):
-            np.save("%s/%s_truth_array"% (self.savedtruth, self.savenumber), self.truth_array)
+        # #save truth_array       
+        # if (os.path.exists(self.savedtruth)):
+        #     np.save("%s/%s_truth_array"% (self.savedtruth, self.savenumber), self.truth_array)
           
         
         elif (os.path.exists(self.savedtruth)!=True):
@@ -194,22 +194,22 @@ class environment(gym.Env):
         
       
         
-    def save_env(self, savedenv,array):
+    # def save_env(self, savedenv,array):
         
-        if (os.path.exists(self.savepath)):
-            np.save("%s"% savedenv, array)
+    #     if (os.path.exists(self.savepath)):
+    #         np.save("%s"% savedenv, array)
         
-        elif (os.path.exists(self.savepath)!=True):
-            os.mkdir(self.savepath)
-            np.save("%s"% savedenv, array)    
+    #     elif (os.path.exists(self.savepath)!=True):
+    #         os.mkdir(self.savepath)
+    #         np.save("%s"% savedenv, array)    
     
-    def load_env(self):
-        #to be deprecated once all saved environments include dicts and ob_sample
+    # def load_env(self):
+    #     #to be deprecated once all saved environments include dicts and ob_sample
         
-        self.geo_array=np.load("%s.npy"% self.savedenv)
-        print("loaded environment")
+    #     self.geo_array=np.load("%s.npy"% self.savedenv)
+    #     print("loaded environment")
         
-        return self.geo_array
+    #     return self.geo_array
         
 
     def build(self):

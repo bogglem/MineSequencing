@@ -25,11 +25,12 @@ class environment(gym.Env):
         self.rendermode=rendermode # on/off display block model in matplotlib
         #self.cutoffpenaltyscalar=penaltyscalar #scaling parameter for changing the penalty for taking no action (cutoff).
         #self.rg_prob=rg_prob #rg for randomly generated, loadenv for loading premade envionments
-        self.savepath=savepath
-        self.savedgeo='./environments/geology'
-        self.savedenv='./environments/environment'
-        self.saveddepdic='./environments/depdict' 
-        self.savedeffdic='./environments/effdict' 
+        envpath='./environments'
+        self.savedgeo='%s/geology' % envpath
+        self.savedtruth='%s/truth' % envpath
+        self.savedenv='%s/environment' % envpath
+        self.saveddepdic='%s/depdict' % envpath
+        self.savedeffdic='%s/effdict' % envpath
         self.policy=policy
         
         #initiating values
@@ -57,7 +58,7 @@ class environment(gym.Env):
         self.Ilen=self.Imax-self.Imin 
         self.Jlen=self.Jmax-self.Jmin
         self.RLlen=self.RLmax-self.RLmin #RL (z coordinate) counts up as depth increases
-        self.channels = 3
+        self.channels = 2
         self.flatlen=self.Ilen*self.Jlen*self.RLlen*self.channels
         
         
@@ -95,7 +96,7 @@ class environment(gym.Env):
             
                     
         #self.init_cutoffpenalty=self.cutoffpenalty() #experimental parameter function. penalises agent for not mining (do nothing), reward for taking action.
-        self.averagereward=np.average((np.multiply(self.geo_array[:,:,:,0],self.geo_array[:,:,:,1])))
+        self.averagereward=np.average(self.geo_array[:,:,:,0])
 
 
     def save_multi_env(self):
@@ -185,22 +186,22 @@ class environment(gym.Env):
             
         scaler=MinMaxScaler()
         H2O_init=self.geo_array[:,:,:,0]
-        Tonnes_init=self.geo_array[:,:,:,1]
-        State_init=self.geo_array[:,:,:,2]
+        #Tonnes_init=self.geo_array[:,:,:,1]
+        State_init=self.geo_array[:,:,:,1]
         
         H2O_reshaped=H2O_init.reshape([-1,1])
-        Tonnes_reshaped=Tonnes_init.reshape([-1,1])
+        #Tonnes_reshaped=Tonnes_init.reshape([-1,1])
         State_reshaped=State_init.reshape([-1,1])
         
         H2O_scaled=scaler.fit_transform(H2O_reshaped)
-        Tonnes_scaled=scaler.fit_transform(Tonnes_reshaped)
+        #Tonnes_scaled=scaler.fit_transform(Tonnes_reshaped)
         
         a=H2O_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
-        b=Tonnes_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
+        #b=Tonnes_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
         c=State_reshaped.reshape([self.Ilen, self.Jlen, self.RLlen,1])
                
-        self.norm=np.append(a, b, axis=3)
-        self.norm=np.append(self.norm,c, axis=3)
+        self.norm=np.append(a, c, axis=3)
+        #self.norm=np.append(self.norm,c, axis=3)
         self.ob_sample=deepcopy(self.norm)
         self.construct_dep_dic()
         self.dep_dic=deepcopy(self.dep_dic_init)
@@ -383,24 +384,27 @@ class environment(gym.Env):
         
         return abandonreward
     
+    def equip_failure(self):
+        #x=self.turncounter
+        #prob_fail= #1-np.exp(-x*0.00001)
+        
+        if random.random()>0.9995**self.turncounter: #probability of success
+            self.terminal=True
+        else:
+            self.terminal=False
+        return
+    
     
     def step(self, action):        
         
         info={} #required for gym.Env class output
-
-        #failurerisk = np.random.uniform(0,self.turns)*(self.turncounter/self.turns)
-        
+       
         # if (self.rg_prob=='loadenv') and (random.random()<0.00001): #every 10 000 randomly save episode
         #     self.savenumber+=1
         #     self.save_multi_env()
             
-       
-        # if failurerisk>=1:
-        #     self.terminal=True
-        #     self.reward = 0       
-        #     observation=self.ob_sample
         
-        if sum(sum(sum(self.ob_sample[:,:,:,2])))>=self.ob_sample[:,:,:,2].size: #if all blocks are mined, end episode
+        if sum(sum(sum(self.ob_sample[:,:,:,1])))>=self.ob_sample[:,:,:,1].size: #if all blocks are mined, end episode
             self.terminal=True
             observation=self.ob_sample
                
@@ -424,6 +428,7 @@ class environment(gym.Env):
             self.update(selected_block)
             self.turncounter+=1
             self.renderif(self.rendermode)
+            self.equip_failure() #terminates episode based on random failure of equipment
             
             
         if self.policy=='MlpPolicy':
@@ -448,21 +453,21 @@ class environment(gym.Env):
         else:
             
             H2O=self.geo_array[self.i,self.j,self.RL,0]
-            Tonnes=self.geo_array[self.i, self.j,self.RL,1] 
+            #Tonnes=self.geo_array[self.i, self.j,self.RL,1] 
 
             # if (H2O*Tonnes)+self.init_cutoffpenalty>=0: #to be used for experimental determination of cutoff grade
-            ore=(H2O*Tonnes)
+            ore=H2O #*Tonnes
             # else:
             #     self.reward=self.init_cutoffpenalty
                 
-        self.reward=ore
+        self.reward=ore*10
         
     def update(self, selected_block):
     
         #updates observation environment and minable block dependencies.
         
         self.block_dic["%s"% selected_block]=1 #set to one (mined). required for dependency logical multiplication
-        self.ob_sample[self.i,self.j,self.RL,2]=1 #set to one (mined) for agent observation.
+        self.ob_sample[self.i,self.j,self.RL,1]=1 #set to one (mined) for agent observation.
    
     def reset(self):
         
@@ -519,7 +524,36 @@ class environment(gym.Env):
                               
                  self.bm.plot()
         pass
-   
+
+    def render(self, geotruth):      
+    
+        #create 3D plot
+        
+        if geotruth=='truth':
+       
+            r=renderbm(self.truth_array[:,:,:,0])
+            
+        else:
+               
+            r=renderbm(self.geo_array[:,:,:,0])
+        
+        r.initiate_plot(self.averagereward)
+        r.plot()
+
+    def renderx(self, geotruth):      
+    
+        #create 3D plot
+        
+        if geotruth=='truth':
+       
+            r=renderbm(self.truth_array[:,:,:,0])
+            
+        else:
+               
+            r=renderbm(self.geo_array[:,:,:,0])
+        
+        r.initiate_plot(self.averagereward)
+        r.plotx(20,0,0)    
         
   
 

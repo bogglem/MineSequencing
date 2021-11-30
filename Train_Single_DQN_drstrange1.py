@@ -34,12 +34,12 @@ from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import DQN
-from tools.FuzzySingle3DBMenv import environment
+from tools.SingleBMenv import environment
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
 #idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
-idx=9
+idx=10
 
 #prepare input parameters
 inputarray=pd.read_csv('jobarrays/Fuzzy_drstrange_job_input.csv')
@@ -80,7 +80,8 @@ end=start+runtime
 episodetimesteps=round(x*y*z*turnspc)
 
 #prepare file naming strings
-LR_s=str(LR).split('.')[1]
+
+LR_s=str("{:f}".format(LR)).split('.')[1]
 inputfile_s='Fuzzy_%s_%s_%s' % (x,y,z)
 gamma_s=str(gamma).replace('.','_')
 #cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
@@ -144,7 +145,7 @@ if __name__ == '__main__':
     #num_cpu = ncpu # Number of processes to use
     # Create the vectorized environment
     #env = environment(x,y,z,0.95, 0.05, savepath, 'MlpPolicy', rg_prob='loadenv')
-    env = environment(x, y, z, gamma, turnspc, savepath, policyname, rg_prob='loadenv')#SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
+    env = environment(x, y, z, gamma, turnspc, policyname, rg_prob='loadenv')#SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
     #eval_env=environment(x, y, z, gamma, turnspc, savepath, policyname, rg_prob='loadenv')
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
@@ -153,22 +154,22 @@ if __name__ == '__main__':
     
     #create callbacks to record data, initiate events during training.
     callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(env, log_path=savepath, n_eval_episodes=1
-                                                                         ,eval_freq=2000, deterministic=True, best_model_save_path=savepath)])
+                                                                         ,eval_freq=10000, deterministic=True, best_model_save_path=savepath)])
     
     if (os.path.exists("%s/best_model.zip" % savepath)):
         # Instantiate the agent
-        model = DQN('MlpPolicy', env, learning_rate=LR, prioritized_replay=True, verbose=1)
+        model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, buffer_size=5000, prioritized_replay=True, verbose=1)
         # Load the trained agent
         model = DQN.load("%s/best_model" % savepath, env=env)
         print('loaded agent')
-        model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
+        model.learn(total_timesteps=episodetimesteps*50000, callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
         
         
     else:
         #create model with Stable Baselines package.
-        model = DQN('MlpPolicy', env, learning_rate=LR, prioritized_replay=True, verbose=1)#, tensorboard_log=scenario)
+        model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, buffer_size=5000, prioritized_replay=True, verbose=1)# tensorboard_log=scenario)
         #model = ACER.load("%s/best_model" % savepath, env)
-        model.learn(total_timesteps=episodetimesteps**50,  callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
+        model.learn(total_timesteps=episodetimesteps*50000,  callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
             
     
     #create learning curve plot
