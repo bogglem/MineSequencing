@@ -4,3 +4,4 @@ tools/__pycache__/
 environments/
 __pycache__/
 tools\__pycache__/
+*.pyc
