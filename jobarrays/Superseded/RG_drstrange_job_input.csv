@@ -1,2 +1,7 @@
-LR,gamma,batch_size,runtime,cutoffpenaltyscalar,rg_prob,turnspc,trialv
-0.0001,0.99,64,14400,1,0.05,0.6,rg_trial
+x,y,z,policyname,LR,gamma,batch_size,runtime,turnspc,trialv
+20,20,6,MlpPolicy,0.0001,0.95,N/A,36000,0.06,comp
+20,20,6,MlpPolicy,0.0001,1,N/A,36000,0.06,comp
+16,16,6,MlpPolicy,0.001,1,N/A,72000,0.06,notruth
+16,16,6,MlpPolicy,0.001,0.95,N/A,72000,0.06,truth
+16,16,6,MlpPolicy,0.001,0.95,N/A,72000,0.06,notruth
+10,10,4,MlpPolicy,0.001,0.95,N/A,300,0.06,10x10x4
