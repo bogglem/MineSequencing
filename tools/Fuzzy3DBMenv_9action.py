@@ -391,7 +391,7 @@ class environment(gym.Env):
             
         elif action==4:
             #mine current block
-            self.turncounter+=1
+            
             selected_block=self.select_block()
             isMinable=self.isMinable(selected_block)
             isEfficient=self.isEfficient(selected_block)
@@ -492,8 +492,7 @@ class environment(gym.Env):
         
         return abandonreward
     
-    
-    
+
     def equip_failure(self):
         #x=self.turncounter
         #prob_fail= #1-np.exp(-x*0.00001)
@@ -511,6 +510,7 @@ class environment(gym.Env):
         # if (random.random()<0.00001): #every 10 000 steps randomly save environment 
         #     self.maxloadid+=1
         #     self.save_multi_env()
+        self.turncounter+=1
         
         if sum(sum(sum(self.ob_sample[:,:,:,1])))>=self.ob_sample[:,:,:,1].size: #if all blocks are mined, end episode
             self.terminal=True

@@ -392,7 +392,7 @@ class environment(gym.Env):
             
         elif action==4:
             #mine current block
-            self.turncounter+=1
+
             selected_block=self.select_block()
             isMinable=self.isMinable(selected_block)
             isEfficient=self.isEfficient(selected_block)
@@ -509,6 +509,7 @@ class environment(gym.Env):
         
         info={} #required for gym.Env class output
         self.reward=0 #standard reward = 0. is overwritten when blocks are mined by action 4.
+        self.turncounter+=1
         # if (random.random()<0.00001): #every 10 000 steps randomly save environment 
         #     self.maxloadid+=1
         #     self.save_multi_env()

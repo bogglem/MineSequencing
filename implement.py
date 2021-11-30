@@ -26,16 +26,16 @@ from stable_baselines import ACER
 from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.policies import CnnPolicy
 from stable_baselines.common.evaluation import evaluate_policy
-from tools.RG3DBMenv import environment
 #from tools.RG3DBMenv import environment
+from tools.Fuzzy3DBMenv_9action import environment
 
 # Create environment
-x=16
-y=16
+x=20
+y=20
 z=6
 batch_size=64
 LR=0.001
-gamma=0.95
+gamma=0.8
 turnspc=0.06
 episodetimesteps=round(x*y*z*turnspc)
 
@@ -51,11 +51,11 @@ elif policyname =='MlpPolicy':
     policy=MlpPolicy
     test='MLPACER'
 
-trialv='truth'
+trialv='9act_fuzz'
 
 #prepare file naming strings
 LR_s=str(LR).split('.')[1]
-inputfile_s='RG_%s_%s_%s' % (x,y,z)
+inputfile_s='Fuzzy_%s_%s_%s' % (x,y,z)
 gamma_s=str(gamma).replace('.','_')
 #cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
 #rg_s=max(str(float(rg_prob)).split('.'))
@@ -72,7 +72,7 @@ env = environment(x,y,z,gamma, turnspc, savepath, policyname)
 model = ACER(policy, env, gamma=gamma, learning_rate=LR,n_steps=episodetimesteps,   verbose=1)
 #
 # Load the trained agent
-model = ACER.load("%s/best_model" % savepath)
+model = ACER.load("%s/final_model" % savepath)
 print('loaded agent %s' % savepath)
 
 # Evaluate the agent

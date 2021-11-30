@@ -1,5 +1,5 @@
 x,y,z,policyname,LR,gamma,batch_size,runtime,turnspc,trialv,ncpu
-20,20,6,MlpPolicy,0.001,0.8,N/A,36000,0.05,9act_fuzz,1
+20,20,6,MlpPolicy,0.001,0.995,N/A,3600,0.3,9act_fuzz,1
 20,20,6,MlpPolicy,0.001,0.9,N/A,36000,0.05,9act_fuzz,1
 20,20,6,MlpPolicy,0.001,0.95,N/A,36000,0.05,9act_fuzz,1
 20,20,6,MlpPolicy,0.001,1,N/A,36000,0.05,9act_fuzz,1
