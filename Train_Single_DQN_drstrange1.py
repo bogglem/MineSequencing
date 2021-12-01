@@ -34,7 +34,7 @@ from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import DQN
-from tools.SingleBMenv import environment
+from tools.SingleBMenv_dqn import environment
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
@@ -82,13 +82,13 @@ episodetimesteps=round(x*y*z*turnspc)
 #prepare file naming strings
 
 LR_s=str("{:f}".format(LR)).split('.')[1]
-inputfile_s='Fuzzy_%s_%s_%s' % (x,y,z)
+inputfile_s='%s_%s_%s' % (x,y,z)
 gamma_s=str(gamma).replace('.','_')
 #cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
 #rg_s=rg_prob #max(str(float(rg_prob)).split('.'))
 turnspc_s=str(turnspc).split('.')[1]
 storagefolder='output'
-scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}_{trialv}')    
+scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}')    
 savepath='./%s/%s' % (storagefolder ,scenario)
 #savepath='%s/environment' % (savepath)
 
@@ -158,7 +158,7 @@ if __name__ == '__main__':
     
     if (os.path.exists("%s/best_model.zip" % savepath)):
         # Instantiate the agent
-        model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, buffer_size=5000, prioritized_replay=True, verbose=1)
+        model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, buffer_size=15000, prioritized_replay=True, verbose=1)
         # Load the trained agent
         model = DQN.load("%s/best_model" % savepath, env=env)
         print('loaded agent')
@@ -167,7 +167,7 @@ if __name__ == '__main__':
         
     else:
         #create model with Stable Baselines package.
-        model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, buffer_size=5000, prioritized_replay=True, verbose=1)# tensorboard_log=scenario)
+        model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, buffer_size=15000, prioritized_replay=True, verbose=1)# tensorboard_log=scenario)
         #model = ACER.load("%s/best_model" % savepath, env)
         model.learn(total_timesteps=episodetimesteps*50000,  callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
             

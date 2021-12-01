@@ -20,13 +20,13 @@ from tools.createmodel import automodel
 
 class environment(gym.Env):
     
-    def __init__(self, x,y,z ,gamma, turnspc, policy, rg_prob='rg', rendermode='off'):
+    def __init__(self, x,y,z ,gamma, turnspc, policy, rg_prob='loadenv', rendermode='off'):
         
         self.rendermode=rendermode # on/off display block model in matplotlib
        # self.cutoffpenaltyscalar=penaltyscalar #scaling parameter for changing the penalty for taking no action (cutoff).
         self.rg_prob=rg_prob #rg for randomly generated, loadenv for loading premade envionments
-        #self.savepath=savepath
-        envpath='./environments'
+       # self.savepath=savepath
+        envpath='./environments/single'
         self.savedgeo='%s/geology' % envpath
         # self.savedtruth='%s/truth' % envpath
         self.savedenv='%s/environment' % envpath
@@ -53,6 +53,7 @@ class environment(gym.Env):
         self.mined=-1
         self.callnumber=1
         self.savenumber=0
+
         try:
             self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
         except:
@@ -100,27 +101,26 @@ class environment(gym.Env):
             
                     
         #self.init_cutoffpenalty=self.cutoffpenalty() #experimental parameter function. penalises agent for not mining (do nothing), reward for taking action.
-       
-
 
     def save_multi_env(self):
-    
+
         #create dir        
-        if (os.path.exists('./environments')!=True):
-            os.mkdir('./environments')
+        #create dir        
+        if (os.path.exists('./environments/single')!=True):
+            os.mkdir('./environments/single')
         if (os.path.exists('%s' %self.savedgeo)!=True):
             os.mkdir('%s' %self.savedgeo)
-        if (os.path.exists('%s' %self.savedtruth)!=True):
-            os.mkdir('%s' %self.savedtruth)
+        # if (os.path.exists('%s' %self.savedtruth)!=True):
+        #     os.mkdir('%s' %self.savedtruth)
         if (os.path.exists('%s' %self.savedenv)!=True):
             os.mkdir('%s' %self.savedenv)
         if (os.path.exists('%s' %self.saveddepdic)!=True):
             os.mkdir('%s' %self.saveddepdic)
         if (os.path.exists('%s' %self.savedeffdic)!=True):
-            os.mkdir('%s' %self.savedeffdic)         
+            os.mkdir('%s' %self.savedeffdic)        
         
         self.savenumber=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])+1
-        
+      
         
         #save geo array   
         if (os.path.exists(self.savedgeo)):
@@ -460,7 +460,7 @@ class environment(gym.Env):
             self.update(selected_block)
             self.turncounter+=1
             self.renderif(self.rendermode)
-            self.equip_failure() #terminates episode based on random failure of equipment
+            #self.equip_failure() #terminates episode based on random failure of equipment
             
             
         if self.policy=='MlpPolicy':

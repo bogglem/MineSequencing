@@ -27,8 +27,8 @@ from stable_baselines import ACER
 from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.policies import CnnPolicy
 from stable_baselines.common.evaluation import evaluate_policy
-from tools.FuzzySingle3DBMenv import environment
-#from tools.Fuzzy3DBMenv import environment
+from tools.SingleBMenv import environment
+#from tools.BMenv import environment
 #from tools.RG3DBMenv import environment
 #from tools.Fuzzy3DBMenv_9action import environment
 
@@ -37,8 +37,8 @@ x=20
 y=20
 z=6
 batch_size=64
-LR=0.001
-gamma=0.95
+LR=0.00001
+gamma=0.98
 turnspc=0.06
 episodetimesteps=round(x*y*z*turnspc)
 
@@ -54,22 +54,22 @@ elif policyname =='MlpPolicy':
     policy=MlpPolicy
     test='MLPDQN'
 
-trialv='single'
+trialv='dqn'
 
 #prepare file naming strings
-LR_s=str(LR).split('.')[1]
-inputfile_s='Fuzzy_%s_%s_%s' % (x,y,z)
+LR_s=str("{:f}".format(LR)).split('.')[1]
+inputfile_s='%s_%s_%s' % (x,y,z)
 gamma_s=str(gamma).replace('.','_')
 #cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
 #rg_s=max(str(float(rg_prob)).split('.'))
 turnspc_s=str(turnspc).split('.')[1]
 
-scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}_{trialv}')  
+scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}')  
 savepath='./output/%s' % scenario
 
 turns=round(x*y*z*turnspc)
 
-env = environment(x,y,z,gamma, turnspc, savepath, policyname)
+env = environment(x,y,z,gamma, turnspc, policyname)
 
 # Instantiate the agent
 #model = ACER(policy, env, gamma=gamma, learning_rate=LR,n_steps=episodetimesteps,   verbose=1)
