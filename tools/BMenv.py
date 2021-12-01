@@ -460,7 +460,7 @@ class environment(gym.Env):
             self.update(selected_block)
             self.turncounter+=1
             self.renderif(self.rendermode)
-            self.equip_failure() #terminates episode based on random failure of equipment
+            #self.equip_failure() #terminates episode based on random failure of equipment
             
             
         if self.policy=='MlpPolicy':
