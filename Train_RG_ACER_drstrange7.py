@@ -33,33 +33,33 @@ from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
-from stable_baselines import DQN
-from tools.SingleBMenv_dqn import environment
+from stable_baselines import ACER
+from tools.Menv import environment
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '2'
+os.environ['CUDA_VISIBLE_DEVICES'] = '5'
 
 #idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
-idx=9
+idx=7
 
 #prepare input parameters
 inputarray=pd.read_csv('jobarrays/Fuzzy_drstrange_job_input.csv')
 
 #block model (environment) dimensions
-x=int(inputarray.loc[idx].x)
-y=int(inputarray.loc[idx].y)
-z=int(inputarray.loc[idx].z) #must be greater than 6 for CNN
+x=inputarray.loc[idx].x
+y=inputarray.loc[idx].y
+z=inputarray.loc[idx].z #must be greater than 6 for CNN
 
 policyname=inputarray.loc[idx].policyname  #change this name to change RL policy type (MlpPolicy/CnnPolicy)
 
 if policyname == 'CnnPolicy':
     
-    policy='CnnPolicy'
-    test='CNNDQN'
+    policy=CnnPolicy
+    test='CNNACER'
 
 elif policyname =='MlpPolicy':
 
-    policy='MlpPolicy'
-    test='MLPDQN'
+    policy=MlpPolicy
+    test='MLPACER'
 
 trialv=inputarray.loc[idx].trialv 
 #LR_critic=inputarray.loc[idx].LR_critic
@@ -80,7 +80,6 @@ end=start+runtime
 episodetimesteps=round(x*y*z*turnspc)
 
 #prepare file naming strings
-
 LR_s=str("{:f}".format(LR)).split('.')[1]
 inputfile_s='%s_%s_%s' % (x,y,z)
 gamma_s=str(gamma).replace('.','_')
@@ -113,63 +112,59 @@ class TimeLimit(BaseCallback):
     def _on_step(self) -> bool:
         if self.n_calls % self.check_freq == 0:
             if time.time()<end:
-                
                 self.incomplete = True
             else:
-                model.save("%s/final_model" % savepath)
                 self.incomplete = False
                         
         return self.incomplete
      
 
-# def make_env(x,y,z, rank, seed=0):
-#     """
-#     Utility function for multiprocessed env.
+def make_env(x,y,z, rank, seed=0):
+    """
+    Utility function for multiprocessed env.
 
-#     :param env_id: (str) the environment ID
-#     :param num_env: (int) the number of environments you wish to have in subprocesses
-#     :param seed: (int) the inital seed for RNG
-#     :param rank: (int) index of the subprocess
-#     """
-#     def _init():
+    :param env_id: (str) the environment ID
+    :param num_env: (int) the number of environments you wish to have in subprocesses
+    :param seed: (int) the inital seed for RNG
+    :param rank: (int) index of the subprocess
+    """
+    def _init():
         
-#         env = environment(x, y, z, gamma, turnspc, savepath, policyname)
-#         env.seed(seed + rank)
-#         return env
-#     set_global_seeds(seed)
-#     return _init
+        env = environment(x, y, z, gamma, turnspc, policyname)
+        env.seed(seed + rank)
+        return env
+    set_global_seeds(seed)
+    return _init
 
 
 if __name__ == '__main__':
 
-    #num_cpu = ncpu # Number of processes to use
+    num_cpu = ncpu  # Number of processes to use
     # Create the vectorized environment
-    #env = environment(x,y,z,0.95, 0.05, savepath, 'MlpPolicy', rg_prob='loadenv')
-    env = environment(x, y, z, gamma, turnspc, policyname, rg_prob='loadenv')#SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
-    #eval_env=environment(x, y, z, gamma, turnspc, savepath, policyname, rg_prob='loadenv')
+    env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
+    eval_env=environment(x, y, z, gamma, turnspc, policyname)
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
 
     
     #create callbacks to record data, initiate events during training.
-    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(env, log_path=savepath, n_eval_episodes=1
-                                                                         ,eval_freq=10000, deterministic=True, best_model_save_path=savepath)])
-    
+    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=savepath, n_eval_episodes=20, eval_freq=2000
+                                                                         , deterministic=False, best_model_save_path=savepath)])
     if (os.path.exists("%s/best_model.zip" % savepath)):
         # Instantiate the agent
-        model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, buffer_size=15000, prioritized_replay=True, verbose=1)
+        model = ACER(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  buffer_size=10000,  verbose=1)
         # Load the trained agent
-        model = DQN.load("%s/best_model" % savepath, env=env)
+        model = ACER.load("%s/best_model" % savepath, env=env)
         print('loaded agent')
-        model.learn(total_timesteps=episodetimesteps*50000, callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
+        model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
         
         
     else:
         #create model with Stable Baselines package.
-        model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, buffer_size=15000, prioritized_replay=True, verbose=1)# tensorboard_log=scenario)
+        model = ACER(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  buffer_size=10000,  verbose=1)#, tensorboard_log=scenario)
         #model = ACER.load("%s/best_model" % savepath, env)
-        model.learn(total_timesteps=episodetimesteps*50000,  callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
+        model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
             
     
     #create learning curve plot

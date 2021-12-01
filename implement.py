@@ -37,9 +37,9 @@ x=20
 y=20
 z=6
 batch_size=64
-LR=0.00001
-gamma=0.98
-turnspc=0.06
+LR=0.001
+gamma=0.995
+turnspc=0.1
 episodetimesteps=round(x*y*z*turnspc)
 
 policyname='MlpPolicy' #change this name to change RL policy type (MlpPolicy/CnnPolicy)
@@ -81,7 +81,7 @@ model = DQN.load("%s/best_model" % savepath)
 print('loaded agent %s' % savepath)
 
 # Evaluate the agent
-mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=20, deterministic=True)
+mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=20, deterministic=False)
 print('mean_reward = %s +/- %s' %(mean_reward,std_reward))
 
 # Enjoy trained agent
@@ -89,7 +89,7 @@ obs = env.reset()
 env.rendermode='on'
 cumreward=0
 for i in range(turns):
-    action, _states = model.predict(obs, deterministic=True)
+    action, _states = model.predict(obs, deterministic=False)
     obs, rewards, dones, info = env.step(action)
     cumreward+=rewards
     print(action, rewards, dones, cumreward)
