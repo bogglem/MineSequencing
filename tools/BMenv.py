@@ -110,8 +110,8 @@ class environment(gym.Env):
             os.mkdir('./environments')
         if (os.path.exists('%s' %self.savedgeo)!=True):
             os.mkdir('%s' %self.savedgeo)
-        if (os.path.exists('%s' %self.savedtruth)!=True):
-            os.mkdir('%s' %self.savedtruth)
+        # if (os.path.exists('%s' %self.savedtruth)!=True):
+        #     os.mkdir('%s' %self.savedtruth)
         if (os.path.exists('%s' %self.savedenv)!=True):
             os.mkdir('%s' %self.savedenv)
         if (os.path.exists('%s' %self.saveddepdic)!=True):

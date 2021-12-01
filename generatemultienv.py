@@ -10,7 +10,7 @@ import gym
 import numpy as np
 import sys
 import pandas as pd
-from tools.Fuzzy3DBMenv import environment
+from tools.BMenv import environment
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '3'
 
@@ -50,18 +50,18 @@ episodetimesteps=round(x*y*z*turnspc)
 
 #prepare file naming strings
 LR_s=str(LR).split('.')[1]
-inputfile_s='Fuzzy_%s_%s_%s' % (x,y,z)
+inputfile_s='%s_%s_%s' % (x,y,z)
 gamma_s=str(gamma).split('.')[1]
 #cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
 #rg_s=max(str(float(rg_prob)).split('.'))
 turnspc_s=str(turnspc).split('.')[1]
 storagefolder='environments/test'
-scenario=str(f'{inputfile_s}_t{test}_lr{LR_s}_{policyname}_{trialv}')
+scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_{policyname}')
 savepath='./%s' % (storagefolder)
 #savepath='%s/environment' % (savepath)
 
 
-env = environment(x,y,z,gamma, turnspc, savepath, policyname)
+env = environment(x,y,z,gamma, turnspc, policyname)
 
 
 for i in range(18):
