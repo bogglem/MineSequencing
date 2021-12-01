@@ -34,7 +34,7 @@ from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import ACER
-from tools.BMenv import environment
+from tools.loadBMenv import environment
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '5'
 
