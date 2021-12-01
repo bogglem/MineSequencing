@@ -102,7 +102,7 @@ class environment(gym.Env):
                     
         #self.init_cutoffpenalty=self.cutoffpenalty() #experimental parameter function. penalises agent for not mining (do nothing), reward for taking action.
 
-    def save_multi_env(self):
+    def save(self):
 
         #create dir        
         #create dir        
@@ -171,7 +171,7 @@ class environment(gym.Env):
         
     
         
-    def load_multi_env(self, loadid):
+    def load(self, loadid):
         
         try:
             #self.geo_array=np.load("%s.npy"% self.savedenv)
@@ -215,7 +215,7 @@ class environment(gym.Env):
         #builds block model and mining sequence constraints dictionary (eg. top must be mined first)         
         if (self.rg_prob=='loadenv'):# and self.maxloadid>0: 
             loadid = round(random.random()*self.maxloadid)      
-            self.load_multi_env(loadid)
+            self.load(loadid)
         
         else:
             #self.geo_array, self.truth_array=self.model.buildmodel()
@@ -223,36 +223,36 @@ class environment(gym.Env):
             #self.save_env(self.savedenv,self.geo_array)
         
             
-        scaler=MinMaxScaler()
-        H2O_init=self.geo_array[:,:,:,0]
-       # Tonnes_init=self.geo_array[:,:,:,1]
-        State_init=self.geo_array[:,:,:,1]
-       # SDev_init=self.geo_array[:,:,:,2]
-        
-        H2O_reshaped=H2O_init.reshape([-1,1])
-        #Tonnes_reshaped=Tonnes_init.reshape([-1,1])
-        State_reshaped=State_init.reshape([-1,1])
-        #SDev_reshaped=SDev_init.reshape([-1,1])
-        
-        H2O_scaled=scaler.fit_transform(H2O_reshaped)
-        #SDev_scaled=scaler.fit_transform(SDev_reshaped)
-        
-        a=H2O_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
-        b=State_reshaped.reshape([self.Ilen, self.Jlen, self.RLlen,1])
-        #c=SDev_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
-        
-        self.averagereward=np.average(self.geo_array[:,:,:,0])
-         
-        self.norm=np.append(a, b, axis=3)
-       # self.norm=np.append(self.norm,c, axis=3)
-        
-        
-        self.ob_sample=deepcopy(self.norm)
-        self.construct_dep_dic()
-        self.dep_dic=deepcopy(self.dep_dic_init)
-        self.construct_eff_dic()
-        self.eff_dic=deepcopy(self.eff_dic_init)
-        
+            scaler=MinMaxScaler()
+            H2O_init=self.geo_array[:,:,:,0]
+           # Tonnes_init=self.geo_array[:,:,:,1]
+            State_init=self.geo_array[:,:,:,1]
+           # SDev_init=self.geo_array[:,:,:,2]
+            
+            H2O_reshaped=H2O_init.reshape([-1,1])
+            #Tonnes_reshaped=Tonnes_init.reshape([-1,1])
+            State_reshaped=State_init.reshape([-1,1])
+            #SDev_reshaped=SDev_init.reshape([-1,1])
+            
+            H2O_scaled=scaler.fit_transform(H2O_reshaped)
+            #SDev_scaled=scaler.fit_transform(SDev_reshaped)
+            
+            a=H2O_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
+            b=State_reshaped.reshape([self.Ilen, self.Jlen, self.RLlen,1])
+            #c=SDev_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
+            
+            self.averagereward=np.average(self.geo_array[:,:,:,0])
+             
+            self.norm=np.append(a, b, axis=3)
+           # self.norm=np.append(self.norm,c, axis=3)
+            
+            
+            self.ob_sample=deepcopy(self.norm)
+            self.construct_dep_dic()
+            self.dep_dic=deepcopy(self.dep_dic_init)
+            self.construct_eff_dic()
+            self.eff_dic=deepcopy(self.eff_dic_init)
+            
         #construct_dependencies blocks with zeros padding to avoid errors around environment edges.
         self.construct_block_dic()
         self.block_dic=deepcopy(self.block_dic_init) #deepcopy so dictionary doesnt have to be rebuilt for every new environment.
@@ -434,7 +434,7 @@ class environment(gym.Env):
        
         # if (random.random()<0.00001): #every 10 000 steps randomly save environment 
         #     self.maxloadid+=1
-        #     self.save_multi_env()
+        #     self.save()
         
         if sum(sum(sum(self.ob_sample[:,:,:,1])))>=self.ob_sample[:,:,:,1].size: #if all blocks are mined, end episode
             self.terminal=True
@@ -508,7 +508,7 @@ class environment(gym.Env):
         #start new episode.
             
         # loadid = int(np.ceil(random.random()*self.maxloadid))
-        # self.load_multi_env(loadid)
+        # self.load(loadid)
         
         #else:
         self.build()

@@ -20,7 +20,7 @@ import logging
 tf.get_logger().setLevel(logging.ERROR)
 
 import gym
-
+import random
 from stable_baselines import ACER
 from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.policies import CnnPolicy
@@ -35,6 +35,7 @@ batch_size=64
 LR=0.001
 gamma=0.95
 turnspc=0.1
+episodetimesteps=round(x*y*z*turnspc)
 
 policyname='MlpPolicy' #change this name to change RL policy type (MlpPolicy/CnnPolicy)
 
@@ -62,13 +63,14 @@ scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}')
 savepath='./output/%s' % scenario
 
 
-turns=round(x*y*z*turnspc)
 
-for n in range(10):
-    env = environment(x,y,z,gamma, turnspc, policyname)
+
+for n in range(1000):
+    turns=round(random.random()*x*y*z*turnspc)
+    env = environment(x,y,z,gamma, turnspc, policyname, rg_prob='loadenv')
     
     # Instantiate the agent
-    model = ACER(policy, env, gamma=gamma, n_steps=batch_size, learning_rate=LR,  verbose=1)
+    model = ACER(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  buffer_size=10000,  verbose=1)
     
     # Load the trained agent
     model = ACER.load("%s/best_model" % savepath)
@@ -84,7 +86,7 @@ for n in range(10):
         #print(action, rewards, dones)
         #env.renderif('on')
         if dones == True:
-                   
             break
-        
-    env.save_multi_env()
+    env.save()
+    #env.render()
+    

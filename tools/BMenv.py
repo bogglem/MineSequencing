@@ -103,7 +103,7 @@ class environment(gym.Env):
        
 
 
-    def save_multi_env(self):
+    def save(self):
     
         #create dir        
         if (os.path.exists('./environments')!=True):
@@ -121,57 +121,22 @@ class environment(gym.Env):
         
         self.savenumber=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])+1
         
-        
         #save geo array   
-        if (os.path.exists(self.savedgeo)):
-            np.save("%s/%s_geo_array"% (self.savedgeo, self.savenumber), self.geo_array)
-          
-        
-        elif (os.path.exists(self.savedgeo)!=True):
-            os.mkdir(self.savedgeo)
-            np.save("%s/%s_geo_array"% (self.savedgeo, self.savenumber), self.geo_array)
-        
+        np.save("%s/%s_geo_array"% (self.savedgeo, self.savenumber), self.geo_array)
+                  
         #save normalised ob_sample       
-        if (os.path.exists(self.savedenv)):
-            np.save("%s/%s_ob_sample"% (self.savedenv, self.savenumber), self.ob_sample)
-          
-        
-        elif (os.path.exists(self.savedenv)!=True):
-            os.mkdir(self.savedenv)
-            np.save("%s/%s_ob_sample"% (self.savedenv, self.savenumber), self.ob_sample)     
-   
-        # #save truth_array       
-        # if (os.path.exists(self.savedtruth)):
-        #     np.save("%s/%s_truth_array"% (self.savedtruth, self.savenumber), self.truth_array)
-          
-        
-        # elif (os.path.exists(self.savedtruth)!=True):
-        #     os.mkdir(self.savedtruth)
-        #     np.save("%s/%s_truth_array"% (self.savedtruth, self.savenumber), self.truth_array)            
-      
-        
+        np.save("%s/%s_ob_sample"% (self.savedenv, self.savenumber), self.ob_sample)
+                
         #save dep_dic  
-        if (os.path.exists(self.saveddepdic)):
-            np.save("%s/%s_dep_dic"% (self.saveddepdic, self.savenumber), self.dep_dic)
+        np.save("%s/%s_dep_dic"% (self.saveddepdic, self.savenumber), self.dep_dic)
+
+        #save eff_dic   
+        np.save("%s/%s_eff_dic"% (self.savedeffdic, self.savenumber), self.eff_dic)
           
-        
-        elif (os.path.exists(self.saveddepdic)!=True):
-            os.mkdir(self.saveddepdic)
-            np.save("%s/%s_dep_dic"% (self.saveddepdic, self.savenumber), self.dep_dic)
-        
-        
-         #save eff_dic   
-        if (os.path.exists(self.savedeffdic)):
-            np.save("%s/%s_eff_dic"% (self.savedeffdic, self.savenumber), self.eff_dic)
-          
-        
-        elif (os.path.exists(self.savedeffdic)!=True):
-            os.mkdir(self.savedeffdic)
-            np.save("%s/%s_eff_dic"% (self.savedeffdic, self.savenumber), self.eff_dic)   
         
     
         
-    def load_multi_env(self, loadid):
+    def load(self, loadid):
         
         try:
             #self.geo_array=np.load("%s.npy"% self.savedenv)
@@ -215,47 +180,48 @@ class environment(gym.Env):
         #builds block model and mining sequence constraints dictionary (eg. top must be mined first)         
         if (self.rg_prob=='loadenv'):# and self.maxloadid>0: 
             loadid = round(random.random()*self.maxloadid)      
-            self.load_multi_env(loadid)
+            self.load(loadid)
         
         else:
             #self.geo_array, self.truth_array=self.model.buildmodel()
             self.geo_array=self.model.buildmodel()
             #self.save_env(self.savedenv,self.geo_array)
         
+                
+            scaler=MinMaxScaler()
+            H2O_init=self.geo_array[:,:,:,0]
+           # Tonnes_init=self.geo_array[:,:,:,1]
+            State_init=self.geo_array[:,:,:,1]
+           # SDev_init=self.geo_array[:,:,:,2]
             
-        scaler=MinMaxScaler()
-        H2O_init=self.geo_array[:,:,:,0]
-       # Tonnes_init=self.geo_array[:,:,:,1]
-        State_init=self.geo_array[:,:,:,1]
-       # SDev_init=self.geo_array[:,:,:,2]
-        
-        H2O_reshaped=H2O_init.reshape([-1,1])
-        #Tonnes_reshaped=Tonnes_init.reshape([-1,1])
-        State_reshaped=State_init.reshape([-1,1])
-        #SDev_reshaped=SDev_init.reshape([-1,1])
-        
-        H2O_scaled=scaler.fit_transform(H2O_reshaped)
-        #SDev_scaled=scaler.fit_transform(SDev_reshaped)
-        
-        a=H2O_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
-        b=State_reshaped.reshape([self.Ilen, self.Jlen, self.RLlen,1])
-        #c=SDev_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
-        
-        self.averagereward=np.average(self.geo_array[:,:,:,0])
-         
-        self.norm=np.append(a, b, axis=3)
-       # self.norm=np.append(self.norm,c, axis=3)
-        
-        
-        self.ob_sample=deepcopy(self.norm)
-        self.construct_dep_dic()
-        self.dep_dic=deepcopy(self.dep_dic_init)
-        self.construct_eff_dic()
-        self.eff_dic=deepcopy(self.eff_dic_init)
-        
+            H2O_reshaped=H2O_init.reshape([-1,1])
+            #Tonnes_reshaped=Tonnes_init.reshape([-1,1])
+            State_reshaped=State_init.reshape([-1,1])
+            #SDev_reshaped=SDev_init.reshape([-1,1])
+            
+            H2O_scaled=scaler.fit_transform(H2O_reshaped)
+            #SDev_scaled=scaler.fit_transform(SDev_reshaped)
+            
+            a=H2O_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
+            b=State_reshaped.reshape([self.Ilen, self.Jlen, self.RLlen,1])
+            #c=SDev_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
+            
+            self.averagereward=np.average(self.geo_array[:,:,:,0])
+             
+            self.norm=np.append(a, b, axis=3)
+           # self.norm=np.append(self.norm,c, axis=3)
+            
+            
+            self.ob_sample=deepcopy(self.norm)
+            self.construct_dep_dic()
+            self.dep_dic=deepcopy(self.dep_dic_init)
+            self.construct_eff_dic()
+            self.eff_dic=deepcopy(self.eff_dic_init)
+            
         #construct_dependencies blocks with zeros padding to avoid errors around environment edges.
         self.construct_block_dic()
         self.block_dic=deepcopy(self.block_dic_init) #deepcopy so dictionary doesnt have to be rebuilt for every new environment.
+        
         self.render_update = self.geo_array[:,:,:,0] #provides data sliced for render function
         self.bm=renderbm(self.render_update)
 
@@ -434,7 +400,7 @@ class environment(gym.Env):
        
         # if (random.random()<0.00001): #every 10 000 steps randomly save environment 
         #     self.maxloadid+=1
-        #     self.save_multi_env()
+        #     self.save()
         
         if sum(sum(sum(self.ob_sample[:,:,:,1])))>=self.ob_sample[:,:,:,1].size: #if all blocks are mined, end episode
             self.terminal=True
@@ -508,7 +474,7 @@ class environment(gym.Env):
         #start new episode.
             
         # loadid = int(np.ceil(random.random()*self.maxloadid))
-        # self.load_multi_env(loadid)
+        # self.load(loadid)
         
         #else:
         self.build()
@@ -553,20 +519,15 @@ class environment(gym.Env):
                  self.bm.plot()
         pass
    
-    def render(self):      
-    
-        #create 3D plot
+    def render(self, mined='mined'):      
+        # input any text to plot without nmined blocks
+
+        self.bm.initiate_plot(self.averagereward)
         
-        # if geotruth=='truth':
-       
-        #     r=renderbm(self.truth_array[:,:,:,0])
-            
-        # else:
-               
-        r=renderbm(self.geo_array[:,:,:,0])
+        if mined=='mined':
+            self.bm.update_all_mined(self.ob_sample)
         
-        r.initiate_plot(self.averagereward)
-        r.plot()
+        self.bm.plot()
 
     def renderx(self):      
     

@@ -77,7 +77,25 @@ class renderbm():
         if exploded_z>0:
             self.facecolours[exploded_x,exploded_y,0:exploded_z-1] = [0.5,0.5,0.5,0] #hide previously mined blocks above
         
+    def update_all_mined(self, ob_sample):
         
+        Ilen=ob_sample.shape[0]
+        Jlen=ob_sample.shape[1]
+        RLlen=ob_sample.shape[2]
+        
+        for i in range(Ilen):
+            for j in range(Jlen):
+                for k in range(RLlen):
+                    if ob_sample[i,j,k,1]==1:
+                        #minedarr=explode(self.bm)
+                        exploded_x,exploded_y,exploded_z = self.translate_to_exploded(i,j,k)
+                        
+                        self.facecolours[exploded_x,exploded_y,exploded_z] = [0.5,0.5,0.5,1]
+                        
+                        if exploded_z>0:
+                            self.facecolours[exploded_x,exploded_y,0:exploded_z-1] = [0.5,0.5,0.5,0] #hide previously mined blocks above
+            
+
 
     def initiate_plot(self, averagereward):   
 
