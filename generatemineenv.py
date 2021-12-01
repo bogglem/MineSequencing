@@ -27,6 +27,8 @@ from stable_baselines.common.policies import CnnPolicy
 from stable_baselines.common.evaluation import evaluate_policy
 from tools.BMenv import environment
 
+os.environ['CUDA_VISIBLE_DEVICES'] = '3'
+
 # Create environment
 x=20
 y=20
