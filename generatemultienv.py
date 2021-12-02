@@ -64,7 +64,7 @@ savepath='./%s' % (storagefolder)
 env = environment(x,y,z,gamma, turnspc, policyname)
 
 
-for i in range(2000):
+for i in range(500):
  
     env.build()
     env.save()

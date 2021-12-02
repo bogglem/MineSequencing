@@ -67,7 +67,7 @@ savepath='./output/%s' % scenario
 
 
 
-for n in range(2000):
+for n in range(500):
     turns=round(random.random()*x*y*z*turnspc)
     env = environment(x,y,z,gamma, turnspc, policyname, rg_prob='loadenv')
     
