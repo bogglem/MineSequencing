@@ -38,11 +38,11 @@ from tools.loadBMenv import environment
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '5'
 
-#idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
-idx=6
+idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
+#idx=6
 
 #prepare input parameters
-inputarray=pd.read_csv('jobarrays/Fuzzy_drstrange_job_input.csv')
+inputarray=pd.read_csv('jobarrays/loadenv_katana_job_input.csv')
 
 #block model (environment) dimensions
 x=inputarray.loc[idx].x
@@ -149,7 +149,7 @@ if __name__ == '__main__':
 
     
     #create callbacks to record data, initiate events during training.
-    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=savepath, n_eval_episodes=20, eval_freq=2000
+    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=savepath, n_eval_episodes=20, eval_freq=10000
                                                                          , deterministic=False, best_model_save_path=savepath)])
     if (os.path.exists("%s/best_model.zip" % savepath)):
         # Instantiate the agent
