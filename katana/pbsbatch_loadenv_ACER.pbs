@@ -16,4 +16,4 @@ cd /home/z3333990/
 source tf1.14env/bin/activate
 
 cd /home/z3333990/MineSequencing
-python3 Train_Fuzzy_ACER_katana.py ${PBS_ARRAY_INDEX}
+python3 Train_loadenv_ACER_katana.py ${PBS_ARRAY_INDEX}

@@ -154,7 +154,7 @@ if __name__ == '__main__':
     
     #create callbacks to record data, initiate events during training.
     callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(env, log_path=savepath, n_eval_episodes=1
-                                                                         ,eval_freq=10000, deterministic=True, best_model_save_path=savepath)])
+                                                                         ,eval_freq=10000, deterministic=False, best_model_save_path=savepath)])
     
     if (os.path.exists("%s/best_model.zip" % savepath)):
         # Instantiate the agent
