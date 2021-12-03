@@ -27,7 +27,7 @@ from stable_baselines import ACER
 from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.policies import CnnPolicy
 from stable_baselines.common.evaluation import evaluate_policy
-from tools.SingleBMenv import environment
+from tools.BMenv import environment
 #from tools.BMenv import environment
 #from tools.RG3DBMenv import environment
 #from tools.Fuzzy3DBMenv_9action import environment
@@ -37,9 +37,9 @@ x=20
 y=20
 z=6
 batch_size=64
-LR=0.001
-gamma=0.995
-turnspc=0.1
+LR=0.0001
+gamma=0.99
+turnspc=0.05
 episodetimesteps=round(x*y*z*turnspc)
 
 policyname='MlpPolicy' #change this name to change RL policy type (MlpPolicy/CnnPolicy)
@@ -52,9 +52,9 @@ if policyname == 'CnnPolicy':
 elif policyname =='MlpPolicy':
 
     policy=MlpPolicy
-    test='MLPDQN'
+    test='MLPACER'
 
-trialv='dqn'
+trialv='loadenv05'
 
 #prepare file naming strings
 LR_s=str("{:f}".format(LR)).split('.')[1]
@@ -72,12 +72,12 @@ turns=round(x*y*z*turnspc)
 env = environment(x,y,z,gamma, turnspc, policyname)
 
 # Instantiate the agent
-#model = ACER(policy, env, gamma=gamma, learning_rate=LR,n_steps=episodetimesteps,   verbose=1)
-model = DQN('MlpPolicy', env, learning_rate=LR, prioritized_replay=True, verbose=1)
+model = ACER(policy, env, gamma=gamma, learning_rate=LR,n_steps=episodetimesteps,   verbose=1)
+#model = DQN('MlpPolicy', env, learning_rate=LR, prioritized_replay=True, verbose=1)
 #
 # Load the trained agent
-#model = ACER.load("%s/best_model" % savepath)
-model = DQN.load("%s/best_model" % savepath)
+model = ACER.load("%s/best_model" % savepath)
+#model = DQN.load("%s/best_model" % savepath)
 print('loaded agent %s' % savepath)
 
 # Evaluate the agent
