@@ -147,9 +147,9 @@ class environment(gym.Env):
         #     np.save("%s/%s_truth_array"% (self.savedtruth, self.savenumber), self.truth_array)
           
         
-        elif (os.path.exists(self.savedtruth)!=True):
-            os.mkdir(self.savedtruth)
-            np.save("%s/%s_truth_array"% (self.savedtruth, self.savenumber), self.truth_array)            
+        # elif (os.path.exists(self.savedtruth)!=True):
+        #     os.mkdir(self.savedtruth)
+        #     np.save("%s/%s_truth_array"% (self.savedtruth, self.savenumber), self.truth_array)            
       
         
         #save dep_dic  
@@ -179,14 +179,14 @@ class environment(gym.Env):
             #self.geo_array=np.load("%s.npy"% self.savedenv)
             self.geo_array=np.load("%s/%s_geo_array.npy"% (self.savedgeo, loadid))
             self.ob_sample=np.load("%s/%s_ob_sample.npy"% (self.savedenv, loadid))
-            self.truth_array=np.load("%s/%s_truth_array.npy"% (self.savedtruth, loadid))
+            #self.truth_array=np.load("%s/%s_truth_array.npy"% (self.savedtruth, loadid))
             self.dep_dic=np.load("%s/%s_dep_dic.npy"% (self.saveddepdic, loadid), allow_pickle='True').flat[0]
             self.eff_dic=np.load("%s/%s_eff_dic.npy"% (self.savedeffdic, loadid), allow_pickle='True').flat[0]
         
         except:
             self.geo_array=np.load("%s/%s_geo_array.npy"% (self.savedgeo, loadid+1))
             self.ob_sample=np.load("%s/%s_ob_sample.npy"% (self.savedenv, loadid+1))
-            self.truth_array=np.load("%s/%s_truth_array.npy"% (self.savedtruth, loadid+1))
+           # self.truth_array=np.load("%s/%s_truth_array.npy"% (self.savedtruth, loadid+1))
             self.dep_dic=np.load("%s/%s_dep_dic.npy"% (self.saveddepdic, loadid+1), allow_pickle='True').flat[0]
             self.eff_dic=np.load("%s/%s_eff_dic.npy"% (self.savedeffdic, loadid+1), allow_pickle='True').flat[0]            
 
@@ -619,35 +619,30 @@ class environment(gym.Env):
             self.bm.plot()
 
    
-    def render(self, geotruth):      
-    
-        #create 3D plot
-        
-        if geotruth=='truth':
-       
-            r=renderbm(self.truth_array[:,:,:,0])
-            
-        else:
-               
-            r=renderbm(self.geo_array[:,:,:,0])
-        
-        r.initiate_plot(self.averagereward)
-        r.plot()
+    def render(self, mined='mined'):      
+        # input any text to plot without nmined blocks
 
-    def renderx(self, geotruth):      
+        self.bm.initiate_plot(self.averagereward)
+        
+        if mined=='mined':
+            self.bm.update_all_mined(self.ob_sample)
+        
+        self.bm.plot()
+
+    def renderx(self):      
     
         #create 3D plot
         
-        if geotruth=='truth':
+        # if geotruth=='truth':
        
-            r=renderbm(self.truth_array[:,:,:,0])
+        #     r=renderbm(self.truth_array[:,:,:,0])
             
-        else:
+        # else:
                
-            r=renderbm(self.geo_array[:,:,:,0])
+        r=renderbm(self.geo_array[:,:,:,0])
         
         r.initiate_plot(self.averagereward)
-        r.plotx(20,0,0)                
+        r.plotx(20,0,0)                            
 
 
         

@@ -57,7 +57,7 @@ class environment(gym.Env):
         try:
             self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
         except:
-            self.maxloadid=0
+            self.maxloadid=1
             
         #sizing the block model environment
         self.Ilen=self.Imax-self.Imin 
@@ -194,30 +194,29 @@ class environment(gym.Env):
     def curriculum(self):
         
         self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
+        n=2000
         
-        if self.maxloadid>1000:
+        if self.maxloadid>=n:
+            
+            self.savenumber=np.random.randint(2,n)
             
             if (os.path.exists(self.savedgeo)):
-                 os.remove("%s/%s_geo_array"% (self.savedgeo, self.savenumber), self.geo_array)
+                 np.save("%s/%s_geo_array"% (self.savedgeo, self.savenumber), self.geo_array)
 
             #save normalised ob_sample       
             if (os.path.exists(self.savedenv)):
-                 os.remove("%s/%s_ob_sample"% (self.savedenv, self.savenumber), self.ob_sample)
-          
-        
-        
+                 np.save("%s/%s_ob_sample"% (self.savedenv, self.savenumber), self.ob_sample)
+
             #save dep_dic  
             if (os.path.exists(self.saveddepdic)):
-                 os.remove("%s/%s_dep_dic"% (self.saveddepdic, self.savenumber), self.dep_dic)
-          
+                 np.save("%s/%s_dep_dic"% (self.saveddepdic, self.savenumber), self.dep_dic)
 
-        
              #save eff_dic   
             if (os.path.exists(self.savedeffdic)):
-                 os.remove("%s/%s_eff_dic"% (self.savedeffdic, self.savenumber), self.eff_dic)
-          
+                 np.save("%s/%s_eff_dic"% (self.savedeffdic, self.savenumber), self.eff_dic)
 
-        self.save()
+        else:
+            self.save()
        
     # def save_env(self, savedenv,array):
         
@@ -241,7 +240,11 @@ class environment(gym.Env):
         
         #builds block model and mining sequence constraints dictionary (eg. top must be mined first)         
         if (self.rg_prob=='loadenv'):# and self.maxloadid>0: 
-            loadid = round(random.random()*self.maxloadid)      
+            
+            if (random.random()>0.1) or (self.maxloadid<=1):
+                loadid =1
+            else:
+                loadid = np.random.randint(1,self.maxloadid)      
             self.load(loadid)
         
         else:
@@ -488,7 +491,7 @@ class environment(gym.Env):
             self.turncounter+=1
             self.renderif(self.rendermode)
             if random.random()>0.9999:
-            self.curriculum()
+                self.curriculum()
             #self.equip_failure() #terminates episode based on random failure of equipment
             
             

@@ -34,7 +34,7 @@ from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import ACER
-from tools.NFuzzy3DBMenv_9action import environment
+from tools.BMenv_9action import environment
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '6'
 
@@ -42,7 +42,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '6'
 idx=4
 
 #prepare input parameters
-inputarray=pd.read_csv('jobarrays/Fuzzy_drstrange_job_input.csv')
+inputarray=pd.read_csv('jobarrays/9action_katana_job_input.csv')
 
 #block model (environment) dimensions
 x=inputarray.loc[idx].x
@@ -132,7 +132,7 @@ def make_env(x,y,z, rank, seed=0):
     """
     def _init():
         
-        env = environment(x, y, z, gamma, turnspc, savepath, policyname, rg_prob='rg')
+        env = environment(x, y, z, gamma, turnspc, policyname, rg_prob='loadenv')
         env.seed(seed + rank)
         return env
     set_global_seeds(seed)
@@ -144,7 +144,7 @@ if __name__ == '__main__':
     num_cpu = ncpu # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
-    eval_env=environment(x, y, z, gamma, turnspc, savepath, policyname, rg_prob='rg')
+    eval_env=environment(x, y, z, gamma, turnspc, policyname, rg_prob='loadenv')
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
