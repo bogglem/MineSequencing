@@ -1,0 +1,13 @@
+x,y,z,policyname,LR,gamma,batch_size,runtime,turnspc,trialv,ncpu
+20,20,6,MlpPolicy,0.0001,0.99,N/A,41400,0.1,turnspc10,1
+20,20,6,MlpPolicy,0.0001,0.99,N/A,41400,0.15,turnspc15,1
+20,20,6,MlpPolicy,0.0001,0.99,N/A,41400,0.2,turnspc20,1
+20,20,6,MlpPolicy,0.0001,0.99,N/A,41400,0.25,turnspc25,1
+20,20,6,MlpPolicy,0.0001,0.99,N/A,41400,0.3,turnspc30,1
+20,20,6,MlpPolicy,0.0001,0.99,N/A,41400,0.35,turnspc35,1
+20,20,6,MlpPolicy,0.00001,0.99,N/A,41400,0.1,turnspc10,1
+20,20,6,MlpPolicy,0.00001,0.99,N/A,41400,0.15,turnspc15,1
+20,20,6,MlpPolicy,0.00001,0.99,N/A,41400,0.2,turnspc20,1
+20,20,6,MlpPolicy,0.00001,0.99,N/A,41400,0.25,turnspc25,1
+20,20,6,MlpPolicy,0.00001,0.99,N/A,41400,0.3,turnspc30,1
+20,20,6,MlpPolicy,0.00001,0.99,N/A,41400,0.35,turnspc35,1
