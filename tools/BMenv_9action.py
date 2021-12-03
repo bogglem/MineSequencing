@@ -355,41 +355,48 @@ class environment(gym.Env):
         #0#1#2#  #\#|#/#
         #3#4#5#  #-#x#-#
         #6#7#8#  #/#|#\#
+        stepcostfactor=0.2
         
         if action==0:
             if self.i==self.Imin:
-                pass
+                self.reward=-self.averagereward*stepcostfactor
             else:
                 self.i=self.i-1
+                self.reward=-self.averagereward*stepcostfactor
                 
             if self.j==self.Jlen-1:
-                pass
+                self.reward=-self.averagereward*stepcostfactor
             else:
                 self.j=self.j+1 
-            
+                self.reward=-self.averagereward*stepcostfactor
+                
         elif action==1:
             if self.j==self.Jlen-1:
-                pass
+                self.reward=-self.averagereward*stepcostfactor
             else:
                 self.j=self.j+1 
+                self.reward=-self.averagereward*stepcostfactor
             
         elif action==2:
             if self.i==self.Ilen-1:
-                pass
+                self.reward=-self.averagereward*stepcostfactor
             else:
                 self.i=self.i+1
+                self.reward=-self.averagereward*stepcostfactor
                 
             if self.j==self.Jlen-1:
-                pass
+                self.reward=-self.averagereward*stepcostfactor
             else:
                 self.j=self.j+1 
+                self.reward=-self.averagereward*stepcostfactor
         
         elif action==3:
             if self.i==self.Imin:
-                pass
+                self.reward=-self.averagereward*stepcostfactor
             else:
                 self.i=self.i-1 
-            
+                self.reward=-self.averagereward*stepcostfactor
+                
         elif action==4:
             #mine current block
 
@@ -402,38 +409,43 @@ class environment(gym.Env):
 
         elif action==5:
             if self.i==self.Ilen-1:
-                pass
+                self.reward=-self.averagereward*stepcostfactor
             else:
-                self.i=self.i+1 
+                self.i=self.i+1
+                self.reward=-self.averagereward*stepcostfactor
             
         elif action==6:
             if self.i==self.Imin:
-                pass
+                self.reward=-self.averagereward*stepcostfactor
             else:
                 self.i=self.i-1
+                self.reward=-self.averagereward*stepcostfactor
                 
             if self.j==self.Jmin:
-                pass
+                self.reward=-self.averagereward*stepcostfactor
             else:
                 self.j=self.j-1
+                self.reward=-self.averagereward*stepcostfactor
         
         elif action==7:
             if self.j==self.Jmin:
-                pass
+                self.reward=-self.averagereward*stepcostfactor
             else:
-                self.j=self.j-1 
+                self.j=self.j-1
+                self.reward=-self.averagereward*stepcostfactor
                      
         elif action==8:
             if self.i==self.Ilen-1:
-                pass
+                self.reward=-self.averagereward*stepcostfactor
             else:
                 self.i=self.i+1
+                self.reward=-self.averagereward*stepcostfactor
                 
             if self.j==self.Jmin:
-                pass
+                self.reward=-self.averagereward*stepcostfactor
             else:
                 self.j=self.j-1 
-                
+                self.reward=-self.averagereward*stepcostfactor
     
     def isMinable(self, selected_block):
         
