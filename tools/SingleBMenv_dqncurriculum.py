@@ -193,7 +193,31 @@ class environment(gym.Env):
       
     def curriculum(self):
         
-        a=1
+        self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
+        
+        if self.maxloadid>1000:
+            
+            if (os.path.exists(self.savedgeo)):
+                 os.remove("%s/%s_geo_array"% (self.savedgeo, self.savenumber), self.geo_array)
+
+            #save normalised ob_sample       
+            if (os.path.exists(self.savedenv)):
+                 os.remove("%s/%s_ob_sample"% (self.savedenv, self.savenumber), self.ob_sample)
+          
+        
+        
+            #save dep_dic  
+            if (os.path.exists(self.saveddepdic)):
+                 os.remove("%s/%s_dep_dic"% (self.saveddepdic, self.savenumber), self.dep_dic)
+          
+
+        
+             #save eff_dic   
+            if (os.path.exists(self.savedeffdic)):
+                 os.remove("%s/%s_eff_dic"% (self.savedeffdic, self.savenumber), self.eff_dic)
+          
+
+        self.save()
        
     # def save_env(self, savedenv,array):
         
