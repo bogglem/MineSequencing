@@ -38,8 +38,8 @@ from tools.SingleBMenv_dqn import environment
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
-#idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
-idx=0
+idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
+#idx=1
 
 #prepare input parameters
 inputarray=pd.read_csv('jobarrays/DQN_katana_job_input.csv')
@@ -157,7 +157,7 @@ if __name__ == '__main__':
     
     if (os.path.exists("%s/best_model.zip" % savepath)):
         # Instantiate the agent
-        model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, buffer_size=15000, prioritized_replay=True, verbose=1)
+        model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, buffer_size=15000, prioritized_replay=False, verbose=1)
         # Load the trained agent
         model = DQN.load("%s/best_model" % savepath, env=env)
         print('loaded agent')
@@ -166,7 +166,7 @@ if __name__ == '__main__':
         
     else:
         #create model with Stable Baselines package.
-        model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, buffer_size=15000, prioritized_replay=True, verbose=1)# tensorboard_log=scenario)
+        model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, buffer_size=15000, prioritized_replay=False, verbose=1)# tensorboard_log=scenario)
         #model = ACER.load("%s/best_model" % savepath, env)
         model.learn(total_timesteps=episodetimesteps*50000,  callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
             
