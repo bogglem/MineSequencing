@@ -35,6 +35,7 @@ from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import ACER
 from tools.BMenv_curricturnspc import environment
+from tools.evalBMenv import environment as evalenv
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
@@ -142,7 +143,7 @@ if __name__ == '__main__':
     num_cpu = ncpu  # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
-    eval_env=environment(x, y, z, gamma, turnspc, policyname)
+    eval_env=evalenv(x, y, z, gamma, turnspc, policyname)
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
