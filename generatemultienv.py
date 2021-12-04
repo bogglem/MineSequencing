@@ -55,16 +55,16 @@ gamma_s=str(gamma).split('.')[1]
 #cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
 #rg_s=max(str(float(rg_prob)).split('.'))
 turnspc_s=str(turnspc).split('.')[1]
-storagefolder='environments/test'
+storagefolder='environments/evalenv'
 scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_{policyname}')
 savepath='./%s' % (storagefolder)
 #savepath='%s/environment' % (savepath)
 
 
-env = environment(x,y,z,gamma, turnspc, policyname)
+env = environment(x,y,z,gamma, turnspc, policyname, envpath=savepath)
 
 
-for i in range(500):
+for i in range(100):
  
     env.build()
     env.save()

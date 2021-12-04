@@ -78,7 +78,7 @@ for n in range(500):
     model = ACER.load("%s/best_model" % savepath)
     
     # Evaluate the agent
-    mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=10)
+    #mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=10)
     
     # Enjoy trained agent
     obs = env.reset()

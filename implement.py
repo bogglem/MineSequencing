@@ -39,7 +39,7 @@ z=6
 batch_size=64
 LR=0.0001
 gamma=0.99
-turnspc=0.05
+turnspc=0.10
 episodetimesteps=round(x*y*z*turnspc)
 
 policyname='MlpPolicy' #change this name to change RL policy type (MlpPolicy/CnnPolicy)
@@ -54,7 +54,7 @@ elif policyname =='MlpPolicy':
     policy=MlpPolicy
     test='MLPACER'
 
-trialv='loadenv05'
+trialv='turnspc10'
 
 #prepare file naming strings
 LR_s=str("{:f}".format(LR)).split('.')[1]
