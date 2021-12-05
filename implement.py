@@ -28,7 +28,8 @@ from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.policies import CnnPolicy
 from stable_baselines.common.evaluation import evaluate_policy
 #from tools.BMenv import environment
-from tools.loadBMenv import environment
+#from tools.loadBMenv import environment
+from tools.SingleBMenv_curricturnspc import environment
 #from tools.RG3DBMenv import environment
 #from tools.Fuzzy3DBMenv_9action import environment
 
@@ -37,9 +38,9 @@ x=20
 y=20
 z=6
 batch_size=64
-LR=0.001
+LR=0.0001
 gamma=0.99
-turnspc=0.10
+turnspc=0.05
 episodetimesteps=round(x*y*z*turnspc)
 
 policyname='MlpPolicy' #change this name to change RL policy type (MlpPolicy/CnnPolicy)
@@ -54,7 +55,7 @@ elif policyname =='MlpPolicy':
     policy=MlpPolicy
     test='MLPACER'
 
-trialv='evalturnspc10'
+trialv='single005'
 
 #prepare file naming strings
 LR_s=str("{:f}".format(LR)).split('.')[1]

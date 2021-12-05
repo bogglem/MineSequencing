@@ -54,12 +54,12 @@ policyname=inputarray.loc[idx].policyname  #change this name to change RL policy
 if policyname == 'CnnPolicy':
     
     policy='CnnPolicy'
-    test='CNNDQN'
+    test='CNNACER'
 
 elif policyname =='MlpPolicy':
 
     policy='MlpPolicy'
-    test='MLPDQN'
+    test='MLPACER'
 
 trialv=inputarray.loc[idx].trialv 
 #LR_critic=inputarray.loc[idx].LR_critic
