@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #PBS -N Job
-#PBS -l select=1:ncpus=6:mem=2gb
+#PBS -l select=1:ncpus=15:mem=10gb
 #PBS -l walltime=11:59:00
 #PBS -k eod
 #PBS -j oe
@@ -16,4 +16,4 @@ cd /home/z3333990/
 source tf1.14env/bin/activate
 
 cd /home/z3333990/MineSequencing
-python3 Train_Single_DQN_katana.py ${PBS_ARRAY_INDEX}
+python3 Train_SingleCurric_ACER_katana.py ${PBS_ARRAY_INDEX}

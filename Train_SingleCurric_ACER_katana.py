@@ -38,8 +38,8 @@ from tools.SingleBMenv_curricturnspc import environment
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
-#idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
-idx=1
+idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
+#idx=1
 
 #prepare input parameters
 inputarray=pd.read_csv('jobarrays/single_katana_job_input.csv')
