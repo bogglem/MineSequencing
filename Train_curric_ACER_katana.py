@@ -174,7 +174,7 @@ if __name__ == '__main__':
         model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
             
     
-    #create learning curve plot
+    #create learning curve plot for training
     evaluations= './%s/%s/evaluations.npz' % (storagefolder,scenario)
     data=np.load(evaluations)
     results=data['results']
@@ -187,8 +187,26 @@ if __name__ == '__main__':
     #plt.show() 
     
     #save learning curve plot
-    figsavepath='./%s/%s/fig_%s' % (storagefolder ,scenario, scenario)
+    figsavepath='./%s/%s/trfig_%s' % (storagefolder ,scenario, scenario)
     plt.savefig(figsavepath)
+    
+    #create learning curve plot for evaluation
+    evaluations='./%s/evaluations.npz' % (evpath)
+    data=np.load(evaluations)
+    results=data['results']
+    y=np.average(results, axis=1)
+    timesteps=data['timesteps']
+    plt.plot(timesteps,y)
+    
+    plt.xlabel('Timesteps')
+    plt.ylabel('Score')
+    #plt.show() 
+    
+    #save learning curve plot
+    figsavepath='./%s/evfig_%s' % (evpath, scenario)
+    plt.savefig(figsavepath)
+    
+    
     
     
     
