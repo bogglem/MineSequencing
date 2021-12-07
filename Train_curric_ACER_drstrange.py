@@ -34,15 +34,16 @@ from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import ACER
-from tools.SingleBMenv_dqncurricturnspc import environment
+from tools.BMenv_curricturnspc import environment
+from tools.evalBMenv import environment as evalenv
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '2'
+os.environ['CUDA_VISIBLE_DEVICES'] = '4'
 
 #idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
 idx=5
 
 #prepare input parameters
-inputarray=pd.read_csv('jobarrays/loadenv_katana_job_input.csv')
+inputarray=pd.read_csv('jobarrays/curricturnspc_drstrange_job_input.csv')
 
 #block model (environment) dimensions
 x=inputarray.loc[idx].x
@@ -89,10 +90,14 @@ turnspc_s=str(turnspc).split('.')[1]
 storagefolder='output'
 scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}')    
 savepath='./%s/%s' % (storagefolder ,scenario)
+evpath='./%s/%s/eval' % (storagefolder ,scenario)
 #savepath='%s/environment' % (savepath)
 
 if (os.path.exists(savepath)!=True):
     os.mkdir(savepath) #make directory prior to multiprocessing to avoid broken pipe error
+
+if (os.path.exists(evpath)!=True):
+    os.mkdir(evpath) #make directory prior to multiprocessing to avoid broken pipe error
 
 class TimeLimit(BaseCallback):
     """
@@ -142,14 +147,16 @@ if __name__ == '__main__':
     num_cpu = ncpu  # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
-    eval_env=environment(x, y, z, gamma, turnspc, policyname)
+    eval_env=evalenv(x, y, z, gamma, turnspc, policyname)
+    env1 =environment(x, y, z, gamma, turnspc, policyname)
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
 
     
     #create callbacks to record data, initiate events during training.
-    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=savepath, n_eval_episodes=20, eval_freq=10000
+    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=evpath, n_eval_episodes=100, eval_freq=50000
+                                                                         , deterministic=False, best_model_save_path=evpath), EvalCallback(env1, log_path=savepath, n_eval_episodes=20, eval_freq=50000
                                                                          , deterministic=False, best_model_save_path=savepath)])
     if (os.path.exists("%s/best_model.zip" % savepath)):
         # Instantiate the agent
@@ -167,7 +174,7 @@ if __name__ == '__main__':
         model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
             
     
-    #create learning curve plot
+    #create learning curve plot for training
     evaluations= './%s/%s/evaluations.npz' % (storagefolder,scenario)
     data=np.load(evaluations)
     results=data['results']
@@ -180,8 +187,26 @@ if __name__ == '__main__':
     #plt.show() 
     
     #save learning curve plot
-    figsavepath='./%s/%s/fig_%s' % (storagefolder ,scenario, scenario)
+    figsavepath='./%s/%s/trfig_%s' % (storagefolder ,scenario, scenario)
     plt.savefig(figsavepath)
+    
+    #create learning curve plot for evaluation
+    evaluations='./%s/evaluations.npz' % (evpath)
+    data=np.load(evaluations)
+    results=data['results']
+    y=np.average(results, axis=1)
+    timesteps=data['timesteps']
+    plt.plot(timesteps,y)
+    
+    plt.xlabel('Timesteps')
+    plt.ylabel('Score')
+    #plt.show() 
+    
+    #save learning curve plot
+    figsavepath='./%s/evfig_%s' % (evpath, scenario)
+    plt.savefig(figsavepath)
+    
+    
     
     
     
