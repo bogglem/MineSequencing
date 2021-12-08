@@ -53,10 +53,15 @@ class environment(gym.Env):
         self.mined=-1
         self.callnumber=1
         self.savenumber=0
+        self.loadidx=0
+                
         try:
             self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
         except:
-            self.maxloadid=0
+            self.maxloadid=1
+        
+        self.loadidarray=np.arange(1,self.maxloadid+1)
+            
             
         #sizing the block model environment
         self.Ilen=self.Imax-self.Imin 
@@ -216,8 +221,15 @@ class environment(gym.Env):
         
         #builds block model and mining sequence constraints dictionary (eg. top must be mined first)         
         if (self.rg_prob=='loadenv'):# and self.maxloadid>0: 
-            loadid = round(random.random()*self.maxloadid)      
+            if self.loadidx>=self.maxloadid:
+                self.loadidx=1
+                np.random.shuffle(self.loadidarray)
+              
+            loadid=self.loadidarray[self.loadidx]
+            
             self.load(loadid)
+            
+            self.loadidx += 1#round(random.random()*self.maxloadid)   
         
         else:
             #self.geo_array, self.truth_array=self.model.buildmodel()
@@ -355,7 +367,7 @@ class environment(gym.Env):
         #0#1#2#  #\#|#/#
         #3#4#5#  #-#x#-#
         #6#7#8#  #/#|#\#
-        stepcostfactor=0.2
+        stepcostfactor=0.2*10
         
         if action==0:
             if self.i==self.Imin:

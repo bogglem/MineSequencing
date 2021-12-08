@@ -26,7 +26,7 @@ class environment(gym.Env):
        # self.cutoffpenaltyscalar=penaltyscalar #scaling parameter for changing the penalty for taking no action (cutoff).
         self.rg_prob=rg_prob #rg for randomly generated, loadenv for loading premade envionments
         #self.savepath=savepath
-        envpath='./environments/katanatraining'
+        envpath='./environments'
         self.savedgeo='%s/geology' % envpath
         # self.savedtruth='%s/truth' % envpath
         self.savedenv='%s/environment' % envpath
@@ -53,11 +53,17 @@ class environment(gym.Env):
         self.mined=-1
         self.callnumber=1
         self.savenumber=0
+        self.loadidx=0
+        
         try:
             self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
         except:
-            self.maxloadid=0
+            self.maxloadid=1
+        
+        self.loadidarray=np.arange(1,self.maxloadid+1)
             
+        
+        
         #sizing the block model environment
         self.Ilen=self.Imax-self.Imin 
         self.Jlen=self.Jmax-self.Jmin
@@ -179,9 +185,15 @@ class environment(gym.Env):
         
         #builds block model and mining sequence constraints dictionary (eg. top must be mined first)         
         if (self.rg_prob=='loadenv'):# and self.maxloadid>0: 
-            loadid = round(random.random()*self.maxloadid)      
+            if self.loadidx>=self.maxloadid:
+                self.loadidx=1
+                np.random.shuffle(self.loadidarray)
+              
+            loadid=self.loadidarray[self.loadidx]
+            
             self.load(loadid)
-        
+            
+            self.loadidx += 1#round(random.random()*self.maxloadid)   
         else:
             #self.geo_array, self.truth_array=self.model.buildmodel()
             self.geo_array=self.model.buildmodel()
