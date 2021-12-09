@@ -39,8 +39,8 @@ from tools.evalBM1env import environment as evalenv
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '6'
 
-#idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
-idx=0
+idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
+#idx=0
 
 #prepare input parameters
 inputarray=pd.read_csv('jobarrays/ch1_katana_job_input.csv')
