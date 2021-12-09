@@ -151,15 +151,15 @@ class TimeLimit(BaseCallback):
         self.check_freq = episodetimesteps
         self.incomplete = True
         self.starttime=time.time()
-        self.prev=0
+        self.prev=1
         
     def _on_step(self) -> bool:
         if self.n_calls % self.check_freq == 0:
             if time.time()<end:
                 self.incomplete = True
-                trainingplot()
             else:
                 self.incomplete = False
+                trainingplot()
                 
             if np.ceil((time.time() - self.starttime)/(60*60*12))-self.prev>=1: #every 12 hours make plot. previous difference will =1
                 trainingplot()
