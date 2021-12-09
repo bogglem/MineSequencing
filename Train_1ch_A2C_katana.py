@@ -33,7 +33,7 @@ from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
-from stable_baselines import ACER
+from stable_baselines import A2C
 from tools.BM1env import environment
 from tools.evalBM1env import environment as evalenv
 
@@ -55,12 +55,12 @@ policyname=inputarray.loc[idx].policyname  #change this name to change RL policy
 if policyname == 'CnnPolicy':
     
     policy=CnnPolicy
-    test='CNNACER'
+    test='CNNA2C'
 
 elif policyname =='MlpPolicy':
 
     policy=MlpPolicy
-    test='MLPACER'
+    test='MLPA2C'
 
 trialv=inputarray.loc[idx].trialv 
 #LR_critic=inputarray.loc[idx].LR_critic
@@ -204,18 +204,18 @@ if __name__ == '__main__':
                                                                          , deterministic=False, best_model_save_path=savepath)])
     if (os.path.exists("%s/best_model.zip" % savepath)):
         # Instantiate the agent
-        model = ACER(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  buffer_size=10000,  verbose=1)
+        model = A2C(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  verbose=1)
         # Load the trained agent
-        model = ACER.load("%s/best_model" % savepath, env=env)
+        model = A2C.load("%s/best_model" % savepath, env=env)
         print('loaded agent')
         model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
         
         
     else:
         #create model with Stable Baselines package.
-        model = ACER(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  buffer_size=10000,  verbose=1)#, tensorboard_log=scenario)
+        model = A2C(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  verbose=1)#, tensorboard_log=scenario)
         #model = ACER.load("%s/best_model" % savepath, env)
-        model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
+        model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist)  #total timesteps set to very large number so program will terminate based on runtime parameter)
             
     
     
