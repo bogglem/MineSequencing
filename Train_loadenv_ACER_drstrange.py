@@ -34,7 +34,7 @@ from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import ACER
-from tools.loadBMenv import environment
+from tools.loadsaveBMenv import environment
 from tools.evalBMenv import environment as evalenv
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '5'
@@ -43,7 +43,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '5'
 idx=0
 
 #prepare input parameters
-inputarray=pd.read_csv('jobarrays/loadenv_drstrange_job_input.csv')
+inputarray=pd.read_csv('jobarrays/general_drstrange_job_input.csv')
 
 #block model (environment) dimensions
 x=inputarray.loc[idx].x
@@ -98,6 +98,41 @@ if (os.path.exists(savepath)!=True):
 
 if (os.path.exists(evpath)!=True):
     os.mkdir(evpath) #make directory prior to multiprocessing to avoid broken pipe error
+    
+def trainingplot():
+
+    #create learning curve plot for training
+    evaluations= './%s/%s/evaluations.npz' % (storagefolder,scenario)
+    data=np.load(evaluations)
+    results=data['results']
+    y=np.average(results, axis=1)
+    timesteps=data['timesteps']
+    plt.plot(timesteps,y)
+    
+    plt.xlabel('Timesteps')
+    plt.ylabel('Score')
+    #plt.show() 
+    
+    #save learning curve plot
+    figsavepath='./%s/%s/trfig_%s' % (storagefolder ,scenario, scenario)
+    plt.savefig(figsavepath)
+    
+    #create learning curve plot for evaluation
+    evaluations='./%s/evaluations.npz' % (evpath)
+    data=np.load(evaluations)
+    results=data['results']
+    y=np.average(results, axis=1)
+    timesteps=data['timesteps']
+    plt.plot(timesteps,y)
+    
+    plt.xlabel('Timesteps')
+    plt.ylabel('Score')
+    #plt.show() 
+    
+    #save learning curve plot
+    figsavepath='./%s/%s/evfig_%s' % (storagefolder ,scenario, scenario)
+    plt.savefig(figsavepath)    
+
 
 class TimeLimit(BaseCallback):
     """
@@ -113,6 +148,8 @@ class TimeLimit(BaseCallback):
         super(TimeLimit, self).__init__()
         self.check_freq = episodetimesteps
         self.incomplete = True
+        self.starttime=time.time()
+        self.prev=1
         
     def _on_step(self) -> bool:
         if self.n_calls % self.check_freq == 0:
@@ -120,9 +157,13 @@ class TimeLimit(BaseCallback):
                 self.incomplete = True
             else:
                 self.incomplete = False
-                        
+                trainingplot()
+                
+            if np.ceil((time.time() - self.starttime)/(60*60*12))-self.prev>=1: #every 12 hours make plot. previous difference will =1
+                trainingplot()
+                
+            self.prev=np.ceil((time.time() - self.starttime)/(60*60*12)) 
         return self.incomplete
-     
 
 def make_env(x,y,z, rank, seed=0):
     """
@@ -160,7 +201,7 @@ if __name__ == '__main__':
                                                                          , deterministic=False, best_model_save_path=savepath)])
     if (os.path.exists("%s/best_model.zip" % savepath)):
         # Instantiate the agent
-        model = ACER(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  buffer_size=10000,  verbose=1)
+        model = ACER(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  buffer_size=5000,  verbose=1)
         # Load the trained agent
         model = ACER.load("%s/best_model" % savepath, env=env)
         print('loaded agent')
@@ -169,42 +210,12 @@ if __name__ == '__main__':
         
     else:
         #create model with Stable Baselines package.
-        model = ACER(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  buffer_size=10000,  verbose=1)#, tensorboard_log=scenario)
+        model = ACER(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  buffer_size=5000,  verbose=1)#, tensorboard_log=scenario)
         #model = ACER.load("%s/best_model" % savepath, env)
         model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
             
     
-    #create learning curve plot for training
-    evaluations= './%s/%s/evaluations.npz' % (storagefolder,scenario)
-    data=np.load(evaluations)
-    results=data['results']
-    y=np.average(results, axis=1)
-    timesteps=data['timesteps']
-    plt.plot(timesteps,y)
-    
-    plt.xlabel('Timesteps')
-    plt.ylabel('Score')
-    #plt.show() 
-    
-    #save learning curve plot
-    figsavepath='./%s/%s/trfig_%s' % (storagefolder ,scenario, scenario)
-    plt.savefig(figsavepath)
-    
-    #create learning curve plot for evaluation
-    evaluations='./%s/evaluations.npz' % (evpath)
-    data=np.load(evaluations)
-    results=data['results']
-    y=np.average(results, axis=1)
-    timesteps=data['timesteps']
-    plt.plot(timesteps,y)
-    
-    plt.xlabel('Timesteps')
-    plt.ylabel('Score')
-    #plt.show() 
-    
-    #save learning curve plot
-    figsavepath='./%s/evfig_%s' % (evpath, scenario)
-    plt.savefig(figsavepath)
+
     
     
     

@@ -10,7 +10,7 @@ import gym
 import numpy as np
 import sys
 import pandas as pd
-from tools.evalBM1env import environment
+from tools.BMenv import environment
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '3'
 

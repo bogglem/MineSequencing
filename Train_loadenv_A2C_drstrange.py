@@ -33,14 +33,14 @@ from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
-from stable_baselines import ACER
-from tools.BM1env import environment
-from tools.evalBM1env import environment as evalenv
+from stable_baselines import A2C
+from tools.loadsaveBMenv import environment
+from tools.evalBMenv import environment as evalenv
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '6'
+os.environ['CUDA_VISIBLE_DEVICES'] = '5'
 
-idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
-#idx=0
+#idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
+idx=1
 
 #prepare input parameters
 inputarray=pd.read_csv('jobarrays/general_drstrange_job_input.csv')
@@ -55,12 +55,12 @@ policyname=inputarray.loc[idx].policyname  #change this name to change RL policy
 if policyname == 'CnnPolicy':
     
     policy=CnnPolicy
-    test='CNNACER'
+    test='CNNA2C'
 
 elif policyname =='MlpPolicy':
 
     policy=MlpPolicy
-    test='MLPACER'
+    test='MLPA2C'
 
 trialv=inputarray.loc[idx].trialv 
 #LR_critic=inputarray.loc[idx].LR_critic
@@ -98,8 +98,7 @@ if (os.path.exists(savepath)!=True):
 
 if (os.path.exists(evpath)!=True):
     os.mkdir(evpath) #make directory prior to multiprocessing to avoid broken pipe error
-
-
+    
 def trainingplot():
 
     #create learning curve plot for training
@@ -132,9 +131,8 @@ def trainingplot():
     
     #save learning curve plot
     figsavepath='./%s/%s/evfig_%s' % (storagefolder ,scenario, scenario)
-    plt.savefig(figsavepath)
-    
-    
+    plt.savefig(figsavepath)    
+
 
 class TimeLimit(BaseCallback):
     """
@@ -166,7 +164,6 @@ class TimeLimit(BaseCallback):
                 
             self.prev=np.ceil((time.time() - self.starttime)/(60*60*12)) 
         return self.incomplete
-     
 
 def make_env(x,y,z, rank, seed=0):
     """
@@ -204,19 +201,21 @@ if __name__ == '__main__':
                                                                          , deterministic=False, best_model_save_path=savepath)])
     if (os.path.exists("%s/best_model.zip" % savepath)):
         # Instantiate the agent
-        model = ACER(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  buffer_size=10000,  verbose=1)
+        model = A2C(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  verbose=1)
         # Load the trained agent
-        model = ACER.load("%s/best_model" % savepath, env=env)
+        model = A2C.load("%s/best_model" % savepath, env=env)
         print('loaded agent')
         model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
         
         
     else:
         #create model with Stable Baselines package.
-        model = ACER(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  buffer_size=10000,  verbose=1)#, tensorboard_log=scenario)
+        model = A2C(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  verbose=1)#, tensorboard_log=scenario)
         #model = ACER.load("%s/best_model" % savepath, env)
-        model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
+        model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist)  #total timesteps set to very large number so program will terminate based on runtime parameter)
             
+    
+
     
     
     
