@@ -37,7 +37,7 @@ from stable_baselines import ACER
 from tools.loadBMenv import environment
 from tools.evalBMenv import environment as evalenv
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '5'
+os.environ['CUDA_VISIBLE_DEVICES'] = '4'
 
 idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
 #idx=6
