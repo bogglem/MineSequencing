@@ -201,7 +201,7 @@ if __name__ == '__main__':
                                                                          , deterministic=False, best_model_save_path=savepath)])
     if (os.path.exists("%s/best_model.zip" % savepath)):
         # Instantiate the agent
-        model = A2C(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  verbose=1, n_cpu_tf_sess=ncpu)
+        model = A2C(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  verbose=1, n_cpu_tf_sess=num_cpu)
         # Load the trained agent
         model = A2C.load("%s/best_model" % savepath, env=env)
         print('loaded agent')
@@ -210,7 +210,7 @@ if __name__ == '__main__':
         
     else:
         #create model with Stable Baselines package.
-        model = A2C(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  verbose=1, n_cpu_tf_sess=ncpu)#, tensorboard_log=scenario)
+        model = A2C(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  verbose=1, n_cpu_tf_sess=num_cpu)#, tensorboard_log=scenario)
         #model = ACER.load("%s/best_model" % savepath, env)
         model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist)  #total timesteps set to very large number so program will terminate based on runtime parameter)
             

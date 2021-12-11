@@ -186,7 +186,7 @@ class TimeLimit(BaseCallback):
 
 if __name__ == '__main__':
 
-    #num_cpu = ncpu # Number of processes to use
+    num_cpu = ncpu # Number of processes to use
     # Create the vectorized environment
     #env = environment(x,y,z,0.95, 0.05, savepath, 'MlpPolicy', rg_prob='loadenv')
     env = environment(x, y, z, gamma, turnspc, policyname, rg_prob='loadenv')#SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
@@ -205,7 +205,7 @@ if __name__ == '__main__':
     
     if (os.path.exists("%s/best_model.zip" % savepath)):
         # Instantiate the agent
-        model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, buffer_size=5000, prioritized_replay=True, verbose=1, n_cpu_tf_sess=1)
+        model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, buffer_size=5000, prioritized_replay=True, verbose=1, n_cpu_tf_sess=num_cpu)
         # Load the trained agent
         model = DQN.load("%s/best_model" % savepath, env=env)
         print('loaded agent')
@@ -214,7 +214,7 @@ if __name__ == '__main__':
         
     else:
         #create model with Stable Baselines package.
-        model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, buffer_size=5000, prioritized_replay=True, verbose=1, n_cpu_tf_sess=1)# tensorboard_log=scenario)
+        model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, buffer_size=5000, prioritized_replay=True, verbose=1, n_cpu_tf_sess=num_cpu)# tensorboard_log=scenario)
         #model = ACER.load("%s/best_model" % savepath, env)
         model.learn(total_timesteps=episodetimesteps*50000,  callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
             
