@@ -200,12 +200,12 @@ if __name__ == '__main__':
     
     #create callbacks to record data, initiate events during training.
     callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=evpath, n_eval_episodes=100, eval_freq=50000
-                                                                         , deterministic=False, best_model_save_path=evpath), EvalCallback(env, log_path=savepath, n_eval_episodes=20, eval_freq=50000
+                                                                         , deterministic=True, best_model_save_path=evpath), EvalCallback(env, log_path=savepath, n_eval_episodes=20, eval_freq=50000
                                                                          , deterministic=False, best_model_save_path=savepath)])
     
     if (os.path.exists("%s/best_model.zip" % savepath)):
         # Instantiate the agent
-        model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, buffer_size=5000, prioritized_replay=True, verbose=1, n_cpu_tf_sess=num_cpu)
+        model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, prioritized_replay=True, verbose=1) #n_cpu_tf_sess=num_cpu)
         # Load the trained agent
         model = DQN.load("%s/best_model" % savepath, env=env)
         print('loaded agent')
@@ -214,7 +214,7 @@ if __name__ == '__main__':
         
     else:
         #create model with Stable Baselines package.
-        model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, buffer_size=5000, prioritized_replay=True, verbose=1, n_cpu_tf_sess=num_cpu)# tensorboard_log=scenario)
+        model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, prioritized_replay=True, verbose=1)#, n_cpu_tf_sess=num_cpu)# tensorboard_log=scenario)
         #model = ACER.load("%s/best_model" % savepath, env)
         model.learn(total_timesteps=episodetimesteps*50000,  callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
             
