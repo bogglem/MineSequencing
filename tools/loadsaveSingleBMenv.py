@@ -57,6 +57,7 @@ class environment(gym.Env):
         self.loadidx=0
         self.savecounter=2 #leave original 1_ob_sample intact
         self.inputloadid=inputloadid
+
         
         try:
             self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
@@ -82,15 +83,14 @@ class environment(gym.Env):
         self.dep_dic_init={}
         self.eff_dic_init={}
         
+        self.turns=round(len(self.dep_dic)*turnspc,0) #set max number of turns (actions) in each episode based on percentage of block model size.
+        
+
         #create block model
         self.model=automodel(self.Ilen,self.Jlen,self.RLlen)
         self.build()
         
-        self.startingturnspc=0.02
-        self.turns=round(len(self.dep_dic)*self.startingturnspc,0) #set max number of turns (actions) in each episode based on percentage of block model size.
-        self.dturnspc=turnspc-self.startingturnspc
-    
-        
+
         # Define action and observation space
         # They must be gym.spaces objects
         # Example when using discrete actions:
@@ -543,9 +543,6 @@ class environment(gym.Env):
         self.discountedmined=0
         self.turncounter=0
         self.episodecounter+=1
-        #increase number of turns available as training progresses
-        self.turns=min(round((len(self.dep_dic)*(self.dturnspc*self.episodecounter/1000000+self.startingturnspc))),round((len(self.dep_dic)*(self.dturnspc))))
-
         self.terminal=False
         self.i=-1
         self.j=-1

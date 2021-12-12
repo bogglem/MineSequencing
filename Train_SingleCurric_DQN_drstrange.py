@@ -156,6 +156,7 @@ class TimeLimit(BaseCallback):
             if time.time()<end:
                 self.incomplete = True
             else:
+                model.save("%s/final_model" % savepath)
                 self.incomplete = False
                 trainingplot()
                 
@@ -190,7 +191,7 @@ if __name__ == '__main__':
     # Create the vectorized environment
     #env = environment(x,y,z,0.95, 0.05, savepath, 'MlpPolicy', rg_prob='loadenv')
     env = environment(x, y, z, gamma, turnspc, policyname, rg_prob='loadenv')#SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
-    eval_env=environment(x, y, z, gamma, turnspc, policyname,rg_prob='loadenv', inputloadid=1)
+    eval_env=environment(x, y, z, gamma, turnspc, policyname, rg_prob='loadenv', inputloadid=1)
     
     
     # Stable Baselines provides you with make_vec_env() helper
@@ -199,7 +200,7 @@ if __name__ == '__main__':
 
     
     #create callbacks to record data, initiate events during training.
-    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=evpath, n_eval_episodes=100, eval_freq=50000
+    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=evpath, n_eval_episodes=1, eval_freq=50000
                                                                          , deterministic=True, best_model_save_path=evpath), EvalCallback(env, log_path=savepath, n_eval_episodes=20, eval_freq=50000
                                                                          , deterministic=False, best_model_save_path=savepath)])
     

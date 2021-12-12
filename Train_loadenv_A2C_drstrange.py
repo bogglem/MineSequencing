@@ -156,6 +156,7 @@ class TimeLimit(BaseCallback):
             if time.time()<end:
                 self.incomplete = True
             else:
+                model.save("%s/final_model" % savepath)
                 self.incomplete = False
                 trainingplot()
                 
