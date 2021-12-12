@@ -6,7 +6,7 @@ Created on Thu Sep 24 12:04:45 2020
 """
 import os.path
 import numpy as np
-#import pandas as pd
+import pandas as pd
 import random
 from copy import deepcopy
 from sklearn.preprocessing import MinMaxScaler
@@ -20,7 +20,7 @@ from tools.createmodel import automodel
 
 class environment(gym.Env):
     
-    def __init__(self, x,y,z ,gamma, turnspc, policy, rg_prob="loadenv", inputloadid='NA', rendermode='off'):
+    def __init__(self, x,y,z ,gamma, turnspc, policy, rg_prob="loadenv", inputloadid='NA', rendermode='off', annealrate=100000):
         
         self.rendermode=rendermode # on/off display block model in matplotlib
        # self.cutoffpenaltyscalar=penaltyscalar #scaling parameter for changing the penalty for taking no action (cutoff).
@@ -57,7 +57,7 @@ class environment(gym.Env):
         self.loadidx=0
         self.savecounter=2 #leave original 1_ob_sample intact
         self.inputloadid=inputloadid
-
+        self.annealrate=annealrate
         
         try:
             self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
@@ -82,14 +82,20 @@ class environment(gym.Env):
         self.dep_dic={}
         self.dep_dic_init={}
         self.eff_dic_init={}
+        
 
 
         #create block model
         self.model=automodel(self.Ilen,self.Jlen,self.RLlen)
         self.build()
         
-        self.turns=round(len(self.dep_dic)*turnspc,0) #set max number of turns (actions) in each episode based on percentage of block model size.
-                
+        self.startingturnspc=0.02
+        self.dturnspc=turnspc-self.startingturnspc
+        if self.annealrate=='NA':
+            self.turns=round(len(self.dep_dic)*(self.dturnspc+self.startingturnspc),0)
+        else:
+            self.turns=round(len(self.dep_dic)*self.startingturnspc,0) #set max number of turns (actions) in each episode based on percentage of block model size.
+        
 
         # Define action and observation space
         # They must be gym.spaces objects
@@ -543,6 +549,12 @@ class environment(gym.Env):
         self.discountedmined=0
         self.turncounter=0
         self.episodecounter+=1
+        if self.annealrate=='NA':
+            pass
+        else:
+            #increase number of turns available as training progresses
+            self.turns=min(round((len(self.dep_dic)*(self.dturnspc*self.episodecounter/self.annealrate+self.startingturnspc))),round((len(self.dep_dic)*(self.dturnspc))))
+
         self.terminal=False
         self.i=-1
         self.j=-1

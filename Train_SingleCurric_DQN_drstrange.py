@@ -206,7 +206,7 @@ if __name__ == '__main__':
     
     if (os.path.exists("%s/best_model.zip" % savepath)):
         # Instantiate the agent
-        model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, prioritized_replay=True, verbose=1) #n_cpu_tf_sess=num_cpu)
+        model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, exploration_final_eps=0.1, prioritized_replay=True, verbose=1) #n_cpu_tf_sess=num_cpu)
         # Load the trained agent
         model = DQN.load("%s/best_model" % savepath, env=env)
         print('loaded agent')
@@ -215,7 +215,7 @@ if __name__ == '__main__':
         
     else:
         #create model with Stable Baselines package.
-        model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, prioritized_replay=True, verbose=1)#, n_cpu_tf_sess=num_cpu)# tensorboard_log=scenario)
+        model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, exploration_final_eps=0.1, prioritized_replay=True, verbose=1)#, n_cpu_tf_sess=num_cpu)# tensorboard_log=scenario)
         #model = ACER.load("%s/best_model" % savepath, env)
         model.learn(total_timesteps=episodetimesteps*50000,  callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
             
