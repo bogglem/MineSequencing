@@ -6,7 +6,7 @@ Created on Thu Sep 24 12:04:45 2020
 """
 import os.path
 import numpy as np
-import pandas as pd
+#import pandas as pd
 import random
 from copy import deepcopy
 from sklearn.preprocessing import MinMaxScaler
@@ -82,14 +82,14 @@ class environment(gym.Env):
         self.dep_dic={}
         self.dep_dic_init={}
         self.eff_dic_init={}
-        
-        self.turns=round(len(self.dep_dic)*turnspc,0) #set max number of turns (actions) in each episode based on percentage of block model size.
-        
+
 
         #create block model
         self.model=automodel(self.Ilen,self.Jlen,self.RLlen)
         self.build()
         
+        self.turns=round(len(self.dep_dic)*turnspc,0) #set max number of turns (actions) in each episode based on percentage of block model size.
+                
 
         # Define action and observation space
         # They must be gym.spaces objects
