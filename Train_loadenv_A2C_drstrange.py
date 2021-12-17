@@ -190,7 +190,7 @@ if __name__ == '__main__':
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
     eval_env=evalenv(x, y, z, gamma, turnspc, policyname)
-    env1 =environment(x, y, z, gamma, turnspc, policyname, annealrate=100000*(20*x*y*z*turnspc)/50000) #env annealreate/ numturns*eval_freq
+    env1 =environment(x, y, z, gamma, turnspc, policyname, annealrate=10000*(20*x*y*z*turnspc)/50000) #env annealreate/ numturns*eval_freq
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
@@ -200,11 +200,11 @@ if __name__ == '__main__':
     callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=evpath, n_eval_episodes=100, eval_freq=50000
                                                                          , deterministic=False, best_model_save_path=evpath), EvalCallback(env1, log_path=savepath, n_eval_episodes=20, eval_freq=50000
                                                                          , deterministic=False, best_model_save_path=savepath)])
-    if (os.path.exists("%s/final_model.zip" % savepath)):
+    if (os.path.exists("%s/best_model.zip" % savepath)):
         # Instantiate the agent
         model = A2C(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  verbose=1, n_cpu_tf_sess=num_cpu)
         # Load the trained agent
-        model = A2C.load("%s/final_model" % savepath, env=env)
+        model = A2C.load("%s/best_model" % savepath, env=env)
         print('loaded agent')
         model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
         

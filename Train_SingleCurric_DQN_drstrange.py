@@ -204,7 +204,7 @@ if __name__ == '__main__':
                                                                          , deterministic=True, best_model_save_path=evpath), EvalCallback(env, log_path=savepath, n_eval_episodes=20, eval_freq=50000
                                                                          , deterministic=False, best_model_save_path=savepath)])
     
-    if (os.path.exists("%s/best_model.zip" % savepath)):
+    if (os.path.exists("%s/final_model.zip" % savepath)):
         # Instantiate the agent
         model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, exploration_final_eps=0.1, prioritized_replay=True, verbose=1) #n_cpu_tf_sess=num_cpu)
         # Load the trained agent
