@@ -26,7 +26,7 @@ class environment(gym.Env):
        # self.cutoffpenaltyscalar=penaltyscalar #scaling parameter for changing the penalty for taking no action (cutoff).
         self.rg_prob=rg_prob #rg for randomly generated, loadenv for loading premade envionments
         #self.savepath=savepath
-        self.envpath='./environments/loadsave'
+        self.envpath='./environments/15x15x4'
         self.savedgeo='%s/geology' % self.envpath
         # self.savedtruth='%s/truth' % envpath
         self.savedenv='%s/environment' % self.envpath
