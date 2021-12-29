@@ -34,9 +34,9 @@ from tools.BMenv import environment
 #from tools.Fuzzy3DBMenv_9action import environment
 
 # Create environment
-x=20
-y=20
-z=6
+x=15
+y=15
+z=4
 batch_size=64
 LR=0.0001
 gamma=0.99
@@ -48,14 +48,14 @@ policyname='MlpPolicy' #change this name to change RL policy type (MlpPolicy/Cnn
 if policyname == 'CnnPolicy':
     
     policy=CnnPolicy
-    test='CNNACER'
+    test='CNNA2C'
 
 elif policyname =='MlpPolicy':
 
     policy=MlpPolicy
-    test='MLPACER'
+    test='MLPA2C'
 
-trialv='loadenv10'
+trialv='loadsave10'
 
 #prepare file naming strings
 LR_s=str("{:f}".format(LR)).split('.')[1]
