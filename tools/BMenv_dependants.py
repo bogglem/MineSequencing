@@ -20,20 +20,20 @@ from tools.createmodel import automodel
 
 class environment(gym.Env):
     
-    def __init__(self, x,y,z ,gamma, turnspc, policy, rg_prob=0.005, annealrate=10000, rendermode='off'):
+    def __init__(self, x,y,z ,gamma, turnspc, policy, rg_prob='rg', envpath='./environments', rendermode='off'):
         
         self.rendermode=rendermode # on/off display block model in matplotlib
        # self.cutoffpenaltyscalar=penaltyscalar #scaling parameter for changing the penalty for taking no action (cutoff).
         self.rg_prob=rg_prob #rg for randomly generated, loadenv for loading premade envionments
         #self.savepath=savepath
-        self.envpath='./environments/15x15x4'
-        self.savedgeo='%s/geology' % self.envpath
+        #envpath='./environments'
+        self.savedgeo='%s/geology' % envpath
         # self.savedtruth='%s/truth' % envpath
-        self.savedenv='%s/environment' % self.envpath
-        self.saveddepdic='%s/depdict' % self.envpath
-        self.savedeffdic='%s/effdict' % self.envpath
+        self.savedenv='%s/environment' % envpath
+        self.saveddepdic='%s/depdict' % envpath
+        self.savedeffdic='%s/effdict' % envpath
         self.policy=policy
-        self.annealrate=annealrate
+        
         #initiating values
         self.framecounter=0
         self.actionslist = list()
@@ -53,19 +53,11 @@ class environment(gym.Env):
         self.mined=-1
         self.callnumber=1
         self.savenumber=0
-        self.episodecounter=0
-        self.loadidx=0
-        self.savecounter=1
-        
         try:
             self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
         except:
-            self.maxloadid=1
-        
-        self.loadidarray=np.arange(1,self.maxloadid+1)
+            self.maxloadid=0
             
-        
-        
         #sizing the block model environment
         self.Ilen=self.Imax-self.Imin 
         self.Jlen=self.Jmax-self.Jmin
@@ -85,10 +77,8 @@ class environment(gym.Env):
         self.model=automodel(self.Ilen,self.Jlen,self.RLlen)
         self.build()
         
-        self.startingturnspc=0.02
-        self.turns=round(len(self.dep_dic)*self.startingturnspc,0) #set max number of turns (actions) in each episode based on percentage of block model size.
-        self.dturnspc=turnspc-self.startingturnspc
-    
+        self.turns=round(len(self.dep_dic)*turnspc,0) #set max number of turns (actions) in each episode based on percentage of block model size.
+        
         
         # Define action and observation space
         # They must be gym.spaces objects
@@ -115,21 +105,9 @@ class environment(gym.Env):
 
     def save(self):
     
-        numenvs=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
-        if numenvs<5000: #max 5000 saved environments
-            self.savenumber=numenvs+1
-        else: #start overwriting older environments
-            self.savenumber=self.savecounter
-            self.savecounter+=1
-            
-        if self.savecounter>5000:
-            self.savecounter=1
-    
         #create dir        
         if (os.path.exists('./environments')!=True):
             os.mkdir('./environments')
-        if (os.path.exists('%s' %self.envpath)!=True):
-            os.mkdir('%s' %self.envpath)
         if (os.path.exists('%s' %self.savedgeo)!=True):
             os.mkdir('%s' %self.savedgeo)
         # if (os.path.exists('%s' %self.savedtruth)!=True):
@@ -141,13 +119,17 @@ class environment(gym.Env):
         if (os.path.exists('%s' %self.savedeffdic)!=True):
             os.mkdir('%s' %self.savedeffdic)         
         
+        self.savenumber=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])+1
         
         #save geo array   
-        np.save("%s/%s_geo_array"% (self.savedgeo, self.savenumber), self.geo_array)  
+        np.save("%s/%s_geo_array"% (self.savedgeo, self.savenumber), self.geo_array)
+                  
         #save normalised ob_sample       
-        np.save("%s/%s_ob_sample"% (self.savedenv, self.savenumber), self.ob_sample)    
+        np.save("%s/%s_ob_sample"% (self.savedenv, self.savenumber), self.ob_sample)
+                
         #save dep_dic  
         np.save("%s/%s_dep_dic"% (self.saveddepdic, self.savenumber), self.dep_dic)
+
         #save eff_dic   
         np.save("%s/%s_eff_dic"% (self.savedeffdic, self.savenumber), self.eff_dic)
           
@@ -173,52 +155,38 @@ class environment(gym.Env):
 
         self.averagereward=np.average(self.geo_array[:,:,:,0])
         
-            
+      
+        
+    # def save_env(self, savedenv,array):
+        
+    #     if (os.path.exists(self.savepath)):
+    #         np.save("%s"% savedenv, array)
+        
+    #     elif (os.path.exists(self.savepath)!=True):
+    #         os.mkdir(self.savepath)
+    #         np.save("%s"% savedenv, array)    
+    
+    # def load_env(self):
+    #     #to be deprecated once all saved environments include dicts and ob_sample
+        
+    #     self.geo_array=np.load("%s.npy"% self.savedenv)
+    #     print("loaded environment")
+        
+    #     return self.geo_array
+        
 
     def build(self):
         
         #builds block model and mining sequence constraints dictionary (eg. top must be mined first)         
-        if (self.rg_prob=='loadenv'):# and self.maxloadid>0:
-            
-            try: #determine number of saved files
-                self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
-            except:
-                self.maxloadid=1
-                
-            self.loadidarray=np.arange(1,self.maxloadid+1)
-            
-            if self.loadidx>=self.maxloadid:
-                self.loadidx=1
-                np.random.shuffle(self.loadidarray)
-              
-            loadid=self.loadidarray[self.loadidx]
-            
+        if (self.rg_prob=='loadenv'):# and self.maxloadid>0: 
+            loadid = round(random.random()*self.maxloadid)      
             self.load(loadid)
-            
-            self.loadidx += 1#round(random.random()*self.maxloadid)   
         
-        elif  (type(self.rg_prob)==float) and (random.random()>self.rg_prob): #if random is greater than rg_prob loadenv, otherwise build new env
-
-            try: #determine number of saved files
-                self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
-            except:
-                self.maxloadid=1
-            
-            self.loadidarray=np.arange(1,self.maxloadid+1)
-            
-            if self.loadidx>=self.maxloadid:
-                self.loadidx=1
-                np.random.shuffle(self.loadidarray)
-              
-            loadid=self.loadidarray[self.loadidx]
-            
-            self.load(loadid)
-            
-            self.loadidx += 1#round(random.random()*self.maxloadid)   
-                
         else:
             #self.geo_array, self.truth_array=self.model.buildmodel()
-            self.geo_array=self.model.buildmodel()      
+            self.geo_array=self.model.buildmodel()
+            #self.save_env(self.savedenv,self.geo_array)
+        
                 
             scaler=MinMaxScaler()
             H2O_init=self.geo_array[:,:,:,0]
@@ -249,7 +217,6 @@ class environment(gym.Env):
             self.dep_dic=deepcopy(self.dep_dic_init)
             self.construct_eff_dic()
             self.eff_dic=deepcopy(self.eff_dic_init)
-            self.save()
             
         #construct_dependencies blocks with zeros padding to avoid errors around environment edges.
         self.construct_block_dic()
@@ -377,6 +344,48 @@ class environment(gym.Env):
                    
         return isMinable
     
+        
+    
+    def minedependants(self, selected_block):
+        
+        #find out if it is possible to mine selected block via dependency list.
+        
+        deplist = self.dep_dic["%s"% selected_block]
+        #minablelogic=np.zeros(len(deplist))
+        isEfficient=1
+        count=0
+        
+        for d in range(len(deplist)):
+            depstr=deplist[d]
+            
+            i0=int(depstr.split('_')[0])
+            j0=int(depstr.split('_')[1])
+            RL0=int(depstr.split('_')[2])
+            
+            if
+            
+            
+            
+                while RL0 >0:
+            
+                    if self.block_dic["%s"% depstr] == 0:
+                        pass:
+                            
+                    else:
+                        self.evaluate(depstr, isEfficient)
+                        self.update(depstr)
+                
+
+                                        
+                    
+                    
+
+
+        
+        #isMinable=int(np.prod(minablelogic)) #logic 1,0 (is minable, not minable)
+                   
+        
+    
     def isEfficient(self,selected_block):
         
         #experimental indicator function to encourage mining adjacent blocks rather than spread out.
@@ -431,9 +440,10 @@ class environment(gym.Env):
         
         info={} #required for gym.Env class output
        
-        if (random.random()<0.00005): #every 20 000 steps randomly save environment 
-            self.maxloadid+=1
-            self.save()
+        # if (random.random()<0.00001): #every 10 000 steps randomly save environment 
+        #     self.maxloadid+=1
+        #     self.save()
+        
         
         if sum(sum(sum(self.ob_sample[:,:,:,1])))>=self.ob_sample[:,:,:,1].size: #if all blocks are mined, end episode
             self.terminal=True
@@ -452,12 +462,15 @@ class environment(gym.Env):
         else:   #normal step process
             self.actcoords(action)
             selected_block=self.select_block()
-            isMinable=self.isMinable(selected_block)
+            #isMinable=self.isMinable(selected_block)
             isEfficient=self.isEfficient(selected_block)
             
-            self.evaluate(selected_block, isMinable, isEfficient)
+            self.evaluate(selected_block, isEfficient)
             self.update(selected_block)
-            self.turncounter+=1
+            
+            if self.RL!=0:
+                self.minedependants(selected_block)
+            
             self.renderif(self.rendermode)
             #self.equip_failure() #terminates episode based on random failure of equipment
             
@@ -474,13 +487,13 @@ class environment(gym.Env):
         return observation, self.reward, self.terminal, info    
     
                  
-    def evaluate(self, selected_block, isMinable, isEfficient):
+    def evaluate(self, selected_block, isEfficient):
         
-        if isMinable==0:             #penalising repetetive useless actions
+        # if isMinable==0:             #penalising repetetive useless actions
+        self.turncounter+=1   
+        #     ore=-self.averagereward
             
-            ore=-self.averagereward
-            
-        elif isEfficient==0: #penalising high entropy policies spreading out and randomly picking.
+        if isEfficient==0: #penalising high entropy policies spreading out and randomly picking.
             ore=-self.averagereward
                 
         else:
@@ -489,11 +502,11 @@ class environment(gym.Env):
             #Tonnes=self.geo_array[self.i, self.j,self.RL,1] 
 
             # if (H2O*Tonnes)+self.init_cutoffpenalty>=0: #to be used for experimental determination of cutoff grade
-            ore=H2O-self.averagereward
+            ore=H2O
             # else:
             #     self.reward=self.init_cutoffpenalty
                 
-        self.reward=ore*10
+        self.reward+=ore*10
         
     def update(self, selected_block):
     
@@ -515,10 +528,6 @@ class environment(gym.Env):
         self.reward=0
         self.discountedmined=0
         self.turncounter=0
-        self.episodecounter+=1
-        #increase number of turns available as training progresses
-        self.turns=min(round((len(self.dep_dic)*(self.dturnspc*self.episodecounter/self.annealrate+self.startingturnspc))),round((len(self.dep_dic)*(self.dturnspc))))
-
         self.terminal=False
         self.i=-1
         self.j=-1
@@ -556,20 +565,15 @@ class environment(gym.Env):
                  self.bm.plot()
         pass
    
-    def render(self):      
-    
-        #create 3D plot
+    def render(self, mined='mined'):      
+        # input any text to plot without nmined blocks
+
+        self.bm.initiate_plot(self.averagereward)
         
-        # if geotruth=='truth':
-       
-        #     r=renderbm(self.truth_array[:,:,:,0])
-            
-        # else:
-               
-        r=renderbm(self.geo_array[:,:,:,0])
+        if mined=='mined':
+            self.bm.update_all_mined(self.ob_sample)
         
-        r.initiate_plot(self.averagereward)
-        r.plot()
+        self.bm.plot()
 
     def renderx(self):      
     
