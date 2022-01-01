@@ -38,7 +38,7 @@ x=15
 y=15
 z=4
 batch_size=64
-LR=0.0001
+LR=0.0005
 gamma=0.99
 turnspc=0.10
 episodetimesteps=round(x*y*z*turnspc)
@@ -48,12 +48,12 @@ policyname='MlpPolicy' #change this name to change RL policy type (MlpPolicy/Cnn
 if policyname == 'CnnPolicy':
     
     policy=CnnPolicy
-    test='CNNACER'
+    test='CNNA2C'
 
 elif policyname =='MlpPolicy':
 
     policy=MlpPolicy
-    test='MLPACER'
+    test='MLPA2C'
 
 trialv='loadsave10'
 

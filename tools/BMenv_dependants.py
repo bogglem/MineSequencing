@@ -247,6 +247,13 @@ class environment(gym.Env):
         #construct_dependencies
         #each block has a list of dependencies (other blocks) which must be removed prior to mining that block.
         
+                #dep map
+        #0#1#2#  #\#|#/#
+        #3#4#5#  #-#x#-#
+        #6#7#8#  #/#|#\#
+
+              
+        
         for i in range(self.Ilen):
             for j in range(self.Jlen):
                 for k in range(self.RLlen):
@@ -343,47 +350,61 @@ class environment(gym.Env):
         isMinable=int(np.prod(minablelogic)) #logic 1,0 (is minable, not minable)
                    
         return isMinable
-    
+
+
+    def generateminedlist(self, selected_block):
         
+        
+        #deplist = self.dep_dic["%s"% selected_block]
+        #minablelogic=np.zeros(len(deplist))
+
+        i_=int(selected_block.split('_')[0])
+        j_=int(selected_block.split('_')[1])
+        RL_=int(selected_block.split('_')[2]) #RL_ also equals maximum pit angle increment
+        minedlist=list()
+        increment =0
+
+        for RLsel in range(RL_,0,-1):        
+            increment+=1
+            
+            for i in range(i_-increment,i_+increment+1):
+        
+                for j in range(j_-increment,j_+increment+1):
+                    
+                    RL=RLsel-1
+                    minedstr="%s_%s_%s" % (i,j,RL)
+                    minedlist.append(minedstr)
+    
+        return minedlist
     
     def minedependants(self, selected_block):
         
         #find out if it is possible to mine selected block via dependency list.
         
-        deplist = self.dep_dic["%s"% selected_block]
+        #deplist = self.dep_dic["%s"% selected_block]
         #minablelogic=np.zeros(len(deplist))
         isEfficient=1
         count=0
+
+        minedlist=self.generateminedlist(selected_block)
+                             
         
-        for d in range(len(deplist)):
-            depstr=deplist[d]
+        for d in range(len(minedlist)):
+            depstr=minedlist[d]
             
-            i0=int(depstr.split('_')[0])
-            j0=int(depstr.split('_')[1])
-            RL0=int(depstr.split('_')[2])
-            
-            if
-            
-            
-            
-                while RL0 >0:
-            
-                    if self.block_dic["%s"% depstr] == 0:
-                        pass:
+            try:
+                if self.block_dic["%s"% depstr] == 1:
+                    pass
                             
-                    else:
-                        self.evaluate(depstr, isEfficient)
-                        self.update(depstr)
-                
+                else:
+                    self.i=int(depstr.split('_')[0])
+                    self.j=int(depstr.split('_')[1])
+                    self.RL=int(depstr.split('_')[2])
+                    self.evaluate(depstr, isEfficient)
+                    self.update(depstr)
 
-                                        
-                    
-                    
-
-
-        
-        #isMinable=int(np.prod(minablelogic)) #logic 1,0 (is minable, not minable)
-                   
+            except:
+                pass
         
     
     def isEfficient(self,selected_block):
@@ -489,6 +510,8 @@ class environment(gym.Env):
                  
     def evaluate(self, selected_block, isEfficient):
         
+        self.reward=0
+        
         # if isMinable==0:             #penalising repetetive useless actions
         self.turncounter+=1   
         #     ore=-self.averagereward
@@ -496,9 +519,14 @@ class environment(gym.Env):
         if isEfficient==0: #penalising high entropy policies spreading out and randomly picking.
             ore=-self.averagereward
                 
+        elif self.block_dic["%s"% selected_block]==1:
+            ore=0
         else:
+            try:
+                H2O=self.geo_array[self.i,self.j,self.RL,0]-self.averagereward
+            except:
+                H2O=0
             
-            H2O=self.geo_array[self.i,self.j,self.RL,0]
             #Tonnes=self.geo_array[self.i, self.j,self.RL,1] 
 
             # if (H2O*Tonnes)+self.init_cutoffpenalty>=0: #to be used for experimental determination of cutoff grade
@@ -511,9 +539,12 @@ class environment(gym.Env):
     def update(self, selected_block):
     
         #updates observation environment and minable block dependencies.
-        
-        self.block_dic["%s"% selected_block]=1 #set to one (mined). required for dependency logical multiplication
-        self.ob_sample[self.i,self.j,self.RL,1]=1 #set to one (mined) for agent observation.
+        try:
+            self.block_dic["%s"% selected_block]=1 #set to one (mined). required for dependency logical multiplication
+            self.ob_sample[self.i,self.j,self.RL,1]=1 #set to one (mined) for agent observation.
+        except:
+            pass
+    
    
     def reset(self):
         
