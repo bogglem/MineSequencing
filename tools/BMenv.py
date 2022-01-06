@@ -222,7 +222,7 @@ class environment(gym.Env):
         self.construct_block_dic()
         self.block_dic=deepcopy(self.block_dic_init) #deepcopy so dictionary doesnt have to be rebuilt for every new environment.
         
-        self.render_update = self.geo_array[:,:,:,0] #provides data sliced for render function
+        self.render_update = deepcopy(self.geo_array[:,:,:,0]) #provides data sliced for render function
         self.bm=renderbm(self.render_update)
 
         # #save environment if random generation disabled
@@ -422,7 +422,7 @@ class environment(gym.Env):
             isMinable=self.isMinable(selected_block)
             isEfficient=self.isEfficient(selected_block)
             
-            self.evaluate(selected_block, isMinable, isEfficient)
+            info=self.evaluate(selected_block, isMinable, isEfficient)
             self.update(selected_block)
             self.turncounter+=1
             self.renderif(self.rendermode)
@@ -443,24 +443,32 @@ class environment(gym.Env):
                  
     def evaluate(self, selected_block, isMinable, isEfficient):
         
+        info=0
+        
         if isMinable==0:             #penalising repetetive useless actions
             
             ore=-self.averagereward
+            H2O=self.geo_array[self.i,self.j,self.RL,0]
+            info=H2O
             
         elif isEfficient==0: #penalising high entropy policies spreading out and randomly picking.
             ore=-self.averagereward
+            H2O=self.geo_array[self.i,self.j,self.RL,0]
+            info=H2O
                 
         else:
             
             H2O=self.geo_array[self.i,self.j,self.RL,0]
             #Tonnes=self.geo_array[self.i, self.j,self.RL,1] 
-
+            info=H2O
             # if (H2O*Tonnes)+self.init_cutoffpenalty>=0: #to be used for experimental determination of cutoff grade
             ore=H2O
             # else:
             #     self.reward=self.init_cutoffpenalty
                 
         self.reward=ore*10
+        
+        return info
         
     def update(self, selected_block):
     
@@ -526,10 +534,15 @@ class environment(gym.Env):
         
         if mined=='mined':
             self.bm.update_all_mined(self.ob_sample)
+            self.bm.plot()
+        else:
+            self.bm_original=renderbm(self.geo_array[:,:,:,0])
+            self.bm_original.initiate_plot(self.averagereward)
+            self.bm_original.plot()
+            
         
-        self.bm.plot()
 
-    def renderx(self):      
+    def renderx(self,xx=0,yy=0,zz=0, mined='mined'):      
     
         #create 3D plot
         
@@ -538,11 +551,18 @@ class environment(gym.Env):
         #     r=renderbm(self.truth_array[:,:,:,0])
             
         # else:
-               
-        r=renderbm(self.geo_array[:,:,:,0])
+        #r=renderbm(self.geo_array[:,:,:,0])
         
-        r.initiate_plot(self.averagereward)
-        r.plotx(20,0,0)                
-
-
         
+        if mined=='mined':
+            self.bm.initiate_plot(self.averagereward)
+            self.bm.update_all_mined(self.ob_sample)
+            self.bm.plotx(xx,yy,zz) 
+        else:
+            self.bm_original=renderbm(self.geo_array[:,:,:,0])
+            self.bm_original.initiate_plot(self.averagereward)
+            self.bm_original.plotx(xx,yy,zz) 
+                 
+        
+                       
+      

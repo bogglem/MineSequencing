@@ -20,13 +20,13 @@ from tools.createmodel import automodel
 
 class environment(gym.Env):
     
-    def __init__(self, x,y,z ,gamma, turnspc, policy, rg_prob=0.005, annealrate=10000, rendermode='off'):
+    def __init__(self, x,y,z ,gamma, turnspc, policy, rg_prob=0.005, annealrate=10000, rendermode='off', envpath='./environments/20x20x6'):
         
         self.rendermode=rendermode # on/off display block model in matplotlib
        # self.cutoffpenaltyscalar=penaltyscalar #scaling parameter for changing the penalty for taking no action (cutoff).
         self.rg_prob=rg_prob #rg for randomly generated, loadenv for loading premade envionments
         #self.savepath=savepath
-        self.envpath='./environments/15x15x4'
+        self.envpath=envpath#'./environments/20x20x6'
         self.savedgeo='%s/geology' % self.envpath
         # self.savedtruth='%s/truth' % envpath
         self.savedenv='%s/environment' % self.envpath

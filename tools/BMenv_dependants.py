@@ -588,8 +588,11 @@ class environment(gym.Env):
                 self.bm.initiate_plot(self.averagereward)
                 self.bm.plot()
                 
-            self.bm.update_mined(self.i, self.j, self.RL)
-            self.render_update[self.i, self.j, self.RL]=0 #not really required
+            
+            self.bm.update_all_mined(self.ob_sample)
+            
+            #self.bm.update_mined(self.i, self.j, self.RL)
+            #self.render_update[self.i, self.j, self.RL]=0 #not really required
                     
             if (self.framecounter % 5 == 0): #replot every 2 action frames.
                               

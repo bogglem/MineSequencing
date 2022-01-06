@@ -20,7 +20,8 @@ import logging
 tf.get_logger().setLevel(logging.ERROR)
 
 import gym
-
+import numpy as np
+import matplotlib.pyplot as plt
 from stable_baselines import A2C
 from stable_baselines import DQN
 from stable_baselines import ACER
@@ -73,11 +74,11 @@ turns=round(x*y*z*turnspc)
 env = environment(x,y,z,gamma, turnspc, policyname)
 
 # Instantiate the agent
-model = ACER(policy, env, gamma=gamma, learning_rate=LR,n_steps=episodetimesteps,   verbose=1)
+model = A2C(policy, env, gamma=gamma, learning_rate=LR,n_steps=episodetimesteps,   verbose=1)
 #model = DQN('MlpPolicy', env, learning_rate=LR, prioritized_replay=True, verbose=1)
 #
 # Load the trained agent
-model = ACER.load("%s/best_model" % savepath)
+model = A2C.load("%s/best_model" % savepath)
 #model = DQN.load("%s/best_model" % savepath)
 print('loaded agent %s' % savepath)
 
@@ -89,11 +90,41 @@ print('mean_reward = %s +/- %s' %(mean_reward,std_reward))
 obs = env.reset()
 env.rendermode='on'
 cumreward=0
+results=list()
 for i in range(turns):
     action, _states = model.predict(obs, deterministic=False)
     obs, rewards, dones, info = env.step(action)
     cumreward+=rewards
     print(action, rewards, dones, cumreward)
+    results.append(info)
     #env.renderif('on')
     if dones == True:
         break
+
+
+resultsarray=np.array(results)
+grades=env.geo_array[:,:,:,0]
+gradesf=np.ndarray.flatten(grades)
+avgrade=np.average(grades)
+
+fig1=plt.figure(1)
+plt.hist(gradesf,40)
+plt.axvline(np.average(resultsarray[0:20]), color='g', linestyle='dashed', linewidth=1)
+plt.axvline(np.average(resultsarray[20:40]), color='r', linestyle='dashed', linewidth=1)
+plt.axvline(np.average(resultsarray), color='k', linestyle='dashed', linewidth=1)
+min_ylim, max_ylim = plt.ylim()
+
+plt.text(np.average(resultsarray[0:20])*1.05, max_ylim*0.4, '0-20 Grade: {:.3f}'.format(np.average(resultsarray[0:20])), rotation=45, color='g')
+plt.text(np.average(resultsarray[20:40])*1.05, max_ylim*0.6, '20-40 Grade: {:.3f}'.format(np.average(resultsarray[20:40])), rotation=45, color='r')
+plt.text(np.average(resultsarray)*1.05, max_ylim*0.8, 'Total Mined Grade: {:.3f}'.format(np.average(resultsarray)), rotation=45)
+
+
+
+plt.figure(2)
+plt.plot(resultsarray)    
+plt.axhline(np.max(resultsarray), color='k', linestyle='dashed', linewidth=1)
+min_xlim, max_xlim = plt.xlim()
+plt.text(max_xlim*0.7, np.max(resultsarray)*0.9, 'Max Grade: {:.3f}'.format(np.max(resultsarray)))
+
+
+    

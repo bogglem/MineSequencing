@@ -91,10 +91,11 @@ class renderbm():
                         exploded_x,exploded_y,exploded_z = self.translate_to_exploded(i,j,k)
                         
                         self.facecolours[exploded_x,exploded_y,exploded_z] = [0.5,0.5,0.5,1]
+                        self.facecolours_x[exploded_x,exploded_y,exploded_z] = [0.5,0.5,0.5,1]
                         
                         if exploded_z>0:
                             self.facecolours[exploded_x,exploded_y,0:exploded_z-1] = [0.5,0.5,0.5,0] #hide previously mined blocks above
-            
+                            self.facecolours_x[exploded_x,exploded_y,0:exploded_z-1] = [0.5,0.5,0.5,0] 
 
 
     def initiate_plot(self, averagereward):   
@@ -160,6 +161,7 @@ class renderbm():
         
             ax.view_init(0, angle)
             ax.voxels(x, y, z, filled, facecolors=facecolours, edgecolors='k', shade=False)
+
             plt.show()            
                
         elif yy>0:
@@ -173,6 +175,7 @@ class renderbm():
 
             ax.view_init(0, angle)
             ax.voxels(x, y, z, filled, facecolors=facecolours, edgecolors='k', shade=False)
+
             plt.show()           
                         
         elif zz>0:
@@ -186,6 +189,7 @@ class renderbm():
 
             ax.view_init(90, angle)
             ax.voxels(x, y, z, filled, facecolors=facecolours, edgecolors='k', shade=False)
+
             plt.show()             
                         
 
