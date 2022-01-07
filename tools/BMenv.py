@@ -462,7 +462,7 @@ class environment(gym.Env):
             #Tonnes=self.geo_array[self.i, self.j,self.RL,1] 
             info=H2O
             # if (H2O*Tonnes)+self.init_cutoffpenalty>=0: #to be used for experimental determination of cutoff grade
-            ore=H2O
+            ore=H2O-self.averagereward
             # else:
             #     self.reward=self.init_cutoffpenalty
                 

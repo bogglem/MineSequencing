@@ -34,15 +34,15 @@ from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import DQN
-from tools.SingleBMenv_dqncurricturnspc import environment
+from tools.loadsaveSingleBMenv import environment
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '2'
+os.environ['CUDA_VISIBLE_DEVICES'] = '6'
 
 #idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
-idx=11
+idx=4
 
 #prepare input parameters
-inputarray=pd.read_csv('jobarrays/DQN_katana_job_input.csv')
+inputarray=pd.read_csv('jobarrays/general_drstrange_job_input.csv')
 
 #block model (environment) dimensions
 x=int(inputarray.loc[idx].x)
@@ -90,11 +90,50 @@ turnspc_s=str(turnspc).split('.')[1]
 storagefolder='output'
 scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}')
 savepath='./%s/%s' % (storagefolder ,scenario)
+evpath='./%s/%s/eval' % (storagefolder ,scenario)
 #savepath='%s/environment' % (savepath)
 
 if (os.path.exists(savepath)!=True):
     os.mkdir(savepath) #make directory prior to multiprocessing to avoid broken pipe error
 
+if (os.path.exists(evpath)!=True):
+    os.mkdir(evpath) #make directory prior to multiprocessing to avoid broken pipe error
+
+
+def trainingplot():
+
+    #create learning curve plot for training
+    evaluations= './%s/%s/evaluations.npz' % (storagefolder,scenario)
+    data=np.load(evaluations)
+    results=data['results']
+    y=np.average(results, axis=1)
+    timesteps=data['timesteps']
+    plt.plot(timesteps,y)
+    
+    plt.xlabel('Timesteps')
+    plt.ylabel('Score')
+    #plt.show() 
+    
+    #save learning curve plot
+    figsavepath='./%s/%s/trfig_%s' % (storagefolder ,scenario, scenario)
+    plt.savefig(figsavepath)
+    
+    #create learning curve plot for evaluation
+    evaluations='./%s/evaluations.npz' % (evpath)
+    data=np.load(evaluations)
+    results=data['results']
+    y=np.average(results, axis=1)
+    timesteps=data['timesteps']
+    plt.plot(timesteps,y)
+    
+    plt.xlabel('Timesteps')
+    plt.ylabel('Score')
+    #plt.show() 
+    
+    #save learning curve plot
+    figsavepath='./%s/%s/evfig_%s' % (storagefolder ,scenario, scenario)
+    plt.savefig(figsavepath)
+    
 class TimeLimit(BaseCallback):
     """
     Callback for saving a model (the check is done every ``check_freq`` steps)
@@ -109,6 +148,8 @@ class TimeLimit(BaseCallback):
         super(TimeLimit, self).__init__()
         self.check_freq = episodetimesteps
         self.incomplete = True
+        self.starttime=time.time()
+        self.prev=1
         
     def _on_step(self) -> bool:
         if self.n_calls % self.check_freq == 0:
@@ -117,7 +158,12 @@ class TimeLimit(BaseCallback):
             else:
                 model.save("%s/final_model" % savepath)
                 self.incomplete = False
-                        
+                trainingplot()
+                
+            if np.ceil((time.time() - self.starttime)/(60*60*12))-self.prev>=1: #every 12 hours make plot. previous difference will =1
+                trainingplot()
+                
+            self.prev=np.ceil((time.time() - self.starttime)/(60*60*12)) 
         return self.incomplete
      
 
@@ -141,23 +187,26 @@ class TimeLimit(BaseCallback):
 
 if __name__ == '__main__':
 
-    #num_cpu = ncpu # Number of processes to use
+    num_cpu = ncpu # Number of processes to use
     # Create the vectorized environment
     #env = environment(x,y,z,0.95, 0.05, savepath, 'MlpPolicy', rg_prob='loadenv')
     env = environment(x, y, z, gamma, turnspc, policyname, rg_prob='loadenv')#SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
-    #eval_env=environment(x, y, z, gamma, turnspc, savepath, policyname, rg_prob='loadenv')
+    eval_env=environment(x, y, z, gamma, turnspc, policyname, rg_prob='loadenv', inputloadid=1)
+    
+    
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
 
     
     #create callbacks to record data, initiate events during training.
-    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(env, log_path=savepath, n_eval_episodes=1
-                                                                         ,eval_freq=10000, deterministic=False, best_model_save_path=savepath)])
+    callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=evpath, n_eval_episodes=1, eval_freq=50000
+                                                                         , deterministic=True, best_model_save_path=evpath), EvalCallback(env, log_path=savepath, n_eval_episodes=20, eval_freq=50000
+                                                                         , deterministic=False, best_model_save_path=savepath)])
     
-    if (os.path.exists("%s/best_model.zip" % savepath)):
+    if (os.path.exists("%s/final_model.zip" % savepath)):
         # Instantiate the agent
-        model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, buffer_size=15000, prioritized_replay=False, verbose=1)
+        model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, exploration_final_eps=0.1, prioritized_replay=True, verbose=1) #n_cpu_tf_sess=num_cpu)
         # Load the trained agent
         model = DQN.load("%s/best_model" % savepath, env=env)
         print('loaded agent')
@@ -166,26 +215,11 @@ if __name__ == '__main__':
         
     else:
         #create model with Stable Baselines package.
-        model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, buffer_size=15000, prioritized_replay=False, verbose=1)# tensorboard_log=scenario)
+        model = DQN('MlpPolicy', env, gamma=gamma, learning_rate=LR, exploration_final_eps=0.1, prioritized_replay=True, verbose=1)#, n_cpu_tf_sess=num_cpu)# tensorboard_log=scenario)
         #model = ACER.load("%s/best_model" % savepath, env)
         model.learn(total_timesteps=episodetimesteps*50000,  callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
             
-    
-    #create learning curve plot
-    evaluations= './%s/%s/evaluations.npz' % (storagefolder,scenario)
-    data=np.load(evaluations)
-    results=data['results']
-    y=np.average(results, axis=1)
-    timesteps=data['timesteps']
-    plt.plot(timesteps,y)
-    
-    plt.xlabel('Timesteps')
-    plt.ylabel('Score')
-    #plt.show() 
-    
-    #save learning curve plot
-    figsavepath='./%s/%s/fig_%s' % (storagefolder ,scenario, scenario)
-    plt.savefig(figsavepath)
+
     
     
     

@@ -17,7 +17,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '3'
 idx=0
 
 #prepare input parameters
-inputarray=pd.read_csv('jobarrays/Fuzzy_drstrange_generateenv_input.csv')
+inputarray=pd.read_csv('jobarrays/drstrange_generateenv_input.csv')
 
 #block model (environment) dimensions
 x=inputarray.loc[idx].x

@@ -40,7 +40,7 @@ from tools.evalBMenv import environment as evalenv
 os.environ['CUDA_VISIBLE_DEVICES'] = '5'
 
 #idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
-idx=1
+idx=0
 
 #prepare input parameters
 inputarray=pd.read_csv('jobarrays/general_drstrange_job_input.csv')
@@ -116,6 +116,7 @@ def trainingplot():
     #save learning curve plot
     figsavepath='./%s/%s/trfig_%s' % (storagefolder ,scenario, scenario)
     plt.savefig(figsavepath)
+    plt.clf() #clear plot
     
     #create learning curve plot for evaluation
     evaluations='./%s/evaluations.npz' % (evpath)
@@ -132,6 +133,45 @@ def trainingplot():
     #save learning curve plot
     figsavepath='./%s/%s/evfig_%s' % (storagefolder ,scenario, scenario)
     plt.savefig(figsavepath)    
+    
+    
+
+def save_evals():
+    
+    tr= './%s/%s/evaluations.npz' % (storagefolder,scenario)
+    ev='./%s/evaluations.npz' % (evpath)
+    prevtr= './%s/%s/prev' % (storagefolder,scenario)
+    prevev='./%s/prev' % (evpath)
+
+    if (os.path.exists(prevtr)!=True):
+        folder='./%s/%s/prev' %(storagefolder,scenario)    
+        os.mkdir(folder)    
+        
+    try:
+        savenumber=len([name for name in os.listdir(prevtr) if os.path.isfile(os.path.join(prevtr, name))])+1
+    except:
+        savenumber=1
+    
+    if (os.path.exists(tr)==True):
+        dest_dir = prevtr
+        new_name = 'evaluations_%s.npz' % savenumber
+        current_file_name = tr
+        os.rename(current_file_name, os.path.join(dest_dir, new_name))
+
+    if (os.path.exists(prevev)!=True):
+        folder='./%s/prev' % (evpath)    
+        os.mkdir(folder)      
+        
+    try:   
+        savenumber=len([name for name in os.listdir(prevev) if os.path.isfile(os.path.join(prevev, name))])+1
+    except:
+        savenumber=1
+    
+    if (os.path.exists(ev)==True):
+        dest_dir = prevev
+        new_name = 'evaluations_%s.npz' % savenumber
+        current_file_name = ev
+        os.rename(current_file_name, os.path.join(dest_dir, new_name))
 
 
 class TimeLimit(BaseCallback):
@@ -206,6 +246,8 @@ if __name__ == '__main__':
         # Load the trained agent
         model = A2C.load("%s/best_model" % savepath, env=env)
         print('loaded agent')
+        save_evals()
+        
         model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
         
         
@@ -213,6 +255,8 @@ if __name__ == '__main__':
         #create model with Stable Baselines package.
         model = A2C(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  verbose=1, n_cpu_tf_sess=num_cpu)#, tensorboard_log=scenario)
         #model = ACER.load("%s/best_model" % savepath, env)
+        save_evals()
+        
         model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist)  #total timesteps set to very large number so program will terminate based on runtime parameter)
             
     
