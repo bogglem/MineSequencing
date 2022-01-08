@@ -20,7 +20,7 @@ from tools.createmodel import automodel
 
 class environment(gym.Env):
     
-    def __init__(self, x,y,z ,gamma, turnspc, policy, rg_prob='loadenv', envpath='./environments/eval20x20x6', rendermode='off'):
+    def __init__(self, x,y,z ,gamma, turnspc, policy, rg_prob='loadenv', envpath='./environments/eval15x15x4', rendermode='off'):
         
         self.rendermode=rendermode # on/off display block model in matplotlib
        # self.cutoffpenaltyscalar=penaltyscalar #scaling parameter for changing the penalty for taking no action (cutoff).
