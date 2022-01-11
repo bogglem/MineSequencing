@@ -517,8 +517,8 @@ class environment(gym.Env):
         self.turncounter=0
         self.episodecounter+=1
         #increase number of turns available as training progresses
-        self.turns=min(round((len(self.dep_dic)*(self.dturnspc*self.episodecounter/self.annealrate+self.startingturnspc))),round((len(self.dep_dic)*(self.startingturnspc))))
-
+        self.turns=min(round((len(self.dep_dic)*(self.dturnspc*self.episodecounter/self.annealrate+self.startingturnspc))),round((len(self.dep_dic)*(self.dturnspc+self.startingturnspc)))) 
+        # self.dturnspc+self.startingturnspc = final turnspc
         self.terminal=False
         self.i=-1
         self.j=-1

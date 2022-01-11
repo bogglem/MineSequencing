@@ -117,7 +117,7 @@ def trainingplot():
     #save learning curve plot
     figsavepath='./%s/%s/trfig_%s' % (storagefolder ,scenario, scenario)
     plt.savefig(figsavepath)
-    plt.clf() #clear plot
+    #plt.clf() #clear plot
     
     #create learning curve plot for evaluation
     evaluations='./%s/evaluations.npz' % (evpath)
@@ -134,7 +134,7 @@ def trainingplot():
     #save learning curve plot
     figsavepath='./%s/%s/evfig_%s' % (storagefolder ,scenario, scenario)
     plt.savefig(figsavepath)    
-    
+    plt.clf() #clear plot
     
 
 def save_evals():
