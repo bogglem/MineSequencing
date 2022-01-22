@@ -39,11 +39,11 @@ from tools.evalBMenv import environment as evalenv
 
 #os.environ['CUDA_VISIBLE_DEVICES'] = '5'
 
-idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
-#idx=0
+#idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
+idx=0
 
 #prepare input parameters
-inputarray=pd.read_csv('jobarrays/A2C_katana_job_input.csv')
+inputarray=pd.read_csv('jobarrays/ACER_katana_job_input.csv')
 
 #block model (environment) dimensions
 x=inputarray.loc[idx].x
@@ -55,12 +55,12 @@ policyname=inputarray.loc[idx].policyname  #change this name to change RL policy
 if policyname == 'CnnPolicy':
     
     policy=CnnPolicy
-    test='CNNA2C'
+    test='CNNACER'
 
 elif policyname =='MlpPolicy':
 
     policy=MlpPolicy
-    test='MLPA2C'
+    test='MLPACER'
 
 trialv=inputarray.loc[idx].trialv 
 #LR_critic=inputarray.loc[idx].LR_critic

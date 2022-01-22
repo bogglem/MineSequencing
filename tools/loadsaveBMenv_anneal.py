@@ -20,7 +20,7 @@ from tools.createmodel import automodel
 
 class environment(gym.Env):
     
-    def __init__(self, x,y,z ,gamma, turnspc, policy, rg_prob=0.005, rendermode='off', envpath='./environments/15x15x4'):
+    def __init__(self, x,y,z ,gamma, turnspc, policy, rg_prob=0.005, annealrate=10000, rendermode='off', envpath='./environments/15x15x4'):
         
         self.rendermode=rendermode # on/off display block model in matplotlib
        # self.cutoffpenaltyscalar=penaltyscalar #scaling parameter for changing the penalty for taking no action (cutoff).
@@ -33,7 +33,7 @@ class environment(gym.Env):
         self.saveddepdic='%s/depdict' % self.envpath
         self.savedeffdic='%s/effdict' % self.envpath
         self.policy=policy
-       # self.annealrate=annealrate
+        self.annealrate=annealrate
         #initiating values
         self.framecounter=0
         self.actionslist = list()
@@ -87,7 +87,7 @@ class environment(gym.Env):
         
         self.startingturnspc=0.02
         self.turns=round(len(self.dep_dic)*self.startingturnspc,0) #set max number of turns (actions) in each episode based on percentage of block model size.
-        #self.dturnspc=turnspc-self.startingturnspc
+        self.dturnspc=turnspc-self.startingturnspc
     
         
         # Define action and observation space
@@ -517,7 +517,7 @@ class environment(gym.Env):
         self.turncounter=0
         self.episodecounter+=1
         #increase number of turns available as training progresses
-        #self.turns=min(round((len(self.dep_dic)*(self.dturnspc*self.episodecounter/self.annealrate+self.startingturnspc))),round((len(self.dep_dic)*(self.dturnspc+self.startingturnspc)))) 
+        self.turns=min(round((len(self.dep_dic)*(self.dturnspc*self.episodecounter/self.annealrate+self.startingturnspc))),round((len(self.dep_dic)*(self.dturnspc+self.startingturnspc)))) 
         # self.dturnspc+self.startingturnspc = final turnspc
         self.terminal=False
         self.i=-1
