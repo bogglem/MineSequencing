@@ -43,7 +43,7 @@ idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
 #idx=0
 
 #prepare input parameters
-inputarray=pd.read_csv('jobarrays/A2C_katana_job_input.csv')
+inputarray=pd.read_csv('jobarrays/ACER_katana_job_input.csv')
 
 #block model (environment) dimensions
 x=inputarray.loc[idx].x
@@ -55,12 +55,12 @@ policyname=inputarray.loc[idx].policyname  #change this name to change RL policy
 if policyname == 'CnnPolicy':
     
     policy=CnnPolicy
-    test='CNNA2C'
+    test='CNNACER'
 
 elif policyname =='MlpPolicy':
 
     policy=MlpPolicy
-    test='MLPA2C'
+    test='MLPACER'
 
 trialv=inputarray.loc[idx].trialv 
 #LR_critic=inputarray.loc[idx].LR_critic
@@ -85,11 +85,13 @@ episodetimesteps=round(x*y*z*turnspc)
 LR_s=str("{:f}".format(LR)).split('.')[1]
 inputfile_s='%s_%s_%s' % (x,y,z)
 gamma_s=str(gamma).replace('.','_')
+scalar_s=str(scalar).replace('.','_')
+
 #cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
 #rg_s=rg_prob #max(str(float(rg_prob)).split('.'))
 turnspc_s=str(turnspc).split('.')[1]
 storagefolder='output'
-scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}')    
+scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}_s{scalar_s}')     
 savepath='./%s/%s' % (storagefolder ,scenario)
 evpath='./%s/%s/eval' % (storagefolder ,scenario)
 #savepath='%s/environment' % (savepath)

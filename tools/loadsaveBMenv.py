@@ -20,7 +20,7 @@ from tools.createmodel import automodel
 
 class environment(gym.Env):
     
-    def __init__(self, x,y,z ,gamma, turnspc, policy, rg_prob=0.005, rendermode='off', envpath='./environments/15x15x4'):
+    def __init__(self, x,y,z ,gamma, turnspc, policy, scalar, rg_prob=0.005, rendermode='off', envpath='./environments/15x15x4'):
         
         self.rendermode=rendermode # on/off display block model in matplotlib
        # self.cutoffpenaltyscalar=penaltyscalar #scaling parameter for changing the penalty for taking no action (cutoff).
@@ -35,6 +35,7 @@ class environment(gym.Env):
         self.policy=policy
        # self.annealrate=annealrate
         #initiating values
+        self.scalar=scalar
         self.framecounter=0
         self.actionslist = list()
         self.reward=0
@@ -171,7 +172,7 @@ class environment(gym.Env):
             self.dep_dic=np.load("%s/%s_dep_dic.npy"% (self.saveddepdic, loadid+1), allow_pickle='True').flat[0]
             self.eff_dic=np.load("%s/%s_eff_dic.npy"% (self.savedeffdic, loadid+1), allow_pickle='True').flat[0]            
 
-        self.averagereward=np.average(self.geo_array[:,:,:,0])
+        self.averagereward=np.average(self.geo_array[:,:,:,0])*self.scalar
         
             
 
@@ -238,7 +239,7 @@ class environment(gym.Env):
             b=State_reshaped.reshape([self.Ilen, self.Jlen, self.RLlen,1])
             #c=SDev_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
             
-            self.averagereward=np.average(self.geo_array[:,:,:,0])
+            self.averagereward=np.average(self.geo_array[:,:,:,0])*self.scalar
              
             self.norm=np.append(a, b, axis=3)
            # self.norm=np.append(self.norm,c, axis=3)

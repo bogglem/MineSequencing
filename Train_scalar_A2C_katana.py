@@ -85,11 +85,13 @@ episodetimesteps=round(x*y*z*turnspc)
 LR_s=str("{:f}".format(LR)).split('.')[1]
 inputfile_s='%s_%s_%s' % (x,y,z)
 gamma_s=str(gamma).replace('.','_')
+scalar_s=str(scalar).replace('.','_')
+
 #cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
 #rg_s=rg_prob #max(str(float(rg_prob)).split('.'))
 turnspc_s=str(turnspc).split('.')[1]
 storagefolder='output'
-scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}')    
+scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}_s{scalar_s}')    
 savepath='./%s/%s' % (storagefolder ,scenario)
 evpath='./%s/%s/eval' % (storagefolder ,scenario)
 #savepath='%s/environment' % (savepath)
