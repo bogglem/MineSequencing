@@ -20,7 +20,7 @@ from tools.createmodel import automodel
 
 class environment(gym.Env):
     
-    def __init__(self, x,y,z ,gamma, turnspc, policy, scalar, rg_prob=0.005, rendermode='off', envpath='./environments/15x15x4'):
+    def __init__(self, x,y,z ,gamma, turnspc, scalar, policy, rg_prob=0.005, rendermode='off', envpath='./environments/15x15x4'):
         
         self.rendermode=rendermode # on/off display block model in matplotlib
        # self.cutoffpenaltyscalar=penaltyscalar #scaling parameter for changing the penalty for taking no action (cutoff).
@@ -172,7 +172,7 @@ class environment(gym.Env):
             self.dep_dic=np.load("%s/%s_dep_dic.npy"% (self.saveddepdic, loadid+1), allow_pickle='True').flat[0]
             self.eff_dic=np.load("%s/%s_eff_dic.npy"% (self.savedeffdic, loadid+1), allow_pickle='True').flat[0]            
 
-        self.averagereward=np.average(self.geo_array[:,:,:,0])*self.scalar
+        self.averagereward=np.multiply(np.average(self.geo_array[:,:,:,0]),self.scalar)
         
             
 

@@ -233,7 +233,7 @@ if __name__ == '__main__':
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
     eval_env=evalenv(x, y, z, gamma, turnspc, policyname)
-    env1 =environment(x, y, z, gamma, turnspc, policyname) #env annealreate/ numturns*eval_freq
+    env1 =environment(x, y, z, gamma, turnspc, scalar, policyname) #env annealreate/ numturns*eval_freq
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
