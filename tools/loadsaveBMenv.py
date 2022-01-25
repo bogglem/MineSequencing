@@ -87,7 +87,7 @@ class environment(gym.Env):
         self.build()
         
         self.startingturnspc=0.02
-        self.turns=round(len(self.dep_dic)*self.startingturnspc,0) #set max number of turns (actions) in each episode based on percentage of block model size.
+        self.turns=round(len(self.dep_dic)*turnspc,0) #set max number of turns (actions) in each episode based on percentage of block model size.
         #self.dturnspc=turnspc-self.startingturnspc
     
         
