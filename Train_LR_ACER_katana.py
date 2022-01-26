@@ -73,6 +73,7 @@ gamma=inputarray.loc[idx].gamma
 runtime=inputarray.loc[idx].runtime
 #cutoffpenaltyscalar=inputarray.loc[idx].cutoffpenaltyscalar #not currently implemented
 #rg_prob=inputarray.loc[idx].rg_prob
+scalar=inputarray.loc[idx].scalar
 turnspc=inputarray.loc[idx].turnspc
 ncpu=inputarray.loc[idx].ncpu
 
