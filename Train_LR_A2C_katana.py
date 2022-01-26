@@ -43,7 +43,7 @@ idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
 #idx=0
 
 #prepare input parameters
-inputarray=pd.read_csv('jobarrays/LR_job_input.csv')
+inputarray=pd.read_csv('jobarrays/LR_A2C_job_input.csv')
 
 #block model (environment) dimensions
 x=inputarray.loc[idx].x
@@ -75,7 +75,7 @@ runtime=inputarray.loc[idx].runtime
 #rg_prob=inputarray.loc[idx].rg_prob
 scalar=inputarray.loc[idx].scalar
 turnspc=inputarray.loc[idx].turnspc
-ncpu=4#inputarray.loc[idx].ncpu
+ncpu=inputarray.loc[idx].ncpu
 
 start=time.time()
 end=start+runtime
