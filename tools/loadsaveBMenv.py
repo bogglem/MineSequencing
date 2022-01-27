@@ -20,10 +20,10 @@ from tools.createmodel import automodel
 
 class environment(gym.Env):
     
-    def __init__(self, x,y,z ,gamma, turnspc, scalar, policy, rg_prob=0.005, rendermode='off', envpath='./environments/15x15x4'):
+    def __init__(self, x,y,z ,gamma, turnspc, failureprob, policy, rg_prob=0.005, rendermode='off', envpath='./environments/15x15x4'):
         
         self.rendermode=rendermode # on/off display block model in matplotlib
-       # self.cutoffpenaltyscalar=penaltyscalar #scaling parameter for changing the penalty for taking no action (cutoff).
+      
         self.rg_prob=rg_prob #rg for randomly generated, loadenv for loading premade envionments
         #self.savepath=savepath
         self.envpath=envpath#'./environments/20x20x6'
@@ -35,7 +35,7 @@ class environment(gym.Env):
         self.policy=policy
        # self.annealrate=annealrate
         #initiating values
-        self.scalar=scalar
+        self.failureprob=failureprob
         self.framecounter=0
         self.actionslist = list()
         self.reward=0
@@ -172,7 +172,7 @@ class environment(gym.Env):
             self.dep_dic=np.load("%s/%s_dep_dic.npy"% (self.saveddepdic, loadid+1), allow_pickle='True').flat[0]
             self.eff_dic=np.load("%s/%s_eff_dic.npy"% (self.savedeffdic, loadid+1), allow_pickle='True').flat[0]            
 
-        self.averagereward=np.multiply(np.average(self.geo_array[:,:,:,0]),self.scalar)
+        self.averagereward=np.average(self.geo_array[:,:,:,0])
         
             
 
@@ -239,7 +239,7 @@ class environment(gym.Env):
             b=State_reshaped.reshape([self.Ilen, self.Jlen, self.RLlen,1])
             #c=SDev_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
             
-            self.averagereward=np.average(self.geo_array[:,:,:,0])*self.scalar
+            self.averagereward=np.average(self.geo_array[:,:,:,0])
              
             self.norm=np.append(a, b, axis=3)
            # self.norm=np.append(self.norm,c, axis=3)
@@ -422,7 +422,7 @@ class environment(gym.Env):
         #x=self.turncounter
         #prob_fail= #1-np.exp(-x*0.00001)
         
-        if random.random()>0.9995**self.turncounter: #probability of success
+        if random.random()>self.failureprob**self.turncounter: #probability of success
             self.terminal=True
         else:
             self.terminal=False
@@ -460,7 +460,7 @@ class environment(gym.Env):
             self.update(selected_block)
             self.turncounter+=1
             self.renderif(self.rendermode)
-            #self.equip_failure() #terminates episode based on random failure of equipment
+            self.equip_failure() #terminates episode based on random failure of equipment
             
             
         if self.policy=='MlpPolicy':
