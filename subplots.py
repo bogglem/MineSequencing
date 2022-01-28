@@ -19,18 +19,45 @@ from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import ACER
-from tools.loadsaveBMenv import environment
-from tools.evalBMenv import environment as evalenv
+# from tools.loadsaveBMenv import environment
+# from tools.evalBMenv import environment as evalenv
 
 #os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
 #prepare input parameters
-inputarray=pd.read_csv('jobarrays/ACER_katana_job_input.csv')
+inputarray=pd.read_csv('jobarrays/ACER_katana_g_job_input.csv')
 
-for t in range(len(inputarray)):
-    
-    idx=t#int(sys.argv[1]) #array row number. required for batch runs on pbs katana
+#initate subplots
+
+l=len(inputarray)
+cols=2
+rows=int(np.ceil(l/cols))
+fig, axes = plt.subplots(rows, cols, figsize=(12,12))
+#fig.tight_layout()
+
+
+# """ Iterate column's axes"""
+# def subplot(cols, x,y, label):
+#     for col in cols:
+#         col
+idx=0
+
+for ax in axes.flatten():
+
+    #idx=t#int(sys.argv[1]) #array row number. required for batch runs on pbs katana
     #idx=5
+    
+    #subplot coords
+    # if t%2==1:
+    #     col=1
+    # else:
+    #     col=0
+    
+    # if t%2==0:
+    #     row=int(t/2)  
+    # else:
+    #     row=int((t-1)/2)
+    
     try:
     
         #block model (environment) dimensions
@@ -91,21 +118,41 @@ for t in range(len(inputarray)):
         y=np.average(results, axis=1)
         timesteps=[]
         timesteps=data['timesteps']
-        label='Penalty Scalar %s' % scalar
-        plt.plot(timesteps,y, label=label, linewidth=1.2)
-        plt.legend()
+        label='Gamma %s' % gamma
+        #plt.plot(timesteps,y, label=label, linewidth=1.2)
+       # plt.legend()
         
-        plt.title("ACER Penalty Scalar Tuning on Eval Environment Set")
-        plt.xlabel('Timesteps')
-        plt.ylabel('Evaluation Score')
+        #
+        #plt.xlabel('Timesteps')
+        #plt.ylabel('Evaluation Score')
         #plt.show() 
+        
+        
+        """ Iterate row's axes"""
+        #subplot(row, col, timesteps, y, label)
+        #ax=axes[row,col]
+        ax.set_ylim([0,50])
+        ax.set_xlim([0,2.5e7])
+           
+        ax.grid(axis='y')
+        ax.plot(timesteps, y, label=label, linewidth=1.2)    
+        ax.legend(loc='lower right')
+        #fig.title("A2C Learning Rate Tuning on Eval Environment Set")
+        
+        idx+=1
         
         
     except:
         break
         
+fig.subplots_adjust(hspace = .3)     
+fig.text(0.51, 0.91, 'ACER Gamma Tuning', ha='center', va='center', fontsize='xx-large')
+fig.text(0.51, 0.08, 'Timesteps', ha='center', va='center', fontsize='xx-large')
+fig.text(0.08, 0.5, 'Evaluation Score', ha='center', va='center', rotation='vertical', fontsize='xx-large')
+
+
 #save learning curve plot
-figsavepath='./%s/%s_%s Tuning' % (storagefolder, test, trialv)
-plt.savefig(figsavepath, dpi=300)
+figsavepath='./%s/%s_%s Tuning_subplots' % (storagefolder, test, trialv)
+plt.savefig(figsavepath, dpi=400)
 #plt.clf()
     
