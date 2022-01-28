@@ -422,7 +422,7 @@ class environment(gym.Env):
         #x=self.turncounter
         #prob_fail= #1-np.exp(-x*0.00001)
         
-        if random.random()>self.failureprob**self.turncounter: #probability of success
+        if random.random()>1-self.failureprob**self.turncounter: #probability of success
             self.terminal=True
         else:
             self.terminal=False
