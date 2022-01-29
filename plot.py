@@ -25,7 +25,7 @@ from tools.evalBMenv import environment as evalenv
 #os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
 #prepare input parameters
-inputarray=pd.read_csv('jobarrays/ACER_katana_job_input.csv')
+inputarray=pd.read_csv('jobarrays/ACER_katana_equipf_job_input.csv')
 
 for t in range(len(inputarray)):
     
@@ -43,12 +43,12 @@ for t in range(len(inputarray)):
         if policyname == 'CnnPolicy':
             
             policy=CnnPolicy
-            test='CNNACER'
+            test='CNNA2C'
         
         elif policyname =='MlpPolicy':
         
             policy=MlpPolicy
-            test='MLPACER'
+            test='MLPA2C'
         
         trialv=inputarray.loc[idx].trialv 
         #LR_critic=inputarray.loc[idx].LR_critic
@@ -78,7 +78,7 @@ for t in range(len(inputarray)):
         #rg_s=rg_prob #max(str(float(rg_prob)).split('.'))
         turnspc_s=str(turnspc).split('.')[1]
         storagefolder='output'
-        scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}_s{scalar_s}')    
+        scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}')    #_s{scalar_s}
         savepath='./%s/%s' % (storagefolder ,scenario)
         evpath='./%s/%s/eval' % (storagefolder ,scenario)
         #savepath='%s/environment' % (savepath)
@@ -91,11 +91,11 @@ for t in range(len(inputarray)):
         y=np.average(results, axis=1)
         timesteps=[]
         timesteps=data['timesteps']
-        label='Penalty Scalar %s' % scalar
+        label='LR %s' % LR
         plt.plot(timesteps,y, label=label, linewidth=1.2)
-        plt.legend()
+        plt.legend(loc='lower right')
         
-        plt.title("ACER Penalty Scalar Tuning on Eval Environment Set")
+        plt.title("A2C Learning Rate Tuning on Eval Environment Set")
         plt.xlabel('Timesteps')
         plt.ylabel('Evaluation Score')
         #plt.show() 
