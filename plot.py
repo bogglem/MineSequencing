@@ -25,7 +25,7 @@ from tools.evalBMenv import environment as evalenv
 #os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
 #prepare input parameters
-inputarray=pd.read_csv('jobarrays/ACER_katana_equipf_job_input.csv')
+inputarray=pd.read_csv('jobarrays/A2C_katana_equipf_job_input.csv')
 
 for t in range(len(inputarray)):
     
@@ -63,7 +63,7 @@ for t in range(len(inputarray)):
         #rg_prob=inputarray.loc[idx].rg_prob
         turnspc=inputarray.loc[idx].turnspc
         ncpu=inputarray.loc[idx].ncpu
-        scalar=inputarray.loc[idx].scalar
+        equipf=inputarray.loc[idx].equipf
         
         start=time.time()
         end=start+runtime
@@ -73,12 +73,12 @@ for t in range(len(inputarray)):
         LR_s=str("{:f}".format(LR)).split('.')[1]
         inputfile_s='%s_%s_%s' % (x,y,z)
         gamma_s=str(gamma).replace('.','_')
-        scalar_s=str(scalar).replace('.','_')
+        scalar_s=str(equipf).replace('.','_')
         #cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
         #rg_s=rg_prob #max(str(float(rg_prob)).split('.'))
         turnspc_s=str(turnspc).split('.')[1]
         storagefolder='output'
-        scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}')    #_s{scalar_s}
+        scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}_f{scalar_s}')    #_s{scalar_s}
         savepath='./%s/%s' % (storagefolder ,scenario)
         evpath='./%s/%s/eval' % (storagefolder ,scenario)
         #savepath='%s/environment' % (savepath)
@@ -91,11 +91,12 @@ for t in range(len(inputarray)):
         y=np.average(results, axis=1)
         timesteps=[]
         timesteps=data['timesteps']
-        label='LR %s' % LR
+        label='Fail Rate %s' % equipf
         plt.plot(timesteps,y, label=label, linewidth=1.2)
         plt.legend(loc='lower right')
         
-        plt.title("A2C Learning Rate Tuning on Eval Environment Set")
+        title="A2C g1 Equipment Fauilure Parameter Testing"
+        plt.title(title)
         plt.xlabel('Timesteps')
         plt.ylabel('Evaluation Score')
         #plt.show() 
@@ -105,7 +106,7 @@ for t in range(len(inputarray)):
         break
         
 #save learning curve plot
-figsavepath='./%s/%s_%s Tuning' % (storagefolder, test, trialv)
+figsavepath='./%s/%s_%s' % (storagefolder, title ,trialv)
 plt.savefig(figsavepath, dpi=300)
 #plt.clf()
     

@@ -132,10 +132,16 @@ class plotresults():
     def subplot(results, labels, geo_array):
        
         fig1, (f1ax1, f1ax2) = plt.subplots(1,2)
+        
         fig2, (f2ax1, f2ax2) = plt.subplots(2)        
+        fig2.subplots_adjust(hspace = .3)     
+        
+        fig3, f3ax1 = plt.subplots(1)  
         
         resultsarray1=np.array(results[0])
         resultsarray2=np.array(results[1])
+        cumresults1=np.cumsum(resultsarray1)
+        cumresults2=np.cumsum(resultsarray2)
         grades=geo_array[:,:,:,0]
         gradesf=np.ndarray.flatten(grades)
         avgrade=np.average(grades)
@@ -187,7 +193,7 @@ class plotresults():
         min_xlim, max_xlim = f2ax1.get_xlim()
         min_ylim, max_ylim = f2ax1.get_ylim()
         f2ax1.text(max_xlim*0.7, np.max(resultsarray1)*0.9, 'Max Grade: {:.3f}'.format(np.max(resultsarray1)))
-        f2ax1.text(max_xlim*0.05, max_ylim*0.5, labels1, rotation=0)     
+        f2ax1.text(max_xlim*0.42, max_ylim*1.05, labels1, rotation=0)     
 
         #Grade sequence 2
    
@@ -197,5 +203,22 @@ class plotresults():
         min_xlim, max_xlim = f2ax2.get_xlim()
         min_ylim, max_ylim = f2ax2.get_ylim()
         f2ax2.text(max_xlim*0.7, np.max(resultsarray2)*0.9, 'Max Grade: {:.3f}'.format(np.max(resultsarray2)))    
-        f2ax2.text(max_xlim*0.05, max_ylim*0.5, labels2, rotation=0)
+        f2ax2.text(max_xlim*0.42, max_ylim*1.05, labels2, rotation=0)
+        
+        
+        #Cumulative plot 1
+    
+        #plt.figure(2)
+        f3ax1.plot(cumresults1, label=labels1)    
+        min_xlim, max_xlim = f3ax1.get_xlim()
+        min_ylim, max_ylim = f3ax1.get_ylim()
+        f3ax1.text(max_xlim*0.31, max_ylim*1.05, 'Cumulative Grade', rotation=0)
+        #Cumulative plot 2
+
+        #plt.figure(2)
+        f3ax1.plot(cumresults2, label=labels2)    
+        
+        f3ax1.legend(loc='lower right')
+        
+
     

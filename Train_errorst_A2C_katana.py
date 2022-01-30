@@ -88,7 +88,7 @@ gamma_s=str(gamma).replace('.','_')
 #rg_s=rg_prob #max(str(float(rg_prob)).split('.'))
 turnspc_s=str(turnspc).split('.')[1]
 storagefolder='output'
-scenario=str(f'{trialv}t_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}')    
+scenario=str(f'{trialv}t_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}_p{penaltyscalar}')    
 savepath='./%s/%s' % (storagefolder ,scenario)
 evpath='./%s/%s/eval' % (storagefolder ,scenario)
 #savepath='%s/environment' % (savepath)
@@ -230,7 +230,7 @@ if __name__ == '__main__':
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
     eval_env=evalenv(x, y, z, gamma, turnspc, policyname)
-    #env1 =environment(x, y, z, gamma, turnspc, penaltyscalar, policyname) #env annealreate/ numturns*eval_freq
+    env1 =environment(x, y, z, gamma, turnspc, penaltyscalar, policyname) #env annealreate/ numturns*eval_freq
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
@@ -238,7 +238,7 @@ if __name__ == '__main__':
     
     #create callbacks to record data, initiate events during training.
     callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=evpath, n_eval_episodes=100, eval_freq=50000
-                                                                         , deterministic=False, best_model_save_path=evpath), EvalCallback(env, log_path=savepath, n_eval_episodes=20, eval_freq=50000
+                                                                         , deterministic=False, best_model_save_path=evpath), EvalCallback(env1, log_path=savepath, n_eval_episodes=20, eval_freq=50000
                                                                          , deterministic=False, best_model_save_path=savepath)])
     if (os.path.exists("%s/best_model.zip" % savepath)):
         # Instantiate the agent
