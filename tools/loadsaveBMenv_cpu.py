@@ -447,7 +447,7 @@ class environment(gym.Env):
         
         info={} #required for gym.Env class output
        
-        if (random.random()<0.00005): #every 20 000 steps randomly save environment 
+        if (random.random()<0.000001): #every 200 000 steps randomly save environment 
             #self.maxloadid+=1
             self.save()
             self.newenv(savenum='random')

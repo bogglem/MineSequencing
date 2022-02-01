@@ -40,7 +40,7 @@ from tools.evalBMenv import environment as evalenv
 os.environ['CUDA_VISIBLE_DEVICES'] = '5'
 
 #idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
-idx=4
+idx=5
 
 #prepare input parameters
 inputarray=pd.read_csv('jobarrays/A2C_katana_cpu_job_input.csv')
