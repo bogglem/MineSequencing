@@ -129,7 +129,7 @@ class ai():
             obs, rewards, dones, info = self.env.step(action)
             cumreward+=rewards
             print(action, rewards, dones, cumreward)
-            self.results.append(info)
+            self.results.append(info[0])
             a=abs(info[1]-1)
             self.minable.append(a)
             

@@ -107,7 +107,7 @@ class plotresults():
         
         resultsarray=np.array(results)
         grades=geo_array[:,:,:,0]
-        gradesf=np.ndarray.flatten(grades)
+        gradesf=np.ndarray.flatten(grades)*100
         avgrade=np.average(grades)
         
         fig1=plt.figure(1)
@@ -135,28 +135,32 @@ class plotresults():
         fig1, (f1ax1, f1ax2) = plt.subplots(1,2)
         
         fig2, (f2ax1, f2ax2) = plt.subplots(2)        
-        fig2.subplots_adjust(hspace = .3)     
+        fig2.subplots_adjust(hspace = .4)     
         
         fig3, f3ax1 = plt.subplots(1)  
         
-        resultsarray1=np.array(results[0])
-        resultsarray2=np.array(results[1])
+        resultsarray1=np.array(results[0])*100
+        resultsarray2=np.array(results[1])*100
         
-      #  minablearray1=np.array(minable[0])*np.average(resultsarray1)
-      #  maskedminablearray1 = np.ma.masked_where(minablearray1>0, minablearray1)
+        minablearray1=np.array(minable[0])*np.average(resultsarray1)
+        maskedminablearray1 = np.ma.masked_where(minablearray1==0, minablearray1)
         
-     #   minablearray2=np.array(minable[1])*np.average(resultsarray2)
-      #  maskedminablearray2=np.ma.masked_where(minablearray2>0, minablearray2)
+        minablearray2=np.array(minable[1])*np.average(resultsarray2)
+        maskedminablearray2=np.ma.masked_where(minablearray2==0, minablearray2)
         
         cumresults1=np.cumsum(resultsarray1)
         cumresults2=np.cumsum(resultsarray2)
-        grades=geo_array[:,:,:,0]
+        grades=geo_array[:,:,:,0]*100
         gradesf=np.ndarray.flatten(grades)
         avgrade=np.average(grades)
 
         labels1, labels2 = labels
         
         #Histogram 1
+        
+        fig1.text(0.54, 0.02, 'Grade %H2O', ha='center', va='center', fontsize='large')
+        fig1.text(0.02, 0.5, '# of available blocks', ha='center', va='center', rotation='vertical', fontsize='large')
+
         
         #fig1=plt.figure(1)
         f1ax1.hist(gradesf,40)
@@ -170,9 +174,9 @@ class plotresults():
         # f1ax1.text(np.average(resultsarray1[20:40])*1.05, max_ylim*0.6, '20-40 Grade: {:.3f}'.format(np.average(resultsarray1[20:40])), rotation=45, color='r')
         # f1ax1.text(np.average(resultsarray1)*1.05, max_ylim*0.8, 'Total Mined Grade: {:.3f}'.format(np.average(resultsarray1)), rotation=45)
         
-        f1ax1.text(max_xlim*0.35, max_ylim*0.4, '0-20 Gr: {:.3f}'.format(np.average(resultsarray1[0:20])), rotation=0, color='g')
-        f1ax1.text(max_xlim*0.35, max_ylim*0.5, '20-40 Gr: {:.3f}'.format(np.average(resultsarray1[20:40])), rotation=0, color='r')
-        f1ax1.text(max_xlim*0.35, max_ylim*0.6, 'Total Gr: {:.3f}'.format(np.average(resultsarray1)), rotation=0)
+        f1ax1.text(max_xlim*0.55, max_ylim*0.4, '0-20 %H2O: {:.1f}'.format(np.average(resultsarray1[0:20])), rotation=0, color='g')
+        f1ax1.text(max_xlim*0.55, max_ylim*0.5, '20-40 %H2O: {:.1f}'.format(np.average(resultsarray1[20:40])), rotation=0, color='r')
+        f1ax1.text(max_xlim*0.55, max_ylim*0.6, 'Total %H2O: {:.1f}'.format(np.average(resultsarray1)), rotation=0)
         f1ax1.text(max_xlim*0.4, max_ylim*1.02, labels1, rotation=0)    
         
         #Histogram 2
@@ -188,36 +192,43 @@ class plotresults():
         # f1ax2.text(np.average(resultsarray2[0:20])*1.05, max_ylim*0.4, '0-20 Grade: {:.3f}'.format(np.average(resultsarray2[0:20])), rotation=45, color='g')
         # f1ax2.text(np.average(resultsarray2[20:40])*1.05, max_ylim*0.6, '20-40 Grade: {:.3f}'.format(np.average(resultsarray2[20:40])), rotation=45, color='r')
         # f1ax2.text(np.average(resultsarray2)*1.05, max_ylim*0.8, 'Total Mined Grade: {:.3f}'.format(np.average(resultsarray2)), rotation=45)
-        f1ax2.text(max_xlim*0.35, max_ylim*0.4, '0-20 Gr: {:.3f}'.format(np.average(resultsarray2[0:20])), rotation=0, color='g')
-        f1ax2.text(max_xlim*0.35, max_ylim*0.5, '20-40 Gr: {:.3f}'.format(np.average(resultsarray2[20:40])), rotation=0, color='r')
-        f1ax2.text(max_xlim*0.35, max_ylim*0.6, 'Total Gr: {:.3f}'.format(np.average(resultsarray2)), rotation=0)       
+        f1ax2.text(max_xlim*0.55, max_ylim*0.4, '0-20 %H2O: {:.1f}'.format(np.average(resultsarray2[0:20])), rotation=0, color='g')
+        f1ax2.text(max_xlim*0.55, max_ylim*0.5, '20-40 %H2O: {:.1f}'.format(np.average(resultsarray2[20:40])), rotation=0, color='r')
+        f1ax2.text(max_xlim*0.55, max_ylim*0.6, 'Total %H2O: {:.1f}'.format(np.average(resultsarray2)), rotation=0)       
         f1ax2.text(max_xlim*0.45, max_ylim*1.02, labels2, rotation=0)     
         
         #Grade sequence 1
-    
+
+        fig2.text(0.51, 0.02, 'Timestep', ha='center', va='center', fontsize='large')
+        fig2.text(0.02, 0.5, 'Grade Extracted %H2O', ha='center', va='center', rotation='vertical', fontsize='large')
+        
         #plt.figure(2)
         f2ax1.plot(resultsarray1)
-      #  f2ax1.plot(maskedminablearray1, color='r', marker='x')
+        f2ax1.plot(maskedminablearray1, color='r',linestyle='none', marker='x', label='Sequence Error')
         f2ax1.axhline(np.max(resultsarray1), color='k', linestyle='dashed', linewidth=1)
         min_xlim, max_xlim = f2ax1.get_xlim()
         min_ylim, max_ylim = f2ax1.get_ylim()
-        f2ax1.text(max_xlim*0.7, np.max(resultsarray1)*0.9, 'Max Grade: {:.3f}'.format(np.max(resultsarray1)))
+        #f2ax1.text(max_xlim*0.7, np.max(resultsarray1)*0.9, 'Max Grade: {:.1f}'.format(np.max(resultsarray1)))
         f2ax1.text(max_xlim*0.42, max_ylim*1.05, labels1, rotation=0)     
 
         #Grade sequence 2
    
         #plt.figure(2)
         f2ax2.plot(resultsarray2)    
-     #   f2ax2.plot(maskedminablearray2, color='r', marker='x')
+        f2ax2.plot(maskedminablearray2, color='r',linestyle='none', marker='x')
         f2ax2.axhline(np.max(resultsarray2), color='k', linestyle='dashed', linewidth=1)
         min_xlim, max_xlim = f2ax2.get_xlim()
         min_ylim, max_ylim = f2ax2.get_ylim()
-        f2ax2.text(max_xlim*0.7, np.max(resultsarray2)*0.9, 'Max Grade: {:.3f}'.format(np.max(resultsarray2)))    
+        #f2ax2.text(max_xlim*0.7, np.max(resultsarray2)*0.9, 'Max Grade: {:.1f}'.format(np.max(resultsarray2)))    
         f2ax2.text(max_xlim*0.42, max_ylim*1.05, labels2, rotation=0)
         
+        fig2.legend(loc='lower right')
         
         #Cumulative plot 1
     
+        fig3.text(0.51, 0.02, 'Timestep', ha='center', va='center', fontsize='large')
+        fig3.text(0.02, 0.5, 'Cumulative H2O Extracted (kg)', ha='center', va='center', rotation='vertical', fontsize='large')
+        
         #plt.figure(2)
         f3ax1.plot(cumresults1, label=labels1)    
         min_xlim, max_xlim = f3ax1.get_xlim()
