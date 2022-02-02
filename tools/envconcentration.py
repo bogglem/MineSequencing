@@ -30,7 +30,7 @@ class envconc():
         #type a = fresh environment
         #type be = used environemnt
         
-        if (random.random()<0.05): #every 20 000 steps randomly save environment 
+        if (random.random()<0.00001): #every 1 00 000 steps randomly save environment 
             self.container[self.i] += 1
             self.s+=1
             self.container[np.random.randint(0,4999)] = 1
@@ -74,9 +74,9 @@ class envconc():
         #ye=np.array(self.brecord)
         
         
-        plt.plot(x,ya, label='New Envs', linewidth=1.2)
-        plt.plot(x,yb, label='Used Env 1', linewidth=1.2)
-        plt.plot(x,yc, label='Used Env>2', linewidth=1.2)
+        plt.plot(x,ya, label='Unmined', linewidth=1.2)
+        plt.plot(x,yb, label='Part Mined Once', linewidth=1.2)
+        plt.plot(x,yc, label='Part Mined >Once', linewidth=1.2)
         #plt.plot(x,yd, label='Used Env 3', linewidth=1.2)
         #plt.plot(x,ye, label='Used Env >4', linewidth=1.2)
                 
@@ -85,7 +85,7 @@ class envconc():
         title="Environment types in folder"
         plt.title(title)
         plt.xlabel('Timestep')
-        plt.ylabel('Count')
+        plt.ylabel('# of Environments in Folder')
 
         
         

@@ -20,23 +20,21 @@ from tools.createmodel import automodel
 
 class environment(gym.Env):
     
-    def __init__(self, x,y,z ,gamma, turnspc, policy, rg_prob='loadenv', rendermode='off', envpath='./environments/15x15x4'):
+    def __init__(self, x,y,z ,gamma, turnspc, policy, rg_prob='rg', envpath='./environments', rendermode='off'):
         
         self.rendermode=rendermode # on/off display block model in matplotlib
-      
+       # self.cutoffpenaltyscalar=penaltyscalar #scaling parameter for changing the penalty for taking no action (cutoff).
         self.rg_prob=rg_prob #rg for randomly generated, loadenv for loading premade envionments
         #self.savepath=savepath
-        self.envpath=envpath#'./environments/20x20x6'
-        self.savedgeo='%s/geology' % self.envpath
+        #envpath='./environments'
+        self.savedgeo='%s/geology' % envpath
         # self.savedtruth='%s/truth' % envpath
-        self.savedenv='%s/environment' % self.envpath
-        self.saveddepdic='%s/depdict' % self.envpath
-        self.savedeffdic='%s/effdict' % self.envpath
+        self.savedenv='%s/environment' % envpath
+        self.saveddepdic='%s/depdict' % envpath
+        self.savedeffdic='%s/effdict' % envpath
         self.policy=policy
-       # self.annealrate=annealrate
+        
         #initiating values
-        #self.failureprob=failureprob
-        self.penaltyscalar=1
         self.framecounter=0
         self.actionslist = list()
         self.reward=0
@@ -55,19 +53,11 @@ class environment(gym.Env):
         self.mined=-1
         self.callnumber=1
         self.savenumber=0
-        self.episodecounter=0
-        self.loadidx=0
-        self.savecounter=1
-        
         try:
             self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
         except:
-            self.maxloadid=1
-        
-        self.loadidarray=np.arange(1,self.maxloadid+1)
+            self.maxloadid=0
             
-        
-        
         #sizing the block model environment
         self.Ilen=self.Imax-self.Imin 
         self.Jlen=self.Jmax-self.Jmin
@@ -85,16 +75,10 @@ class environment(gym.Env):
         
         #create block model
         self.model=automodel(self.Ilen,self.Jlen,self.RLlen)
-        
-        #construct_dependencies blocks with zeros padding to avoid errors around environment edges.
-        self.construct_block_dic()
-        
         self.build()
         
-        self.startingturnspc=0.02
         self.turns=round(len(self.dep_dic)*turnspc,0) #set max number of turns (actions) in each episode based on percentage of block model size.
-        #self.dturnspc=turnspc-self.startingturnspc
-    
+        
         
         # Define action and observation space
         # They must be gym.spaces objects
@@ -119,29 +103,11 @@ class environment(gym.Env):
        
 
 
-    def save(self, savenum='count'):
-        
-        
-        if savenum =='count':
-            numenvs=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
-            if numenvs<5000: #max 5000 saved environments.
-                self.savenumber=numenvs+1
-            else: #start overwriting older environments
-                self.savenumber=self.savecounter
-                self.savecounter+=1
-                
-            if self.savecounter>5000:
-                self.savecounter=1
-                
-        elif savenum == 'random':
-        
-           self.savenumber=np.random.randint(1,self.maxloadid)
+    def save(self):
     
         #create dir        
         if (os.path.exists('./environments')!=True):
             os.mkdir('./environments')
-        if (os.path.exists('%s' %self.envpath)!=True):
-            os.mkdir('%s' %self.envpath)
         if (os.path.exists('%s' %self.savedgeo)!=True):
             os.mkdir('%s' %self.savedgeo)
         # if (os.path.exists('%s' %self.savedtruth)!=True):
@@ -153,16 +119,22 @@ class environment(gym.Env):
         if (os.path.exists('%s' %self.savedeffdic)!=True):
             os.mkdir('%s' %self.savedeffdic)         
         
+        self.savenumber=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])+1
         
         #save geo array   
-        np.save("%s/%s_geo_array"% (self.savedgeo, self.savenumber), self.geo_array)  
+        np.save("%s/%s_geo_array"% (self.savedgeo, self.savenumber), self.geo_array)
+                  
         #save normalised ob_sample       
-        np.save("%s/%s_ob_sample"% (self.savedenv, self.savenumber), self.ob_sample)    
+        np.save("%s/%s_ob_sample"% (self.savedenv, self.savenumber), self.ob_sample)
+                
         #save dep_dic  
         np.save("%s/%s_dep_dic"% (self.saveddepdic, self.savenumber), self.dep_dic)
+
         #save eff_dic   
         np.save("%s/%s_eff_dic"% (self.savedeffdic, self.savenumber), self.eff_dic)
-
+          
+        
+    
         
     def load(self, loadid):
         
@@ -182,96 +154,75 @@ class environment(gym.Env):
             self.eff_dic=np.load("%s/%s_eff_dic.npy"% (self.savedeffdic, loadid+1), allow_pickle='True').flat[0]            
 
         self.averagereward=np.average(self.geo_array[:,:,:,0])
-
-
-    def newenv(self, savenum='count'):
         
+      
         
-         savenum=savenum
-        #generates a new environment and saves in folder
-         #self.geo_array, self.truth_array=self.model.buildmodel()
-         self.geo_array=self.model.buildmodel()      
-             
-         scaler=MinMaxScaler()
-         H2O_init=self.geo_array[:,:,:,0]
-        # Tonnes_init=self.geo_array[:,:,:,1]
-         State_init=self.geo_array[:,:,:,1]
-        # SDev_init=self.geo_array[:,:,:,2]
-         
-         H2O_reshaped=H2O_init.reshape([-1,1])
-         #Tonnes_reshaped=Tonnes_init.reshape([-1,1])
-         State_reshaped=State_init.reshape([-1,1])
-         #SDev_reshaped=SDev_init.reshape([-1,1])
-         
-         H2O_scaled=scaler.fit_transform(H2O_reshaped)
-         #SDev_scaled=scaler.fit_transform(SDev_reshaped)
-         
-         a=H2O_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
-         b=State_reshaped.reshape([self.Ilen, self.Jlen, self.RLlen,1])
-         #c=SDev_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
-         
-         self.averagereward=np.average(self.geo_array[:,:,:,0])
-          
-         self.norm=np.append(a, b, axis=3)
-        # self.norm=np.append(self.norm,c, axis=3)
-         
-         
-         self.ob_sample=deepcopy(self.norm)
-         self.construct_dep_dic()
-         self.dep_dic=deepcopy(self.dep_dic_init)
-         self.construct_eff_dic()
-         self.eff_dic=deepcopy(self.eff_dic_init)
-         self.save(savenum)
- 
+    # def save_env(self, savedenv,array):
+        
+    #     if (os.path.exists(self.savepath)):
+    #         np.save("%s"% savedenv, array)
+        
+    #     elif (os.path.exists(self.savepath)!=True):
+    #         os.mkdir(self.savepath)
+    #         np.save("%s"% savedenv, array)    
+    
+    # def load_env(self):
+    #     #to be deprecated once all saved environments include dicts and ob_sample
+        
+    #     self.geo_array=np.load("%s.npy"% self.savedenv)
+    #     print("loaded environment")
+        
+    #     return self.geo_array
+        
 
     def build(self):
         
         #builds block model and mining sequence constraints dictionary (eg. top must be mined first)         
-        if (self.rg_prob=='loadenv'):# and self.maxloadid>0:
-            
-            try: #determine number of saved files
-                self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
-            except:
-                self.maxloadid=1
-                
-            self.loadidarray=np.arange(1,self.maxloadid+1)
-            
-            if self.loadidx>=self.maxloadid:
-                self.loadidx=1
-                np.random.shuffle(self.loadidarray)
-              
-            loadid=self.loadidarray[self.loadidx]
-            
+        if (self.rg_prob=='loadenv'):# and self.maxloadid>0: 
+            loadid = round(random.random()*self.maxloadid)      
             self.load(loadid)
-            
-            self.loadidx += 1#round(random.random()*self.maxloadid)   
         
-        # elif  (type(self.rg_prob)==float) and (random.random()>self.rg_prob): #if random is greater than rg_prob loadenv, otherwise build new env
-    
-        #     try: #determine number of saved files
-        #         self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
-        #     except:
-        #         self.maxloadid=1
-            
-        #     self.loadidarray=np.arange(1,self.maxloadid+1)
-            
-        #     if self.loadidx>=self.maxloadid:
-        #         self.loadidx=1
-        #         np.random.shuffle(self.loadidarray)
-              
-        #     loadid=self.loadidarray[self.loadidx]
-            
-        #     self.load(loadid)
-            
-        #     self.loadidx += 1#round(random.random()*self.maxloadid)   
-                    
         else:
-            self.newenv() #generates a new environment and saves in folder
+            #self.geo_array, self.truth_array=self.model.buildmodel()
+            self.geo_array=self.model.buildmodel()
+            #self.save_env(self.savedenv,self.geo_array)
+        
+                
+            scaler=MinMaxScaler()
+            H2O_init=self.geo_array[:,:,:,0]
+           # Tonnes_init=self.geo_array[:,:,:,1]
+            State_init=self.geo_array[:,:,:,1]
+           # SDev_init=self.geo_array[:,:,:,2]
             
-
+            H2O_reshaped=H2O_init.reshape([-1,1])
+            #Tonnes_reshaped=Tonnes_init.reshape([-1,1])
+            State_reshaped=State_init.reshape([-1,1])
+            #SDev_reshaped=SDev_init.reshape([-1,1])
+            
+            H2O_scaled=scaler.fit_transform(H2O_reshaped)
+            #SDev_scaled=scaler.fit_transform(SDev_reshaped)
+            
+            a=H2O_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
+            b=State_reshaped.reshape([self.Ilen, self.Jlen, self.RLlen,1])
+            #c=SDev_scaled.reshape([self.Ilen, self.Jlen, self.RLlen,1])
+            
+            self.averagereward=np.average(self.geo_array[:,:,:,0])
+             
+            self.norm=np.append(a, b, axis=3)
+           # self.norm=np.append(self.norm,c, axis=3)
+            
+            
+            self.ob_sample=deepcopy(self.norm)
+            self.construct_dep_dic()
+            self.dep_dic=deepcopy(self.dep_dic_init)
+            self.construct_eff_dic()
+            self.eff_dic=deepcopy(self.eff_dic_init)
+            
+        #construct_dependencies blocks with zeros padding to avoid errors around environment edges.
+        self.construct_block_dic()
         self.block_dic=deepcopy(self.block_dic_init) #deepcopy so dictionary doesnt have to be rebuilt for every new environment.
         
-        self.render_update = self.geo_array[:,:,:,0] #provides data sliced for render function
+        self.render_update = deepcopy(self.geo_array[:,:,:,0]) #provides data sliced for render function
         self.bm=renderbm(self.render_update)
 
         # #save environment if random generation disabled
@@ -433,24 +384,23 @@ class environment(gym.Env):
     
     
     
-    # def equip_failure(self):
-    #     #x=self.turncounter
-    #     #prob_fail= #1-np.exp(-x*0.00001)
+    def equip_failure(self):
+        #x=self.turncounter
+        #prob_fail= #1-np.exp(-x*0.00001)
         
-    #     if random.random()>1-self.failureprob**self.turncounter: #probability of success
-    #         self.terminal=True
-    #     else:
-    #         self.terminal=False
-    #     return
+        if random.random()>0.9995**self.turncounter: #probability of success
+            self.terminal=True
+        else:
+            self.terminal=False
+        return
     
     def step(self, action):        
         
         info={} #required for gym.Env class output
        
-        if (random.random()<0.00001): #every 100 000 steps randomly save environment 
-            #self.maxloadid+=1
-            self.save()
-            self.newenv(savenum='random')
+        # if (random.random()<0.00001): #every 10 000 steps randomly save environment 
+        #     self.maxloadid+=1
+        #     self.save()
         
         if sum(sum(sum(self.ob_sample[:,:,:,1])))>=self.ob_sample[:,:,:,1].size: #if all blocks are mined, end episode
             self.terminal=True
@@ -472,7 +422,7 @@ class environment(gym.Env):
             isMinable=self.isMinable(selected_block)
             isEfficient=self.isEfficient(selected_block)
             
-            self.evaluate(selected_block, isMinable, isEfficient)
+            info=self.evaluate(selected_block, isMinable, isEfficient)
             self.update(selected_block)
             self.turncounter+=1
             self.renderif(self.rendermode)
@@ -493,25 +443,32 @@ class environment(gym.Env):
                  
     def evaluate(self, selected_block, isMinable, isEfficient):
         
+        info=0
+        
         if isMinable==0:             #penalising repetetive useless actions
             
-            ore=-self.penaltyscalar*self.averagereward
-            #self.terminal=True
+            ore=-self.averagereward
+            H2O=self.geo_array[self.i,self.j,self.RL,0]
+            info=H2O
             
         elif isEfficient==0: #penalising high entropy policies spreading out and randomly picking.
             ore=-self.averagereward
+            H2O=self.geo_array[self.i,self.j,self.RL,0]
+            info=H2O
                 
         else:
             
             H2O=self.geo_array[self.i,self.j,self.RL,0]
             #Tonnes=self.geo_array[self.i, self.j,self.RL,1] 
-
+            info=H2O
             # if (H2O*Tonnes)+self.init_cutoffpenalty>=0: #to be used for experimental determination of cutoff grade
             ore=H2O-self.averagereward
             # else:
             #     self.reward=self.init_cutoffpenalty
                 
         self.reward=ore*10
+        
+        return info
         
     def update(self, selected_block):
     
@@ -533,10 +490,6 @@ class environment(gym.Env):
         self.reward=0
         self.discountedmined=0
         self.turncounter=0
-        self.episodecounter+=1
-        #increase number of turns available as training progresses
-        #self.turns=min(round((len(self.dep_dic)*(self.dturnspc*self.episodecounter/self.annealrate+self.startingturnspc))),round((len(self.dep_dic)*(self.dturnspc+self.startingturnspc)))) 
-        # self.dturnspc+self.startingturnspc = final turnspc
         self.terminal=False
         self.i=-1
         self.j=-1
@@ -574,7 +527,22 @@ class environment(gym.Env):
                  self.bm.plot()
         pass
    
-    def render(self):      
+    def render(self, mined='mined'):      
+        # input any text to plot without nmined blocks
+
+        self.bm.initiate_plot(self.averagereward)
+        
+        if mined=='mined':
+            self.bm.update_all_mined(self.ob_sample)
+            self.bm.plot()
+        else:
+            self.bm_original=renderbm(self.geo_array[:,:,:,0])
+            self.bm_original.initiate_plot(self.averagereward)
+            self.bm_original.plot()
+            
+        
+
+    def renderx(self,xx=0,yy=0,zz=0, mined='mined'):      
     
         #create 3D plot
         
@@ -583,26 +551,18 @@ class environment(gym.Env):
         #     r=renderbm(self.truth_array[:,:,:,0])
             
         # else:
-               
-        r=renderbm(self.geo_array[:,:,:,0])
+        #r=renderbm(self.geo_array[:,:,:,0])
         
-        r.initiate_plot(self.averagereward)
-        r.plot()
-
-    def renderx(self):      
-    
-        #create 3D plot
         
-        # if geotruth=='truth':
-       
-        #     r=renderbm(self.truth_array[:,:,:,0])
-            
-        # else:
-               
-        r=renderbm(self.geo_array[:,:,:,0])
+        if mined=='mined':
+            self.bm.initiate_plot(self.averagereward)
+            self.bm.update_all_mined(self.ob_sample)
+            self.bm.plotx(xx,yy,zz) 
+        else:
+            self.bm_original=renderbm(self.geo_array[:,:,:,0])
+            self.bm_original.initiate_plot(self.averagereward)
+            self.bm_original.plotx(xx,yy,zz) 
+                 
         
-        r.initiate_plot(self.averagereward)
-        r.plotx(20,0,0)                
-
-
-        
+                       
+      

@@ -45,16 +45,22 @@ class human():
         
         self.traj = np.genfromtxt(str(f'{humantraj}.csv'), delimiter=',')  
         self.results=list()
+        self.minable=list()
         self.env=env
         
     def run(self):
         self.env.reset()
         counter=0
+        self.env.rendermode='off'
+        
         for s in self.traj:
             
             obs, rewards, dones, info = env.step(int(s))         
             self.env.render()         
-            self.results.append(info)          
+            self.results.append(info[0])
+            a=abs(info[1]-1)
+            self.minable.append(a)
+            
             counter+=1
         
 
@@ -111,11 +117,12 @@ class ai():
         mean_reward, std_reward = evaluate_policy(self.model, self.env, n_eval_episodes=20, deterministic=False)
         print('mean_reward = %s +/- %s' %(mean_reward,std_reward))
         self.results=list()
+        self.minable=list()
         
     def run(self):  # Enjoy trained agent
         cumreward=0
         obs = self.env.reset()
-        self.env.rendermode='on'
+        self.env.rendermode='off'
 
         for i in range(self.episodetimesteps):
             action, _states = self.model.predict(obs, deterministic=False)
@@ -123,6 +130,9 @@ class ai():
             cumreward+=rewards
             print(action, rewards, dones, cumreward)
             self.results.append(info)
+            a=abs(info[1]-1)
+            self.minable.append(a)
+            
             #env.renderif('on')
             if dones == True:
                 break
@@ -133,10 +143,12 @@ class ai():
         
 if __name__ == '__main__':
     
+    envnum=2
     
-    env = environment(15, 15, 4, 0.9, 0.1, 'MlpPolicy')
+    env = environment(15, 15, 4, 0.9, 0.1, 'MlpPolicy', rg_prob=envnum)
     
-    human=human(env, 'HumanTrajectory')
+    trajname='HumanTrajectory%s' % envnum
+    human=human(env, trajname)
             
     ai=ai(env)
     
@@ -144,6 +156,6 @@ if __name__ == '__main__':
     
     ai.run()
     
-    plotresults.subplot([human.results, ai.results], ['Human', 'Agent'], env.geo_array)
+    plotresults.subplot([human.results, ai.results], ['Human', 'Agent'], env.geo_array, [human.minable, ai.minable])
     
     

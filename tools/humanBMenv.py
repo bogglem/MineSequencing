@@ -182,6 +182,10 @@ class environment(gym.Env):
             loadid = round(random.random()*self.maxloadid)      
             self.load(loadid)
         
+        elif type(self.rg_prob)==int:
+            loadid=self.rg_prob
+            self.load(loadid)
+        
         else:
             #self.geo_array, self.truth_array=self.model.buildmodel()
             self.geo_array=self.model.buildmodel()
@@ -449,18 +453,18 @@ class environment(gym.Env):
             
             ore=-self.averagereward
             H2O=self.geo_array[self.i,self.j,self.RL,0]
-            info=H2O
+            info=[H2O,isMinable]
             
         elif isEfficient==0: #penalising high entropy policies spreading out and randomly picking.
             ore=-self.averagereward
             H2O=self.geo_array[self.i,self.j,self.RL,0]
-            info=H2O
+            info=[H2O,isMinable]
                 
         else:
             
             H2O=self.geo_array[self.i,self.j,self.RL,0]
             #Tonnes=self.geo_array[self.i, self.j,self.RL,1] 
-            info=H2O
+            info=[H2O,isMinable]
             # if (H2O*Tonnes)+self.init_cutoffpenalty>=0: #to be used for experimental determination of cutoff grade
             ore=H2O-self.averagereward
             # else:

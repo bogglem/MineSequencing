@@ -129,7 +129,8 @@ class plotresults():
         plt.text(max_xlim*0.4, np.max(resultsarray)*0.9, labels)
 
         
-    def subplot(results, labels, geo_array):
+    def subplot(results, labels, geo_array, minable):
+        
        
         fig1, (f1ax1, f1ax2) = plt.subplots(1,2)
         
@@ -140,6 +141,13 @@ class plotresults():
         
         resultsarray1=np.array(results[0])
         resultsarray2=np.array(results[1])
+        
+      #  minablearray1=np.array(minable[0])*np.average(resultsarray1)
+      #  maskedminablearray1 = np.ma.masked_where(minablearray1>0, minablearray1)
+        
+     #   minablearray2=np.array(minable[1])*np.average(resultsarray2)
+      #  maskedminablearray2=np.ma.masked_where(minablearray2>0, minablearray2)
+        
         cumresults1=np.cumsum(resultsarray1)
         cumresults2=np.cumsum(resultsarray2)
         grades=geo_array[:,:,:,0]
@@ -188,7 +196,8 @@ class plotresults():
         #Grade sequence 1
     
         #plt.figure(2)
-        f2ax1.plot(resultsarray1)    
+        f2ax1.plot(resultsarray1)
+      #  f2ax1.plot(maskedminablearray1, color='r', marker='x')
         f2ax1.axhline(np.max(resultsarray1), color='k', linestyle='dashed', linewidth=1)
         min_xlim, max_xlim = f2ax1.get_xlim()
         min_ylim, max_ylim = f2ax1.get_ylim()
@@ -199,6 +208,7 @@ class plotresults():
    
         #plt.figure(2)
         f2ax2.plot(resultsarray2)    
+     #   f2ax2.plot(maskedminablearray2, color='r', marker='x')
         f2ax2.axhline(np.max(resultsarray2), color='k', linestyle='dashed', linewidth=1)
         min_xlim, max_xlim = f2ax2.get_xlim()
         min_ylim, max_ylim = f2ax2.get_ylim()

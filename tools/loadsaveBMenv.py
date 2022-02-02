@@ -25,6 +25,7 @@ class environment(gym.Env):
         self.rendermode=rendermode # on/off display block model in matplotlib
       
         self.rg_prob=rg_prob #rg for randomly generated, loadenv for loading premade envionments
+       # self.rg_prob1=rg_prob
         #self.savepath=savepath
         self.envpath=envpath#'./environments/20x20x6'
         self.savedgeo='%s/geology' % self.envpath
@@ -58,6 +59,7 @@ class environment(gym.Env):
         self.episodecounter=0
         self.loadidx=0
         self.savecounter=1
+        self.freshsave=0 #if =1 save new environment
         
         try:
             self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
@@ -184,10 +186,10 @@ class environment(gym.Env):
         self.averagereward=np.average(self.geo_array[:,:,:,0])
 
 
-    def newenv(self, savenum='count'):
+    def newenv(self):
         
         
-         savenum=savenum
+         #savenum=savenum
         #generates a new environment and saves in folder
          #self.geo_array, self.truth_array=self.model.buildmodel()
          self.geo_array=self.model.buildmodel()      
@@ -221,13 +223,13 @@ class environment(gym.Env):
          self.dep_dic=deepcopy(self.dep_dic_init)
          self.construct_eff_dic()
          self.eff_dic=deepcopy(self.eff_dic_init)
-         self.save(savenum)
+         
  
 
     def build(self):
         
         #builds block model and mining sequence constraints dictionary (eg. top must be mined first)         
-        if (self.rg_prob=='loadenv'):# and self.maxloadid>0:
+        if (self.rg_prob=='loadenv') and (self.freshsave==0):# and self.maxloadid>0:
             
             try: #determine number of saved files
                 self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
@@ -264,10 +266,14 @@ class environment(gym.Env):
         #     self.load(loadid)
             
         #     self.loadidx += 1#round(random.random()*self.maxloadid)   
-                    
+        
+        elif (self.freshsave=='random'):
+            self.newenv() #generates a new environment and saves in folder
+            self.save(savenum='random')
+            
         else:
             self.newenv() #generates a new environment and saves in folder
-            
+            self.save(savenum='count')
 
         self.block_dic=deepcopy(self.block_dic_init) #deepcopy so dictionary doesnt have to be rebuilt for every new environment.
         
@@ -447,10 +453,10 @@ class environment(gym.Env):
         
         info={} #required for gym.Env class output
        
-        if (random.random()<0.00001): #every 100 000 steps randomly save environment 
+        if (random.random()<0.00002): #every 50 000 steps randomly save environment 
             #self.maxloadid+=1
             self.save()
-            self.newenv(savenum='random')
+            self.freshsave='random'
         
         if sum(sum(sum(self.ob_sample[:,:,:,1])))>=self.ob_sample[:,:,:,1].size: #if all blocks are mined, end episode
             self.terminal=True
@@ -486,7 +492,7 @@ class environment(gym.Env):
         else:
             observation=self.ob_sample
         
-        
+      
         
         return observation, self.reward, self.terminal, info    
     
@@ -527,8 +533,13 @@ class environment(gym.Env):
         # loadid = int(np.ceil(random.random()*self.maxloadid))
         # self.load(loadid)
         
-        #else:
-        self.build()
+        if (self.freshsave=='random'):
+            self.build()
+            #self.save(savenum='random')
+            self.freshsave=0
+            
+        else:
+            self.build()
             
         self.reward=0
         self.discountedmined=0
