@@ -37,7 +37,7 @@ from stable_baselines import A2C
 from tools.loadsaveBMenv_cpu import environment
 from tools.evalBMenv import environment as evalenv
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '7'
+os.environ['CUDA_VISIBLE_DEVICES'] = '6'
 
 #idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
 idx=6
