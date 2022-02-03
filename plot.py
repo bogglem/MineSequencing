@@ -25,7 +25,7 @@ from tools.evalBMenv import environment as evalenv
 #os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
 #prepare input parameters
-inputarray=pd.read_csv('jobarrays/A2C_katana_equipf_job_input.csv')
+inputarray=pd.read_csv('jobarrays/ACER_katana_cpu_job_input.csv')
 
 for t in range(len(inputarray)):
     
@@ -43,12 +43,12 @@ for t in range(len(inputarray)):
         if policyname == 'CnnPolicy':
             
             policy=CnnPolicy
-            test='CNNA2C'
+            test='CNNACER'
         
         elif policyname =='MlpPolicy':
         
             policy=MlpPolicy
-            test='MLPA2C'
+            test='MLPACER'
         
         trialv=inputarray.loc[idx].trialv 
         #LR_critic=inputarray.loc[idx].LR_critic
@@ -78,7 +78,7 @@ for t in range(len(inputarray)):
         #rg_s=rg_prob #max(str(float(rg_prob)).split('.'))
         turnspc_s=str(turnspc).split('.')[1]
         storagefolder='output'
-        scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}_f{scalar_s}')    #_s{scalar_s}
+        scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}_cpu{ncpu}')    #_s{scalar_s}
         savepath='./%s/%s' % (storagefolder ,scenario)
         evpath='./%s/%s/eval' % (storagefolder ,scenario)
         #savepath='%s/environment' % (savepath)
@@ -95,7 +95,7 @@ for t in range(len(inputarray)):
         plt.plot(timesteps,y, label=label, linewidth=1.2)
         plt.legend(loc='lower right')
         
-        title="A2C g1 Equipment Fauilure Parameter Testing"
+        title="ACER nCPUs Parameter Testing"
         plt.title(title)
         plt.xlabel('Timesteps')
         plt.ylabel('Evaluation Score')
