@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#PBS -N Job
+#PBS -l select=1:ncpus=16:mem=6gb
+#PBS -l walltime=11:59:00
+#PBS -k eod
+#PBS -j oe
+#PBS -M t.pelech@unsw.edu.au
+#PBS -m ae
+#PBS -o /home/z3333990/Output
+ 
+cd /home/z3333990/
+
+source tf1.14env/bin/activate
+
+cd /home/z3333990/MineSequencing
+python3 Train_ncpu_ACER_katana1.py

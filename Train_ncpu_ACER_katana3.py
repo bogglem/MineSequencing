@@ -33,17 +33,17 @@ from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
-from stable_baselines import A2C
+from stable_baselines import ACER
 from tools.loadsaveBMenv_cpu import environment
 from tools.evalBMenv import environment as evalenv
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 #idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
-idx=6
+idx=3
 
 #prepare input parameters
-inputarray=pd.read_csv('jobarrays/A2C_katana_cpu_job_input.csv')
+inputarray=pd.read_csv('jobarrays/ACER_katana_cpu_job_input.csv')
 
 #block model (environment) dimensions
 x=inputarray.loc[idx].x
@@ -55,12 +55,12 @@ policyname=inputarray.loc[idx].policyname  #change this name to change RL policy
 if policyname == 'CnnPolicy':
     
     policy=CnnPolicy
-    test='CNNA2C'
+    test='CNNACER'
 
 elif policyname =='MlpPolicy':
 
     policy=MlpPolicy
-    test='MLPA2C'
+    test='MLPACER'
 
 trialv=inputarray.loc[idx].trialv 
 #LR_critic=inputarray.loc[idx].LR_critic
@@ -133,45 +133,6 @@ def trainingplot():
     #save learning curve plot
     figsavepath='./%s/%s/evfig_%s' % (storagefolder ,scenario, scenario)
     plt.savefig(figsavepath)    
-    
-    
-
-def save_evals():
-    
-    tr= './%s/%s/evaluations.npz' % (storagefolder,scenario)
-    ev='./%s/evaluations.npz' % (evpath)
-    prevtr= './%s/%s/prev' % (storagefolder,scenario)
-    prevev='./%s/prev' % (evpath)
-
-    if (os.path.exists(prevtr)!=True):
-        folder='./%s/%s/prev' %(storagefolder,scenario)    
-        os.mkdir(folder)    
-        
-    try:
-        savenumber=len([name for name in os.listdir(prevtr) if os.path.isfile(os.path.join(prevtr, name))])+1
-    except:
-        savenumber=1
-    
-    if (os.path.exists(tr)==True):
-        dest_dir = prevtr
-        new_name = 'evaluations_%s.npz' % savenumber
-        current_file_name = tr
-        os.rename(current_file_name, os.path.join(dest_dir, new_name))
-
-    if (os.path.exists(prevev)!=True):
-        folder='./%s/prev' % (evpath)    
-        os.mkdir(folder)      
-        
-    try:   
-        savenumber=len([name for name in os.listdir(prevev) if os.path.isfile(os.path.join(prevev, name))])+1
-    except:
-        savenumber=1
-    
-    if (os.path.exists(ev)==True):
-        dest_dir = prevev
-        new_name = 'evaluations_%s.npz' % savenumber
-        current_file_name = ev
-        os.rename(current_file_name, os.path.join(dest_dir, new_name))
 
 
 class TimeLimit(BaseCallback):
@@ -196,7 +157,7 @@ class TimeLimit(BaseCallback):
             if time.time()<end:
                 self.incomplete = True
             else:
-                model.save("%s/final_model" % savepath)
+                model.save("%s/best_model" % savepath)
                 self.incomplete = False
                 trainingplot()
                 
@@ -230,7 +191,7 @@ if __name__ == '__main__':
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
     eval_env=evalenv(x, y, z, gamma, turnspc, policyname)
-    env1 =environment(x, y, z, gamma, turnspc, policyname) #env annealreate/ numturns*eval_freq
+    env1 =environment(x, y, z, gamma, turnspc, policyname)
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
@@ -238,26 +199,22 @@ if __name__ == '__main__':
     
     #create callbacks to record data, initiate events during training.
     callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=evpath, n_eval_episodes=100, eval_freq=50000
-                                                                         , deterministic=False, best_model_save_path=evpath), EvalCallback(env1, log_path=savepath, n_eval_episodes=20, eval_freq=50000
+                                                                         , deterministic=False, best_model_save_path=evpath), EvalCallback(env1, log_path=savepath, n_eval_episodes=20, eval_freq=10000
                                                                          , deterministic=False, best_model_save_path=savepath)])
     if (os.path.exists("%s/best_model.zip" % savepath)):
         # Instantiate the agent
-        model = A2C(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  verbose=1, n_cpu_tf_sess=num_cpu)
+        model = ACER(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  buffer_size=10000,  verbose=1, n_cpu_tf_sess=num_cpu)
         # Load the trained agent
-        model = A2C.load("%s/best_model" % savepath, env=env)
+        model = ACER.load("%s/best_model" % savepath, env=env)
         print('loaded agent')
-        save_evals()
-        
         model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
         
         
     else:
         #create model with Stable Baselines package.
-        model = A2C(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  verbose=1, n_cpu_tf_sess=num_cpu)#, tensorboard_log=scenario)
+        model = ACER(policy, env, gamma=gamma, n_steps=episodetimesteps, learning_rate=LR,  buffer_size=10000,  verbose=1, n_cpu_tf_sess=num_cpu)#, tensorboard_log=scenario)
         #model = ACER.load("%s/best_model" % savepath, env)
-        save_evals()
-        
-        model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist)  #total timesteps set to very large number so program will terminate based on runtime parameter)
+        model.learn(total_timesteps=episodetimesteps**50, callback=callbacklist) #total timesteps set to very large number so program will terminate based on runtime parameter)
             
     
 

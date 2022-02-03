@@ -31,7 +31,7 @@ from stable_baselines.common.evaluation import evaluate_policy
 from tools.plotresults import plotresults
 #from tools.loadBMenv import environment
 #from tools.SingleBMenv_curricturnspc import environment
-from tools.BMenv import environment
+from tools.humanBMenv import environment
 #from tools.Fuzzy3DBMenv_9action import environment
 
 # Create environment
@@ -39,10 +39,11 @@ x=15
 y=15
 z=4
 batch_size=64
-LR=0.0005
+LR=0.001
 gamma=0.99
 turnspc=0.10
 episodetimesteps=round(x*y*z*turnspc)
+ncpu=12
 
 policyname='MlpPolicy' #change this name to change RL policy type (MlpPolicy/CnnPolicy)
 
@@ -56,7 +57,8 @@ elif policyname =='MlpPolicy':
     policy=MlpPolicy
     test='MLPA2C'
 
-trialv='loadsave10'
+trialv='ncpu'
+#'loadsave10'
 
 #prepare file naming strings
 LR_s=str("{:f}".format(LR)).split('.')[1]
@@ -66,21 +68,34 @@ gamma_s=str(gamma).replace('.','_')
 #rg_s=max(str(float(rg_prob)).split('.'))
 turnspc_s=str(turnspc).split('.')[1]
 
-scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}')  
+scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}_cpu{ncpu}')  
 savepath='./output/%s' % scenario
 
 turns=round(x*y*z*turnspc)
 
 env = environment(x,y,z,gamma, turnspc, policyname)
 
-# Instantiate the agent
-model = A2C(policy, env, gamma=gamma, learning_rate=LR,n_steps=episodetimesteps,   verbose=1)
-#model = DQN('MlpPolicy', env, learning_rate=LR, prioritized_replay=True, verbose=1)
-#
-# Load the trained agent
-model = A2C.load("%s/best_model" % savepath)
-#model = DQN.load("%s/best_model" % savepath)
-print('loaded agent %s' % savepath)
+if test=='CNNACER' or test=='MLPACER':
+
+    # Instantiate the agent
+    model = ACER(policy, env, gamma=gamma, learning_rate=LR,n_steps=episodetimesteps,   verbose=1)
+    #model = DQN('MlpPolicy', env, learning_rate=LR, prioritized_replay=True, verbose=1)
+    #
+    # Load the trained agent
+    model = ACER.load("%s/best_model" % savepath)
+    #model = DQN.load("%s/best_model" % savepath)
+    print('loaded agent %s' % savepath)
+
+    
+else:
+    # Instantiate the agent
+    model = A2C(policy, env, gamma=gamma, learning_rate=LR,n_steps=episodetimesteps,   verbose=1)
+    #model = DQN('MlpPolicy', env, learning_rate=LR, prioritized_replay=True, verbose=1)
+    #
+    # Load the trained agent
+    model = A2C.load("%s/best_model" % savepath)
+    #model = DQN.load("%s/best_model" % savepath)
+    print('loaded agent %s' % savepath)
 
 # Evaluate the agent
 mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=20, deterministic=False)
@@ -91,18 +106,22 @@ obs = env.reset()
 env.rendermode='on'
 cumreward=0
 results=list()
+minable=list()
+
 for i in range(turns):
     action, _states = model.predict(obs, deterministic=False)
     obs, rewards, dones, info = env.step(action)
     cumreward+=rewards
     print(action, rewards, dones, cumreward)
-    results.append(info)
+    results.append(info[0])
+    a=abs(info[1]-1) #translating sequence errors to be positive, else zero
+    minable.append(a)
     #env.renderif('on')
     if dones == True:
         break
 
 
-plotresults.singleplot(results,'AI', env.geo_array)
+plotresults.singleplot(results,'AI', env.geo_array, minable)
 
 # resultsarray=np.array(results)
 # grades=env.geo_array[:,:,:,0]

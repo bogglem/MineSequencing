@@ -103,12 +103,17 @@ from tools.BMenv import environment
 
 class plotresults():
            
-    def singleplot(results, labels, geo_array):
+    def singleplot(results, labels, geo_array, minable):
         
-        resultsarray=np.array(results)
-        grades=geo_array[:,:,:,0]
-        gradesf=np.ndarray.flatten(grades)*100
+        resultsarray=np.array(results)*100
+        grades=geo_array[:,:,:,0]*100
+        gradesf=np.ndarray.flatten(grades)
         avgrade=np.average(grades)
+        
+        minablearray=np.array(minable)*np.average(resultsarray)
+        maskedminablearray = np.ma.masked_where(minablearray==0, minablearray)
+        
+        #grade histogram
         
         fig1=plt.figure(1)
         plt.hist(gradesf,40)
@@ -117,15 +122,18 @@ class plotresults():
         plt.axvline(np.average(resultsarray), color='k', linestyle='dashed', linewidth=1)
         min_ylim, max_ylim = plt.ylim()
         
-        plt.text(np.average(resultsarray[0:20])*1.05, max_ylim*0.4, '0-20 Grade: {:.3f}'.format(np.average(resultsarray[0:20])), rotation=45, color='g')
-        plt.text(np.average(resultsarray[20:40])*1.05, max_ylim*0.6, '20-40 Grade: {:.3f}'.format(np.average(resultsarray[20:40])), rotation=45, color='r')
-        plt.text(np.average(resultsarray)*1.05, max_ylim*0.8, 'Total Mined Grade: {:.3f}'.format(np.average(resultsarray)), rotation=45)
+        plt.text(np.average(resultsarray[0:20])*1.05, max_ylim*0.4, '0-20 Grade: {:.1f}'.format(np.average(resultsarray[0:20])), rotation=45, color='g')
+        plt.text(np.average(resultsarray[20:40])*1.05, max_ylim*0.6, '20-40 Grade: {:.1f}'.format(np.average(resultsarray[20:40])), rotation=45, color='r')
+        plt.text(np.average(resultsarray)*1.05, max_ylim*0.8, 'Total Mined Grade: {:.1f}'.format(np.average(resultsarray)), rotation=45)
+        
+        #Sequence Plot
         
         plt.figure(2)
         plt.plot(resultsarray)    
+        plt.plot(maskedminablearray, color='r',linestyle='none', marker='x', label='Sequence Error')
         plt.axhline(np.max(resultsarray), color='k', linestyle='dashed', linewidth=1)
         min_xlim, max_xlim = plt.xlim()
-        plt.text(max_xlim*0.7, np.max(resultsarray)*0.9, 'Max Grade: {:.3f}'.format(np.max(resultsarray)))
+        plt.text(max_xlim*0.7, np.max(resultsarray)*0.9, 'Max Grade: {:.1f}'.format(np.max(resultsarray)))
         plt.text(max_xlim*0.4, np.max(resultsarray)*0.9, labels)
 
         

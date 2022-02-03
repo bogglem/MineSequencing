@@ -34,6 +34,7 @@ from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import A2C
+from stable_baselines import ACER
 from tools.humanBMenv import environment
 from tools.plotresults import plotresults
 import numpy as np
@@ -104,15 +105,30 @@ class ai():
                
        # env = environment(x,y,z,gamma, turnspc, policyname)
         
-        # Instantiate the agent
-        self.model = A2C(policy, env, gamma=gamma, learning_rate=LR,n_steps=self.episodetimesteps,   verbose=1)
-        #model = DQN('MlpPolicy', env, learning_rate=LR, prioritized_replay=True, verbose=1)
-        #
-        # Load the trained agent
-        self.model = A2C.load("%s/best_model" % savepath)
-        #model = DQN.load("%s/best_model" % savepath)
-        print('loaded agent %s' % savepath)
+        if test=='CNNACER' or test=='MLPACER':
         
+            # Instantiate the agent
+            self.model = ACER(policy, env, gamma=gamma, learning_rate=LR,n_steps=self.episodetimesteps,   verbose=1)
+            #model = DQN('MlpPolicy', env, learning_rate=LR, prioritized_replay=True, verbose=1)
+            #
+            # Load the trained agent
+            self.model = ACER.load("%s/best_model" % savepath)
+            #model = DQN.load("%s/best_model" % savepath)
+            print('loaded agent %s' % savepath)
+
+            
+        else:
+            # Instantiate the agent
+            self.model = A2C(policy, env, gamma=gamma, learning_rate=LR,n_steps=self.episodetimesteps,   verbose=1)
+            #model = DQN('MlpPolicy', env, learning_rate=LR, prioritized_replay=True, verbose=1)
+            #
+            # Load the trained agent
+            self.model = A2C.load("%s/best_model" % savepath)
+            #model = DQN.load("%s/best_model" % savepath)
+            print('loaded agent %s' % savepath)
+            
+            
+
         # Evaluate the agent
         mean_reward, std_reward = evaluate_policy(self.model, self.env, n_eval_episodes=20, deterministic=False)
         print('mean_reward = %s +/- %s' %(mean_reward,std_reward))
@@ -130,7 +146,7 @@ class ai():
             cumreward+=rewards
             print(action, rewards, dones, cumreward)
             self.results.append(info[0])
-            a=abs(info[1]-1)
+            a=abs(info[1]-1) #translating sequence errors to be positive, else zero
             self.minable.append(a)
             
             #env.renderif('on')
