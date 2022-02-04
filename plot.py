@@ -15,17 +15,37 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from stable_baselines.common.policies import CnnPolicy
 from stable_baselines.common.policies import MlpPolicy
-from stable_baselines.common.vec_env import SubprocVecEnv
-from stable_baselines.common import set_global_seeds, make_vec_env
-from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
-from stable_baselines import ACER
-from tools.loadsaveBMenv import environment
-from tools.evalBMenv import environment as evalenv
+# from stable_baselines.common.vec_env import SubprocVecEnv
+# from stable_baselines.common import set_global_seeds, make_vec_env
+# from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
+# from stable_baselines import ACER
+# from tools.loadsaveBMenv import environment
+# from tools.evalBMenv import environment as evalenv
 
 #os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
 #prepare input parameters
-inputarray=pd.read_csv('jobarrays/ACER_katana_cpu_job_input.csv')
+inputarray=pd.read_csv('jobarrays/ACER_katana_equipf_job_input2.csv')
+
+def moving_average(a, n=3) :
+    ret = np.cumsum(a, dtype=float)
+    ret[n:] = ret[n:] - ret[:-n]
+    ma=ret[n - 1:] / n
+    
+    var=np.zeros(len(ma))
+    for i in range(len(ma)):
+        var[i]=np.var(a[i:i+n])
+    
+    return ma, var
+
+# def plot(x, y, n):
+    
+#     ma,var=moving_average(y,n)
+#     t=x[n-1:]
+#     fig, ax = plt.subplots(1)
+#     ax.plot(t, ma, lw=2, label='mean population 1')
+#     ax.fill_between(t, ma+var, ma-var, alpha=0.4) #facecolor='C0'
+
 
 for t in range(len(inputarray)):
     
@@ -43,12 +63,12 @@ for t in range(len(inputarray)):
         if policyname == 'CnnPolicy':
             
             policy=CnnPolicy
-            test='CNNACER'
+            test='CNNA2C'
         
         elif policyname =='MlpPolicy':
         
             policy=MlpPolicy
-            test='MLPACER'
+            test='MLPA2C'
         
         trialv=inputarray.loc[idx].trialv 
         #LR_critic=inputarray.loc[idx].LR_critic
@@ -78,7 +98,7 @@ for t in range(len(inputarray)):
         #rg_s=rg_prob #max(str(float(rg_prob)).split('.'))
         turnspc_s=str(turnspc).split('.')[1]
         storagefolder='output'
-        scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}_cpu{ncpu}')    #_s{scalar_s}
+        scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}_f{scalar_s}')    #_s{scalar_s}
         savepath='./%s/%s' % (storagefolder ,scenario)
         evpath='./%s/%s/eval' % (storagefolder ,scenario)
         #savepath='%s/environment' % (savepath)
@@ -91,11 +111,19 @@ for t in range(len(inputarray)):
         y=np.average(results, axis=1)
         timesteps=[]
         timesteps=data['timesteps']
-        label='Fail Rate %s' % equipf
-        plt.plot(timesteps,y, label=label, linewidth=1.2)
+        label='Failure Probability %s' % equipf
+        
+        n=25 #moving average points
+        ma,var=moving_average(y,n)
+        t=timesteps[n-1:]
+        #fig, ax = plt.subplots(1)
+        plt.plot(t, ma, lw=2, label=label)
+        plt.fill_between(t, ma+var, ma-var, alpha=0.2)
+        
+        #plt.plot(timesteps,y, label=label, linewidth=1.2)
         plt.legend(loc='lower right')
         
-        title="ACER nCPUs Parameter Testing"
+        title="A2C Equipment Failure Parameter Testing"
         plt.title(title)
         plt.xlabel('Timesteps')
         plt.ylabel('Evaluation Score')
@@ -104,9 +132,10 @@ for t in range(len(inputarray)):
         
     except:
         break
-        
+
+title="A2C Equipment Failure Parameter Testing"      
 #save learning curve plot
-figsavepath='./%s/%s_%s' % (storagefolder, title ,trialv)
+figsavepath='./%s/%s' % (storagefolder, title)
 plt.savefig(figsavepath, dpi=300)
 #plt.clf()
     
