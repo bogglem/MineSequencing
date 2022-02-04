@@ -31,7 +31,7 @@ from stable_baselines.common.evaluation import evaluate_policy
 from tools.plotresults import plotresults
 #from tools.loadBMenv import environment
 #from tools.SingleBMenv_curricturnspc import environment
-from tools.humanBMenv import environment
+from tools.BMenv import environment
 #from tools.Fuzzy3DBMenv_9action import environment
 
 # Create environment
@@ -40,10 +40,10 @@ y=15
 z=4
 batch_size=64
 LR=0.001
-gamma=0.99
+gamma=0.8
 turnspc=0.10
 episodetimesteps=round(x*y*z*turnspc)
-ncpu=12
+ncpu=16
 
 policyname='MlpPolicy' #change this name to change RL policy type (MlpPolicy/CnnPolicy)
 
@@ -57,7 +57,7 @@ elif policyname =='MlpPolicy':
     policy=MlpPolicy
     test='MLPA2C'
 
-trialv='ncpu'
+trialv='final'
 #'loadsave10'
 
 #prepare file naming strings

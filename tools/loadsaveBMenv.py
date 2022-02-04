@@ -235,8 +235,7 @@ class environment(gym.Env):
                 self.maxloadid=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])
             except:
                 self.maxloadid=1
-                
-            self.loadidarray=np.arange(1,self.maxloadid+1)
+
             
             if self.loadidx>=self.maxloadid:
                 self.loadidx=1
