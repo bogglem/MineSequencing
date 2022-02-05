@@ -34,7 +34,7 @@ from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import A2C
-from tools.loadsaveBMenv_excluderror import environment
+from tools.loadsaveBMenv_excludeerror import environment
 from tools.evalBMenv2 import environment as evalenv
 
 #os.environ['CUDA_VISIBLE_DEVICES'] = '5'
@@ -73,7 +73,7 @@ gamma=inputarray.loc[idx].gamma
 runtime=inputarray.loc[idx].runtime
 #cutoffpenaltyscalar=inputarray.loc[idx].cutoffpenaltyscalar #not currently implemented
 #rg_prob=inputarray.loc[idx].rg_prob
-scalar=inputarray.loc[idx].scalar
+#scalar=inputarray.loc[idx].scalar
 turnspc=inputarray.loc[idx].turnspc
 ncpu=inputarray.loc[idx].ncpu
 
@@ -85,7 +85,7 @@ episodetimesteps=round(x*y*z*turnspc)
 LR_s=str("{:f}".format(LR)).split('.')[1]
 inputfile_s='%s_%s_%s' % (x,y,z)
 gamma_s=str(gamma).replace('.','_')
-scalar_s=str(scalar).replace('.','_')
+#scalar_s=str(scalar).replace('.','_')
 
 #cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
 #rg_s=rg_prob #max(str(float(rg_prob)).split('.'))
