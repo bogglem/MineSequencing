@@ -30,7 +30,7 @@ from stable_baselines.common.policies import CnnPolicy
 from stable_baselines.common.evaluation import evaluate_policy
 from tools.plotresults import plotresults
 #from tools.loadBMenv import environment
-#from tools.SingleBMenv_curricturnspc import environment
+#from tools.loadsaveBMenv_excludeerror import environment
 from tools.BMenv import environment
 #from tools.Fuzzy3DBMenv_9action import environment
 
@@ -50,14 +50,14 @@ policyname='MlpPolicy' #change this name to change RL policy type (MlpPolicy/Cnn
 if policyname == 'CnnPolicy':
     
     policy=CnnPolicy
-    test='CNNA2C'
+    test='CNNACER'
 
 elif policyname =='MlpPolicy':
 
     policy=MlpPolicy
-    test='MLPA2C'
+    test='MLPACER'
 
-trialv='final'
+trialv='exerror'
 #'loadsave10'
 
 #prepare file naming strings
@@ -68,7 +68,7 @@ gamma_s=str(gamma).replace('.','_')
 #rg_s=max(str(float(rg_prob)).split('.'))
 turnspc_s=str(turnspc).split('.')[1]
 
-scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}_cpu{ncpu}')  
+scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}')  #_cpu{ncpu}
 savepath='./output/%s' % scenario
 
 turns=round(x*y*z*turnspc)
@@ -102,8 +102,8 @@ mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=20, determ
 print('mean_reward = %s +/- %s' %(mean_reward,std_reward))
 
 # Enjoy trained agent
-obs = env.reset()
 env.rendermode='on'
+obs = env.reset()
 cumreward=0
 results=list()
 minable=list()

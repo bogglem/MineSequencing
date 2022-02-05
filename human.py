@@ -93,7 +93,7 @@ class ai():
             policy=MlpPolicy
             test='MLPACER'
         
-        trialv='final'
+        trialv='exerror'
         
         #prepare file naming strings
         LR_s=str("{:f}".format(LR)).split('.')[1]
@@ -101,7 +101,7 @@ class ai():
         gamma_s=str(gamma).replace('.','_')
         turnspc_s=str(turnspc).split('.')[1]
         
-        scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}_cpu{ncpu}')  
+        scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}')  #_cpu{ncpu}
         savepath='./output/%s' % scenario
                
        # env = environment(x,y,z,gamma, turnspc, policyname)
@@ -160,7 +160,7 @@ class ai():
         
 if __name__ == '__main__':
     
-    envnum=1
+    envnum=2
     
     env = environment(15, 15, 4, 0.9, 0.1, 'MlpPolicy', rg_prob=envnum)
     
