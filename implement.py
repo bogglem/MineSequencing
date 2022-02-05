@@ -98,7 +98,7 @@ else:
     print('loaded agent %s' % savepath)
 
 # Evaluate the agent
-mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=20, deterministic=False)
+mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=20, deterministic=True)
 print('mean_reward = %s +/- %s' %(mean_reward,std_reward))
 
 # Enjoy trained agent
@@ -109,7 +109,7 @@ results=list()
 minable=list()
 
 for i in range(turns):
-    action, _states = model.predict(obs, deterministic=False)
+    action, _states = model.predict(obs, deterministic=True)
     obs, rewards, dones, info = env.step(action)
     cumreward+=rewards
     print(action, rewards, dones, cumreward)

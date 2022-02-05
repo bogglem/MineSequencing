@@ -182,9 +182,9 @@ class plotresults():
         # f1ax1.text(np.average(resultsarray1[20:40])*1.05, max_ylim*0.6, '20-40 Grade: {:.3f}'.format(np.average(resultsarray1[20:40])), rotation=45, color='r')
         # f1ax1.text(np.average(resultsarray1)*1.05, max_ylim*0.8, 'Total Mined Grade: {:.3f}'.format(np.average(resultsarray1)), rotation=45)
         
-        f1ax1.text(max_xlim*0.55, max_ylim*0.4, '0-20 %H2O: {:.1f}'.format(np.average(resultsarray1[0:20])), rotation=0, color='g')
-        f1ax1.text(max_xlim*0.55, max_ylim*0.5, '20-40 %H2O: {:.1f}'.format(np.average(resultsarray1[20:40])), rotation=0, color='r')
-        f1ax1.text(max_xlim*0.55, max_ylim*0.6, 'Total %H2O: {:.1f}'.format(np.average(resultsarray1)), rotation=0)
+        f1ax1.text(max_xlim*0.45, max_ylim*0.4, '0-20 %H2O: {:.1f}'.format(np.average(resultsarray1[0:20])), rotation=0, color='g')
+        f1ax1.text(max_xlim*0.45, max_ylim*0.5, '20-40 %H2O: {:.1f}'.format(np.average(resultsarray1[20:40])), rotation=0, color='r')
+        f1ax1.text(max_xlim*0.45, max_ylim*0.6, 'Total %H2O: {:.1f}'.format(np.average(resultsarray1)), rotation=0)
         f1ax1.text(max_xlim*0.4, max_ylim*1.02, labels1, rotation=0)    
         
         #Histogram 2
@@ -200,9 +200,9 @@ class plotresults():
         # f1ax2.text(np.average(resultsarray2[0:20])*1.05, max_ylim*0.4, '0-20 Grade: {:.3f}'.format(np.average(resultsarray2[0:20])), rotation=45, color='g')
         # f1ax2.text(np.average(resultsarray2[20:40])*1.05, max_ylim*0.6, '20-40 Grade: {:.3f}'.format(np.average(resultsarray2[20:40])), rotation=45, color='r')
         # f1ax2.text(np.average(resultsarray2)*1.05, max_ylim*0.8, 'Total Mined Grade: {:.3f}'.format(np.average(resultsarray2)), rotation=45)
-        f1ax2.text(max_xlim*0.55, max_ylim*0.4, '0-20 %H2O: {:.1f}'.format(np.average(resultsarray2[0:20])), rotation=0, color='g')
-        f1ax2.text(max_xlim*0.55, max_ylim*0.5, '20-40 %H2O: {:.1f}'.format(np.average(resultsarray2[20:40])), rotation=0, color='r')
-        f1ax2.text(max_xlim*0.55, max_ylim*0.6, 'Total %H2O: {:.1f}'.format(np.average(resultsarray2)), rotation=0)       
+        f1ax2.text(max_xlim*0.45, max_ylim*0.4, '0-20 %H2O: {:.1f}'.format(np.average(resultsarray2[0:20])), rotation=0, color='g')
+        f1ax2.text(max_xlim*0.45, max_ylim*0.5, '20-40 %H2O: {:.1f}'.format(np.average(resultsarray2[20:40])), rotation=0, color='r')
+        f1ax2.text(max_xlim*0.45, max_ylim*0.6, 'Total %H2O: {:.1f}'.format(np.average(resultsarray2)), rotation=0)       
         f1ax2.text(max_xlim*0.45, max_ylim*1.02, labels2, rotation=0)     
         
         #Grade sequence 1

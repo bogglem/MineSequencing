@@ -20,8 +20,8 @@ from tools.createmodel import automodel
 
 class environment(gym.Env):
     
-    def __init__(self, x,y,z ,gamma, turnspc, scalar, policy, rg_prob='loadenv', rendermode='off', envpath='./environments/15x15x4'):
-        
+    def __init__(self, x,y,z ,gamma, turnspc, policy, rg_prob='loadenv', rendermode='off', envpath='./environments/15x15x4'):
+        #x,y,z ,gamma, turnspc, scalar, policy, rg_prob='loadenv',
         self.rendermode=rendermode # on/off display block model in matplotlib
       
         self.rg_prob=rg_prob #rg for randomly generated, loadenv for loading premade envionments
@@ -34,10 +34,10 @@ class environment(gym.Env):
         self.saveddepdic='%s/depdict' % self.envpath
         self.savedeffdic='%s/effdict' % self.envpath
         self.policy=policy
-       # self.annealrate=annealrate
+     
         #initiating values
         #self.failureprob=failureprob
-        self.penaltyscalar=scalar
+        self.penaltyscalar=1
         self.framecounter=0
         self.actionslist = list()
         self.reward=0
@@ -93,7 +93,6 @@ class environment(gym.Env):
         
         self.build()
         
-        self.startingturnspc=0.02
         self.turns=round(len(self.dep_dic)*turnspc,0) #set max number of turns (actions) in each episode based on percentage of block model size.
         #self.dturnspc=turnspc-self.startingturnspc
     
@@ -188,7 +187,6 @@ class environment(gym.Env):
 
     def newenv(self):
         
-        
          #savenum=savenum
         #generates a new environment and saves in folder
          #self.geo_array, self.truth_array=self.model.buildmodel()
@@ -241,7 +239,11 @@ class environment(gym.Env):
                 self.loadidx=1
                 np.random.shuffle(self.loadidarray)
               
-            loadid=self.loadidarray[self.loadidx]
+            try:
+                loadid=self.loadidarray[self.loadidx]
+            except:
+                self.loadidx=1
+                loadid=self.loadidarray[self.loadidx]
             
             self.load(loadid)
             
@@ -276,8 +278,9 @@ class environment(gym.Env):
 
         self.block_dic=deepcopy(self.block_dic_init) #deepcopy so dictionary doesnt have to be rebuilt for every new environment.
         
-        self.render_update = self.geo_array[:,:,:,0] #provides data sliced for render function
-        self.bm=renderbm(self.render_update)
+        if self.rendermode=='on':
+            self.render_update = self.geo_array[:,:,:,0] #provides data sliced for render function
+            self.bm=renderbm(self.render_update)
 
         # #save environment if random generation disabled
         # if self.rg_prob==0.0 and not (os.path.isfile('%s.npy' % self.savedenv)):
@@ -451,7 +454,9 @@ class environment(gym.Env):
     def step(self, action):        
         
         info={} #required for gym.Env class output
-       
+        
+        
+        
         if (random.random()<0.00002): #every 50 000 steps randomly save environment 
             #self.maxloadid+=1
             self.save()
@@ -460,6 +465,7 @@ class environment(gym.Env):
         if sum(sum(sum(self.ob_sample[:,:,:,1])))>=self.ob_sample[:,:,:,1].size: #if all blocks are mined, end episode
             self.terminal=True
             observation=self.ob_sample
+            
                
         elif (self.turncounter>=self.turns): #if number of turns exceeds limit, end episode
             self.terminal=True
@@ -471,18 +477,25 @@ class environment(gym.Env):
             self.reward = -self.unminedOre()  
             observation=self.ob_sample
         
+        ##########
+        
+        
         else:   #normal step process
             self.actcoords(action)
             selected_block=self.select_block()
             isMinable=self.isMinable(selected_block)
             isEfficient=self.isEfficient(selected_block)
             
-            self.evaluate(selected_block, isMinable, isEfficient)
-            self.update(selected_block)
-            self.turncounter+=1
-            self.renderif(self.rendermode)
-            #self.equip_failure() #terminates episode based on random failure of equipment
-            
+            if isMinable==1:
+                self.evaluate(selected_block, isMinable, isEfficient)
+                self.update(selected_block)
+                self.turncounter+=1
+                self.renderif(self.rendermode)
+                #self.equip_failure() #terminates episode based on random failure of equipment
+
+            else:
+                self.evaluate(selected_block, isMinable, isEfficient)           
+                
             
         if self.policy=='MlpPolicy':
             arr=np.ndarray.flatten(self.ob_sample) #uncomment line for MLP (not CNN) policy

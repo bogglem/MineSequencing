@@ -14,4 +14,4 @@ cd /home/z3333990/
 source tf1.14env/bin/activate
 
 cd /home/z3333990/MineSequencing
-python3 Train_ncpu_ACER_katana0.py
+python3 Train_excludeerror_ACER_katana.py

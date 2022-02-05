@@ -21,7 +21,7 @@ from tools.createmodel import automodel
 class environment(gym.Env):
     
     def __init__(self, x,y,z ,gamma, turnspc, policy, rg_prob='loadenv', rendermode='off', envpath='./environments/15x15x4'):
-        
+        #x,y,z ,gamma, turnspc, scalar, policy, rg_prob='loadenv',
         self.rendermode=rendermode # on/off display block model in matplotlib
       
         self.rg_prob=rg_prob #rg for randomly generated, loadenv for loading premade envionments
@@ -34,7 +34,7 @@ class environment(gym.Env):
         self.saveddepdic='%s/depdict' % self.envpath
         self.savedeffdic='%s/effdict' % self.envpath
         self.policy=policy
-       # self.annealrate=annealrate
+     
         #initiating values
         #self.failureprob=failureprob
         self.penaltyscalar=1
@@ -57,7 +57,7 @@ class environment(gym.Env):
         self.callnumber=1
         self.savenumber=0
         self.episodecounter=0
-        self.loadidx=0
+        self.loadidx=1
         self.savecounter=1
         self.freshsave=0 #if =1 save new environment
         
@@ -93,7 +93,6 @@ class environment(gym.Env):
         
         self.build()
         
-        self.startingturnspc=0.02
         self.turns=round(len(self.dep_dic)*turnspc,0) #set max number of turns (actions) in each episode based on percentage of block model size.
         #self.dturnspc=turnspc-self.startingturnspc
     
@@ -188,7 +187,6 @@ class environment(gym.Env):
 
     def newenv(self):
         
-        
          #savenum=savenum
         #generates a new environment and saves in folder
          #self.geo_array, self.truth_array=self.model.buildmodel()
@@ -276,8 +274,9 @@ class environment(gym.Env):
 
         self.block_dic=deepcopy(self.block_dic_init) #deepcopy so dictionary doesnt have to be rebuilt for every new environment.
         
-        self.render_update = self.geo_array[:,:,:,0] #provides data sliced for render function
-        self.bm=renderbm(self.render_update)
+        if self.rendermode=='on':
+            self.render_update = self.geo_array[:,:,:,0] #provides data sliced for render function
+            self.bm=renderbm(self.render_update)
 
         # #save environment if random generation disabled
         # if self.rg_prob==0.0 and not (os.path.isfile('%s.npy' % self.savedenv)):

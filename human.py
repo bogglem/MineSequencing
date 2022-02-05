@@ -57,7 +57,7 @@ class human():
         for s in self.traj:
             
             obs, rewards, dones, info = env.step(int(s))         
-            self.env.render()         
+            #self.env.render()         
             self.results.append(info[0])
             a=abs(info[1]-1)
             self.minable.append(a)
@@ -75,9 +75,10 @@ class ai():
         x=env.Imax
         y=env.Jmax
         z=env.RLmax
-        LR=0.0005
-        gamma=0.99
+        LR=0.001
+        gamma=0.8
         turnspc=0.10
+        ncpu=16
         self.episodetimesteps=round(x*y*z*turnspc)
         
         policyname='MlpPolicy' #change this name to change RL policy type (MlpPolicy/CnnPolicy)
@@ -85,14 +86,14 @@ class ai():
         if policyname == 'CnnPolicy':
             
             policy=CnnPolicy
-            test='CNNA2C'
+            test='CNNACER'
         
         elif policyname =='MlpPolicy':
         
             policy=MlpPolicy
-            test='MLPA2C'
+            test='MLPACER'
         
-        trialv='loadsave10'
+        trialv='final'
         
         #prepare file naming strings
         LR_s=str("{:f}".format(LR)).split('.')[1]
@@ -100,7 +101,7 @@ class ai():
         gamma_s=str(gamma).replace('.','_')
         turnspc_s=str(turnspc).split('.')[1]
         
-        scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}')  
+        scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}_cpu{ncpu}')  
         savepath='./output/%s' % scenario
                
        # env = environment(x,y,z,gamma, turnspc, policyname)
@@ -130,7 +131,7 @@ class ai():
             
 
         # Evaluate the agent
-        mean_reward, std_reward = evaluate_policy(self.model, self.env, n_eval_episodes=20, deterministic=False)
+        mean_reward, std_reward = evaluate_policy(self.model, self.env, n_eval_episodes=20, deterministic=True)
         print('mean_reward = %s +/- %s' %(mean_reward,std_reward))
         self.results=list()
         self.minable=list()
@@ -141,7 +142,7 @@ class ai():
         self.env.rendermode='off'
 
         for i in range(self.episodetimesteps):
-            action, _states = self.model.predict(obs, deterministic=False)
+            action, _states = self.model.predict(obs, deterministic=True)
             obs, rewards, dones, info = self.env.step(action)
             cumreward+=rewards
             print(action, rewards, dones, cumreward)
@@ -149,7 +150,7 @@ class ai():
             a=abs(info[1]-1) #translating sequence errors to be positive, else zero
             self.minable.append(a)
             
-            #env.renderif('on')
+            env.renderif('on')
             if dones == True:
                 break
     
@@ -159,7 +160,7 @@ class ai():
         
 if __name__ == '__main__':
     
-    envnum=2
+    envnum=1
     
     env = environment(15, 15, 4, 0.9, 0.1, 'MlpPolicy', rg_prob=envnum)
     
