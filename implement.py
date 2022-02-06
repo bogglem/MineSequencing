@@ -29,9 +29,9 @@ from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.policies import CnnPolicy
 from stable_baselines.common.evaluation import evaluate_policy
 from tools.plotresults import plotresults
-#from tools.loadBMenv import environment
-#from tools.loadsaveBMenv_excludeerror import environment
 from tools.BMenv import environment
+#from tools.loadsaveBMenv_excludeerror import environment
+#from tools.evalBMenv2_exerror import environment
 #from tools.Fuzzy3DBMenv_9action import environment
 
 # Create environment
@@ -50,12 +50,12 @@ policyname='MlpPolicy' #change this name to change RL policy type (MlpPolicy/Cnn
 if policyname == 'CnnPolicy':
     
     policy=CnnPolicy
-    test='CNNACER'
+    test='CNNA2C'
 
 elif policyname =='MlpPolicy':
 
     policy=MlpPolicy
-    test='MLPACER'
+    test='MLPA2C'
 
 trialv='exerror'
 #'loadsave10'
@@ -69,11 +69,11 @@ gamma_s=str(gamma).replace('.','_')
 turnspc_s=str(turnspc).split('.')[1]
 
 scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}')  #_cpu{ncpu}
-savepath='./output/%s' % scenario
+savepath='./output/%s/%s' % (scenario, 'eval')
 
 turns=round(x*y*z*turnspc)
 
-env = environment(x,y,z,gamma, turnspc, policyname)
+env = environment(x,y,z,gamma, turnspc, policyname, rg_prob='rg')
 
 if test=='CNNACER' or test=='MLPACER':
 
@@ -98,7 +98,7 @@ else:
     print('loaded agent %s' % savepath)
 
 # Evaluate the agent
-mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=20, deterministic=True)
+mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=20, deterministic=False)
 print('mean_reward = %s +/- %s' %(mean_reward,std_reward))
 
 # Enjoy trained agent

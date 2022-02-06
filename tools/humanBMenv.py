@@ -402,9 +402,10 @@ class environment(gym.Env):
         
         info={} #required for gym.Env class output
        
-        # if (random.random()<0.00001): #every 10 000 steps randomly save environment 
-        #     self.maxloadid+=1
+        # if (random.random()<0.00002): #every 50 000 steps randomly save environment 
+        #     #self.maxloadid+=1
         #     self.save()
+        #     self.freshsave='random'
         
         if sum(sum(sum(self.ob_sample[:,:,:,1])))>=self.ob_sample[:,:,:,1].size: #if all blocks are mined, end episode
             self.terminal=True
@@ -426,12 +427,17 @@ class environment(gym.Env):
             isMinable=self.isMinable(selected_block)
             isEfficient=self.isEfficient(selected_block)
             
-            info=self.evaluate(selected_block, isMinable, isEfficient)
-            self.update(selected_block)
-            self.turncounter+=1
-            self.renderif(self.rendermode)
-            #self.equip_failure() #terminates episode based on random failure of equipment
-            
+            if isMinable==1:
+                info=self.evaluate(selected_block, isMinable, isEfficient)
+                self.update(selected_block)
+                self.turncounter+=1
+                self.renderif(self.rendermode)
+                #self.equip_failure() #terminates episode based on random failure of equipment
+
+            else:
+                self.evaluate(selected_block, isMinable, isEfficient)
+                info=[0,1]
+                self.turncounter+=1
             
         if self.policy=='MlpPolicy':
             arr=np.ndarray.flatten(self.ob_sample) #uncomment line for MLP (not CNN) policy
@@ -452,7 +458,7 @@ class environment(gym.Env):
         if isMinable==0:             #penalising repetetive useless actions
             
             ore=-self.averagereward
-            H2O=self.geo_array[self.i,self.j,self.RL,0]
+            H2O=0#self.geo_array[self.i,self.j,self.RL,0]
             info=[H2O,isMinable]
             
         elif isEfficient==0: #penalising high entropy policies spreading out and randomly picking.
@@ -510,7 +516,7 @@ class environment(gym.Env):
         return observation
                     
     
-    def renderif(self, mode):      
+    def renderif(self, mode, transparency='off'):      
         
         #create 3D plots if set 'on'
         
@@ -520,7 +526,7 @@ class environment(gym.Env):
             if self.framecounter<=1:
                 self.render_update[self.i, self.j, self.RL]=0
     
-                self.bm.initiate_plot(self.averagereward)
+                self.bm.initiate_plot(self.averagereward, transparency)
                 self.bm.plot()
                 
             self.bm.update_mined(self.i, self.j, self.RL)
@@ -531,10 +537,10 @@ class environment(gym.Env):
                  self.bm.plot()
         pass
    
-    def render(self, mined='mined'):      
+    def render(self, mined='mined', transparency='off'):      
         # input any text to plot without nmined blocks
 
-        self.bm.initiate_plot(self.averagereward)
+        self.bm.initiate_plot(self.averagereward, transparency)
         
         if mined=='mined':
             self.bm.update_all_mined(self.ob_sample)
@@ -543,6 +549,7 @@ class environment(gym.Env):
             self.bm_original=renderbm(self.geo_array[:,:,:,0])
             self.bm_original.initiate_plot(self.averagereward)
             self.bm_original.plot()
+            
             
         
 

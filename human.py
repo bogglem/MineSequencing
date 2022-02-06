@@ -131,7 +131,7 @@ class ai():
             
 
         # Evaluate the agent
-        mean_reward, std_reward = evaluate_policy(self.model, self.env, n_eval_episodes=20, deterministic=True)
+        mean_reward, std_reward = evaluate_policy(self.model, self.env, n_eval_episodes=20, deterministic=False)
         print('mean_reward = %s +/- %s' %(mean_reward,std_reward))
         self.results=list()
         self.minable=list()
@@ -142,7 +142,7 @@ class ai():
         self.env.rendermode='off'
 
         for i in range(self.episodetimesteps):
-            action, _states = self.model.predict(obs, deterministic=True)
+            action, _states = self.model.predict(obs, deterministic=False)
             obs, rewards, dones, info = self.env.step(action)
             cumreward+=rewards
             print(action, rewards, dones, cumreward)

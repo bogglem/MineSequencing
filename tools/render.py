@@ -72,7 +72,8 @@ class renderbm():
         #minedarr=explode(self.bm)
         exploded_x,exploded_y,exploded_z = self.translate_to_exploded(i,j,RL)
         
-        self.facecolours[exploded_x,exploded_y,exploded_z] = [0.5,0.5,0.5,1]
+        #scale=(RL+1)/(self.RLmax)
+        self.facecolours[exploded_x,exploded_y,exploded_z] = [0.5,0.5,0.5,0]
         
         if exploded_z>0:
             self.facecolours[exploded_x,exploded_y,0:exploded_z-1] = [0.5,0.5,0.5,0] #hide previously mined blocks above
@@ -88,17 +89,18 @@ class renderbm():
                 for k in range(RLlen):
                     if ob_sample[i,j,k,1]==1:
                         #minedarr=explode(self.bm)
+                        #scale=(k+1)/(RLlen+1)
                         exploded_x,exploded_y,exploded_z = self.translate_to_exploded(i,j,k)
                         
-                        self.facecolours[exploded_x,exploded_y,exploded_z] = [0.5,0.5,0.5,1]
-                        self.facecolours_x[exploded_x,exploded_y,exploded_z] = [0.5,0.5,0.5,1]
+                        self.facecolours[exploded_x,exploded_y,exploded_z] = [0.5,0.5,0.5,0]
+                        self.facecolours_x[exploded_x,exploded_y,exploded_z] = [0.5,0.5,0.5,0]
                         
                         if exploded_z>0:
                             self.facecolours[exploded_x,exploded_y,0:exploded_z-1] = [0.5,0.5,0.5,0] #hide previously mined blocks above
                             self.facecolours_x[exploded_x,exploded_y,0:exploded_z-1] = [0.5,0.5,0.5,0] 
 
 
-    def initiate_plot(self, averagereward):   
+    def initiate_plot(self, averagereward, transparency='on'):   
 
         self.exparr_x=self.explode(self.bm)
         self.exparr=np.where(self.exparr_x-averagereward<0, 0,self.exparr) #turns values below cutoff to 0 invisible waste
@@ -106,15 +108,30 @@ class renderbm():
         self.facecolours = cm.plasma(normarr) # facecolours [x,y,z, (r,g,b,a)]
         #ceilarr=np.ceil(normarr)
         #normarr[normarr<=0.05]=0 #hide voxels less than 0.05
-        
-        self.facecolours[:,:,:,-1] = normarr #matches transperancy to normarr intensity
-        
-        normarr_x = self.normalize(self.exparr_x)            
-        self.facecolours_x = cm.plasma(normarr_x) # facecolours [x,y,z, (r,g,b,a)]
-        #ceilarr=np.ceil(normarr)
-        #normarr[normarr<=0.05]=0 #hide voxels less than 0.05
-        
-        self.facecolours_x[:,:,:,-1] = normarr #matches transperancy to normarr intensity        
+        if transparency=='on':
+            self.facecolours[:,:,:,-1] = normarr #matches transperancy to normarr intensity
+            normarr_x = self.normalize(self.exparr_x)            
+            self.facecolours_x = cm.plasma(normarr_x) # facecolours [x,y,z, (r,g,b,a)]
+            #ceilarr=np.ceil(normarr)
+            #normarr[normarr<=0.05]=0 #hide voxels less than 0.05
+            
+            self.facecolours_x[:,:,:,-1] = normarr #matches transperancy to normarr intensity     
+            
+            
+            
+        else:
+            
+            notransp=np.where(self.exparr_x-averagereward<0, 0,1)
+            self.facecolours[:,:,:,-1] = notransp
+            
+            
+            normarr_x = self.normalize(self.exparr_x)            
+            self.facecolours_x = cm.plasma(normarr_x) # facecolours [x,y,z, (r,g,b,a)]
+            #ceilarr=np.ceil(normarr)
+            #normarr[normarr<=0.05]=0 #hide voxels less than 0.05
+
+            self.facecolours_x[:,:,:,-1] = notransp #matches transperancy to 1 for ore 0 for waste        
+           
         
 
         
@@ -133,7 +150,7 @@ class renderbm():
         ax.set_zlim(top=eqscale*2)
 
         ax.invert_zaxis()
-        ax.voxels(x, y, z, self.filled, facecolors=self.facecolours, edgecolors='none', shade=False)
+        ax.voxels(x, y, z, self.filled, facecolors=self.facecolours, edgecolors='k', shade=False)
         ax.set(xlabel='X',ylabel='Y',zlabel='Z')
 
         plt.show()
