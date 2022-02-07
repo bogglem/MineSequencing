@@ -410,16 +410,19 @@ class environment(gym.Env):
         if sum(sum(sum(self.ob_sample[:,:,:,1])))>=self.ob_sample[:,:,:,1].size: #if all blocks are mined, end episode
             self.terminal=True
             observation=self.ob_sample
+            info=[0,0]
                
         elif (self.turncounter>=self.turns): #if number of turns exceeds limit, end episode
             self.terminal=True
             self.reward = 0
             observation=self.ob_sample
+            info=[0,0]
         
         elif action>=((self.Ilen)*(self.Jlen)):
             self.terminal=True
             self.reward = -self.unminedOre()  
             observation=self.ob_sample
+            info=[0,0]
         
         else:   #normal step process
             self.actcoords(action)
@@ -436,8 +439,8 @@ class environment(gym.Env):
 
             else:
                 self.evaluate(selected_block, isMinable, isEfficient)
-                info=[0,1]
-                self.turncounter+=1
+                info=[0,0]
+                #self.turncounter+=1
             
         if self.policy=='MlpPolicy':
             arr=np.ndarray.flatten(self.ob_sample) #uncomment line for MLP (not CNN) policy

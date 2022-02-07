@@ -25,27 +25,31 @@ class envconc():
                 
         self.length=length
     
-    def change(self):
+    def change(self, ratio):
         
         #type a = fresh environment
         #type be = used environemnt
+        prob=random.random()
         
-        if (random.random()<0.00001): #every 1 00 000 steps randomly save environment 
+        threshold=0.00001
+        
+        if (prob<ratio*threshold): #every 1 00 000 steps randomly save environment 
             self.container[self.i] += 1
             self.s+=1
-            self.container[np.random.randint(0,4999)] = 1
+        if (prob<threshold): #probability of resetting environment
+            self.container[np.random.randint(0,self.length-1)] = 1
             self.n+=1
             
         #elif (self.i%90==0)  and (random.random()<0.05):
 
     
-    def step(self):
+    def step(self, ratio):
         
-        self.change()
+        self.change(ratio)
                         
        
         
-        if self.t%1000000==0:   
+        if self.t%10000000==0:   #total timesteps
              a=len(self.container[self.container==1])
              b=len(self.container[self.container==2])
              c=len(self.container[self.container>2])
@@ -59,7 +63,7 @@ class envconc():
         
         self.i+=1
         self.t+=1
-        if self.i>=self.length:
+        if self.i>=self.length: #cyclical timesteps
             self.i=0
         
         

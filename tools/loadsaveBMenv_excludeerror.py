@@ -455,11 +455,15 @@ class environment(gym.Env):
         
         info={} #required for gym.Env class output
         
+        prob=random.random()
         
+        threshold=0.00002
         
-        if (random.random()<0.00002): #every 50 000 steps randomly save environment 
+        if (prob<2*threshold): #every 25 000 steps randomly save environment 
             #self.maxloadid+=1
             self.save()
+            
+        if (prob<threshold): #every 50 000 steps randomly save on new environment 
             self.freshsave='random'
         
         if sum(sum(sum(self.ob_sample[:,:,:,1])))>=self.ob_sample[:,:,:,1].size: #if all blocks are mined, end episode

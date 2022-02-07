@@ -86,12 +86,12 @@ class ai():
         if policyname == 'CnnPolicy':
             
             policy=CnnPolicy
-            test='CNNACER'
+            test='CNNA2C'
         
         elif policyname =='MlpPolicy':
         
             policy=MlpPolicy
-            test='MLPACER'
+            test='MLPA2C'
         
         trialv='exerror'
         
@@ -141,14 +141,15 @@ class ai():
         obs = self.env.reset()
         self.env.rendermode='off'
 
-        for i in range(self.episodetimesteps):
+        while self.env.terminal==False: #i in range(self.episodetimesteps):
             action, _states = self.model.predict(obs, deterministic=False)
             obs, rewards, dones, info = self.env.step(action)
             cumreward+=rewards
             print(action, rewards, dones, cumreward)
-            self.results.append(info[0])
-            a=abs(info[1]-1) #translating sequence errors to be positive, else zero
-            self.minable.append(a)
+            if info[1]==1:
+                self.results.append(info[0])
+                a=abs(info[1]-1) #translating sequence errors to be positive, else zero
+                self.minable.append(a)
             
             env.renderif('on')
             if dones == True:
