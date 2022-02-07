@@ -86,12 +86,12 @@ class ai():
         if policyname == 'CnnPolicy':
             
             policy=CnnPolicy
-            test='CNNA2C'
+            test='CNNACER'
         
         elif policyname =='MlpPolicy':
         
             policy=MlpPolicy
-            test='MLPA2C'
+            test='MLPACER'
         
         trialv='exerror'
         
