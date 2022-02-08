@@ -20,7 +20,7 @@ from tools.createmodel import automodel
 
 class environment(gym.Env):
     
-    def __init__(self, x,y,z ,gamma, turnspc, policy, rg_prob='loadenv', rendermode='off', envpath='./environments/15x15x4'):
+    def __init__(self, x,y,z, turnspc, policy, rg_prob='loadenv', rendermode='off', envpath='./environments/15x15x4'):
         #x,y,z ,gamma, turnspc, scalar, policy, rg_prob='loadenv',
         self.rendermode=rendermode # on/off display block model in matplotlib
       
@@ -46,7 +46,7 @@ class environment(gym.Env):
         self.i=-1
         self.j=-1
         self.terminal=False
-        self.gamma=gamma #discount factor exponential (reward*turn^discount factor)
+        #self.gamma=gamma #discount factor exponential (reward*turn^discount factor)
         self.Imin=0
         self.Imax=x
         self.Jmin=0

@@ -34,13 +34,13 @@ from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import ACER
-from tools.loadsaveBMenv import environment
-from tools.evalBMenv import environment as evalenv
+from tools.loadsaveBMenv_excludeerror import environment
+from tools.evalBMenv2 import environment as evalenv
 
 #os.environ['CUDA_VISIBLE_DEVICES'] = '5'
 
-idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
-#idx=0
+#idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
+idx=0
 
 #prepare input parameters
 inputarray=pd.read_csv('jobarrays/ACER_katana_g_job_input.csv')
@@ -220,7 +220,7 @@ def make_env(x,y,z, rank, seed=0):
     """
     def _init():
         
-        env = environment(x, y, z, gamma, turnspc, scalar, policyname)
+        env = environment(x, y, z, turnspc, policyname)
         env.seed(seed + rank)
         return env
     set_global_seeds(seed)
@@ -232,16 +232,17 @@ if __name__ == '__main__':
     num_cpu = ncpu  # Number of processes to use
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
-    eval_env=evalenv(x, y, z, gamma, turnspc, policyname)
-    env1 =environment(x, y, z, gamma, turnspc, scalar, policyname) #env annealreate/ numturns*eval_freq
+    eval_env=evalenv(x, y, z, turnspc, policyname)
+    env1 =environment(x, y, z, turnspc, policyname)
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
 
+
     
     #create callbacks to record data, initiate events during training.
     callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=evpath, n_eval_episodes=100, eval_freq=50000
-                                                                         , deterministic=False, best_model_save_path=evpath), EvalCallback(env1, log_path=savepath, n_eval_episodes=20, eval_freq=50000
+                                                                         , deterministic=True, best_model_save_path=evpath), EvalCallback(env1, log_path=savepath, n_eval_episodes=20, eval_freq=10000
                                                                          , deterministic=False, best_model_save_path=savepath)])
     if (os.path.exists("%s/final_model.zip" % savepath)):
         # Instantiate the agent
