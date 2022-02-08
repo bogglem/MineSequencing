@@ -34,8 +34,8 @@ from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import A2C
-from tools.loadsaveBMenv_cpu import environment
-from tools.evalBMenv import environment as evalenv
+from tools.loadsaveBMenv_excludeerror import environment
+from tools.evalBMenv2 import environment as evalenv
 
 # os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
@@ -58,12 +58,12 @@ policyname=inputarray.loc[idx].policyname  #change this name to change RL policy
 if policyname == 'CnnPolicy':
     
     policy=CnnPolicy
-    test='CNNACER'
+    test='CNNA2C'
 
 elif policyname =='MlpPolicy':
 
     policy=MlpPolicy
-    test='MLPACER'
+    test='MLPA2C'
 
 trialv=inputarray.loc[idx].trialv 
 #LR_critic=inputarray.loc[idx].LR_critic

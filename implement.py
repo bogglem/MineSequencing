@@ -73,7 +73,7 @@ savepath='./output/%s/%s' % (scenario, 'eval')
 
 turns=round(x*y*z*turnspc)
 
-env = environment(x,y,z,gamma, turnspc, policyname, rg_prob='rg')
+env = environment(x,y,z, turnspc, policyname, rg_prob='rg')
 
 if test=='CNNACER' or test=='MLPACER':
 

@@ -86,12 +86,12 @@ class ai():
         if policyname == 'CnnPolicy':
             
             policy=CnnPolicy
-            test='CNNACER'
+            test='CNNA2C'
         
         elif policyname =='MlpPolicy':
         
             policy=MlpPolicy
-            test='MLPACER'
+            test='MLPA2C'
         
         trialv='exerror'
         
@@ -163,7 +163,7 @@ if __name__ == '__main__':
     
     envnum=1
     
-    env = environment(15, 15, 4, 0.9, 0.1, 'MlpPolicy', rg_prob=envnum)
+    env = environment(15, 15, 4, 0.1, 'MlpPolicy', rg_prob=envnum)
     
     trajname='HumanTrajectory%s' % envnum
     human=human(env, trajname)
