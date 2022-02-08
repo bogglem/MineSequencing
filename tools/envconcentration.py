@@ -91,7 +91,7 @@ class envconc():
         plt.xlabel('Timestep')
         plt.ylabel('# of Environments in Folder')
 
-        
+        plt.savefig('envconcentrations2', dpi=300)
         
         
                 

@@ -34,16 +34,16 @@ from stable_baselines.common.vec_env import SubprocVecEnv
 from stable_baselines.common import set_global_seeds, make_vec_env
 from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCallback
 from stable_baselines import ACER
-from tools.loadsaveBMenv_excludeerror import environment
-from tools.evalBMenv2 import environment as evalenv
+from tools.loadsaveBMenv import environment
+from tools.evalBMenv import environment as evalenv
 
 #os.environ['CUDA_VISIBLE_DEVICES'] = '5'
 
-#idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
-idx=0
+idx=int(sys.argv[1]) #array row number. required for batch runs on pbs katana
+#idx=0
 
 #prepare input parameters
-inputarray=pd.read_csv('jobarrays/general_katana_job_input.csv')
+inputarray=pd.read_csv('jobarrays/LR_job_input.csv')
 
 #block model (environment) dimensions
 x=inputarray.loc[idx].x
@@ -73,7 +73,7 @@ gamma=inputarray.loc[idx].gamma
 runtime=inputarray.loc[idx].runtime
 #cutoffpenaltyscalar=inputarray.loc[idx].cutoffpenaltyscalar #not currently implemented
 #rg_prob=inputarray.loc[idx].rg_prob
-#scalar=inputarray.loc[idx].scalar
+scalar=inputarray.loc[idx].scalar
 turnspc=inputarray.loc[idx].turnspc
 ncpu=inputarray.loc[idx].ncpu
 
@@ -85,8 +85,6 @@ episodetimesteps=round(x*y*z*turnspc)
 LR_s=str("{:f}".format(LR)).split('.')[1]
 inputfile_s='%s_%s_%s' % (x,y,z)
 gamma_s=str(gamma).replace('.','_')
-#scalar_s=str(scalar).replace('.','_')
-
 #cutoff_s=str(cutoffpenaltyscalar).split('.')[0]
 #rg_s=rg_prob #max(str(float(rg_prob)).split('.'))
 turnspc_s=str(turnspc).split('.')[1]
@@ -220,7 +218,7 @@ def make_env(x,y,z, rank, seed=0):
     """
     def _init():
         
-        env = environment(x, y, z, gamma, turnspc, policyname)
+        env = environment(x, y, z, gamma, turnspc, scalar, policyname)
         env.seed(seed + rank)
         return env
     set_global_seeds(seed)
@@ -233,7 +231,7 @@ if __name__ == '__main__':
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
     eval_env=evalenv(x, y, z, gamma, turnspc, policyname)
-    env1 =environment(x, y, z, gamma, turnspc, policyname)
+    env1 =environment(x, y, z, gamma, turnspc, scalar, policyname) #env annealreate/ numturns*eval_freq
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
@@ -241,7 +239,7 @@ if __name__ == '__main__':
     
     #create callbacks to record data, initiate events during training.
     callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=evpath, n_eval_episodes=100, eval_freq=50000
-                                                                         , deterministic=True, best_model_save_path=evpath), EvalCallback(env1, log_path=savepath, n_eval_episodes=20, eval_freq=10000
+                                                                         , deterministic=False, best_model_save_path=evpath), EvalCallback(env1, log_path=savepath, n_eval_episodes=20, eval_freq=50000
                                                                          , deterministic=False, best_model_save_path=savepath)])
     if (os.path.exists("%s/final_model.zip" % savepath)):
         # Instantiate the agent
@@ -262,8 +260,4 @@ if __name__ == '__main__':
             
     
 
-
-    
-    
-    
     

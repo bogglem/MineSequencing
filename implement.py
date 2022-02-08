@@ -108,14 +108,20 @@ cumreward=0
 results=list()
 minable=list()
 
-for i in range(turns):
-    action, _states = model.predict(obs, deterministic=True)
+while True:
+#for i in range(turns):
+    action, _states = model.predict(obs, deterministic=False)
     obs, rewards, dones, info = env.step(action)
     cumreward+=rewards
     print(action, rewards, dones, cumreward)
     results.append(info[0])
     a=abs(info[1]-1) #translating sequence errors to be positive, else zero
     minable.append(a)
+    
+    # if info[1]==1:
+    #     results.append(info[0])
+    #     a=abs(info[1]-1) #translating sequence errors to be positive, else zero
+    #     minable.append(a)
     #env.renderif('on')
     if dones == True:
         break

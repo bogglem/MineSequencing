@@ -7,7 +7,7 @@ Created on Fri Feb  4 19:58:48 2022
 import numpy as np
 import matplotlib.pyplot as plt
 
-def moving_average(a, n=3) :
+def moving_average(a, n=3):
     ret = np.cumsum(a, dtype=float)
     ret[n:] = ret[n:] - ret[:-n]
     ma=ret[n - 1:] / n
