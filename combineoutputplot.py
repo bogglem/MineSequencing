@@ -25,7 +25,7 @@ from stable_baselines.common.policies import MlpPolicy
 #os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
 #prepare input parameters
-inputarray=pd.read_csv('jobarrays/ACER_katana_equipf_job_input2.csv')
+inputarray=pd.read_csv('jobarrays/LR_job_input.csv')
 
 def moving_average(a, n=3) :
     ret = np.cumsum(a, dtype=float)

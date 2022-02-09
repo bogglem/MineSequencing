@@ -161,7 +161,7 @@ class ai():
         
 if __name__ == '__main__':
     
-    envnum=1
+    envnum=2
     
     env = environment(15, 15, 4, 0.1, 'MlpPolicy', rg_prob=envnum)
     
