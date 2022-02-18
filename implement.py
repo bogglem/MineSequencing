@@ -29,9 +29,9 @@ from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.policies import CnnPolicy
 from stable_baselines.common.evaluation import evaluate_policy
 from tools.plotresults import plotresults
-from tools.BMenv import environment
+#from tools.BMenv import environment
 #from tools.loadsaveBMenv_excludeerror import environment
-#from tools.evalBMenv2_exerror import environment
+from tools.evalBMenv2_exerror import environment
 #from tools.Fuzzy3DBMenv_9action import environment
 
 # Create environment

@@ -105,12 +105,12 @@ for ax in axes.flatten():
         #rg_s=rg_prob #max(str(float(rg_prob)).split('.'))
         turnspc_s=str(turnspc).split('.')[1]
         storagefolder='output'
-        scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}_s{scalar_s}')    
+        scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}') #   _s{scalar_s}
         savepath='./%s/%s' % (storagefolder ,scenario)
         evpath='./%s/%s/eval' % (storagefolder ,scenario)
         #savepath='%s/environment' % (savepath)
         
-        evaluations='./%s/evaluations.npz' % (evpath)
+        evaluations='%s/evaluations.npz' % (evpath)
         data=[]
         data=np.load(evaluations)
         results=[]
@@ -118,7 +118,7 @@ for ax in axes.flatten():
         y=np.average(results, axis=1)
         timesteps=[]
         timesteps=data['timesteps']
-        label='Gamma %s' % gamma
+        label='LR %s' % LR
         #plt.plot(timesteps,y, label=label, linewidth=1.2)
        # plt.legend()
         
@@ -131,8 +131,8 @@ for ax in axes.flatten():
         """ Iterate row's axes"""
         #subplot(row, col, timesteps, y, label)
         #ax=axes[row,col]
-        ax.set_ylim([0,50])
-        ax.set_xlim([0,2.5e7])
+        ax.set_ylim([-30,-7])
+        ax.set_xlim([0,2.1e7])
            
         ax.grid(axis='y')
         ax.plot(timesteps, y, label=label, linewidth=1.2)    

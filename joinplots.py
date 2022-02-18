@@ -47,7 +47,7 @@ from tools.evalBMenv2 import environment as evalenv
 inputarray=pd.read_csv('jobarrays/general_katana_job_input.csv')
 
 #for idx in range(len(inputarray)):
-idx=0
+idx=1
 #block model (environment) dimensions
 x=inputarray.loc[idx].x
 y=inputarray.loc[idx].y
