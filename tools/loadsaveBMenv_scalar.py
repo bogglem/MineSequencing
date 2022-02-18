@@ -20,7 +20,7 @@ from tools.createmodel import automodel
 
 class environment(gym.Env):
     
-    def __init__(self, x,y,z, turnspc, policy, scalar, rg_prob='loadenv', rendermode='off', envpath='./environments/15x15x4'):
+    def __init__(self, x,y,z, turnspc, scalar, policy, rg_prob='loadenv', rendermode='off', envpath='./environments/15x15x4'):
         #x,y,z ,gamma, turnspc, scalar, policy, rg_prob='loadenv',
         self.rendermode=rendermode # on/off display block model in matplotlib
       

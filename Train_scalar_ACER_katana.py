@@ -220,7 +220,7 @@ def make_env(x,y,z, rank, seed=0):
     """
     def _init():
         
-        env = environment(x, y, z, gamma, turnspc, scalar, policyname)
+        env = environment(x, y, z, turnspc, scalar, policyname)
         env.seed(seed + rank)
         return env
     set_global_seeds(seed)
@@ -233,7 +233,7 @@ if __name__ == '__main__':
     # Create the vectorized environment
     env = SubprocVecEnv([make_env(x,y,z, i) for i in range(num_cpu)])
     eval_env=evalenv(x, y, z, turnspc, policyname)
-    env1 =environment(x, y, z, turnspc, policyname)
+    env1 =environment(x, y, z, turnspc, scalar, policyname)
     # Stable Baselines provides you with make_vec_env() helper
     # which does exactly the previous steps for you:
     # env = make_vec_env(env_id, n_envs=num_cpu, seed=0)
@@ -242,7 +242,7 @@ if __name__ == '__main__':
     
     #create callbacks to record data, initiate events during training.
     callbacklist=CallbackList([TimeLimit(episodetimesteps), EvalCallback(eval_env, log_path=evpath, n_eval_episodes=100, eval_freq=50000
-                                                                         , deterministic=True, best_model_save_path=evpath), EvalCallback(env1, log_path=savepath, n_eval_episodes=20, eval_freq=10000
+                                                                         , deterministic=False, best_model_save_path=evpath), EvalCallback(env1, log_path=savepath, n_eval_episodes=20, eval_freq=10000
                                                                          , deterministic=False, best_model_save_path=savepath)])
     if (os.path.exists("%s/final_model.zip" % savepath)):
         # Instantiate the agent
