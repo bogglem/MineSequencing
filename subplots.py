@@ -25,7 +25,7 @@ from stable_baselines import ACER
 #os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
 #prepare input parameters
-inputarray=pd.read_csv('jobarrays/LR_job_input.csv')
+inputarray=pd.read_csv('jobarrays/ACER_katana_g_job_input.csv')
 
 #initate subplots
 
@@ -105,7 +105,7 @@ for ax in axes.flatten():
         #rg_s=rg_prob #max(str(float(rg_prob)).split('.'))
         turnspc_s=str(turnspc).split('.')[1]
         storagefolder='output'
-        scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}') #   _s{scalar_s}
+        scenario=str(f'{trialv}_{inputfile_s}_t{test}_lr{LR_s}_g{gamma_s}_s{scalar_s}') #   
         savepath='./%s/%s' % (storagefolder ,scenario)
         evpath='./%s/%s/eval' % (storagefolder ,scenario)
         #savepath='%s/environment' % (savepath)
@@ -118,7 +118,7 @@ for ax in axes.flatten():
         y=np.average(results, axis=1)
         timesteps=[]
         timesteps=data['timesteps']
-        label='LR %s' % LR
+        label='Gamma %s' % gamma
         #plt.plot(timesteps,y, label=label, linewidth=1.2)
        # plt.legend()
         
@@ -131,7 +131,7 @@ for ax in axes.flatten():
         """ Iterate row's axes"""
         #subplot(row, col, timesteps, y, label)
         #ax=axes[row,col]
-        ax.set_ylim([-30,-7.5])
+        ax.set_ylim([-30,0])
         ax.set_xlim([0,2e7])
            
         ax.grid(axis='y')
@@ -146,7 +146,7 @@ for ax in axes.flatten():
         break
         
 fig.subplots_adjust(hspace = .3)     
-fig.text(0.51, 0.91, 'ACER Learning Rate Tuning', ha='center', va='center', fontsize='xx-large')
+fig.text(0.51, 0.91, 'ACER Gamma Tuning', ha='center', va='center', fontsize='xx-large')
 fig.text(0.51, 0.08, 'Timesteps', ha='center', va='center', fontsize='xx-large')
 fig.text(0.08, 0.5, 'Evaluation Score', ha='center', va='center', rotation='vertical', fontsize='xx-large')
 
