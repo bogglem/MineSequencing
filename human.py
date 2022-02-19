@@ -51,6 +51,7 @@ class human():
         
     def run(self):
         self.env.reset()
+        self.env.clean('temporalhuman')
         counter=0
         self.env.rendermode='off'
         
@@ -63,6 +64,7 @@ class human():
             self.minable.append(a)
             
             counter+=1
+            self.env.savestep('temporalhuman')
         
 
 
@@ -139,6 +141,7 @@ class ai():
     def run(self):  # Enjoy trained agent
         cumreward=0
         obs = self.env.reset()
+        self.env.clean('temporalai')
         self.env.rendermode='off'
 
         while self.env.terminal==False: #i in range(self.episodetimesteps):
@@ -151,7 +154,9 @@ class ai():
                 a=abs(info[1]-1) #translating sequence errors to be positive, else zero
                 self.minable.append(a)
             
-            env.renderif('on')
+            #env.renderif('on')
+            self.env.savestep('temporalai')
+            
             if dones == True:
                 break
     
@@ -161,7 +166,7 @@ class ai():
         
 if __name__ == '__main__':
     
-    envnum=1
+    envnum=2
     
     env = environment(15, 15, 4, 0.1, 'MlpPolicy', rg_prob=envnum)
     

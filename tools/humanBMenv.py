@@ -5,6 +5,7 @@ Created on Thu Sep 24 12:04:45 2020
 @author: Tim Pelech
 """
 import os.path
+import shutil
 import numpy as np
 import pandas as pd
 import random
@@ -102,38 +103,62 @@ class environment(gym.Env):
         #self.init_cutoffpenalty=self.cutoffpenalty() #experimental parameter function. penalises agent for not mining (do nothing), reward for taking action.
        
 
+    def clean(self, folder):
 
-    def save(self):
-    
+        if os.path.exists('./environments/human/%s' %folder):
+            # removing the file using the os.remove() method
+            shutil.rmtree('./environments/human/%s' %folder)
+            
+        else:
+            pass
+
+
+    def savestep(self, folder):
+        
+        
         #create dir        
-        if (os.path.exists('./environments')!=True):
-            os.mkdir('./environments')
+        if (os.path.exists('./environments/human/%s' % folder)!=True):
+            os.mkdir('./environments/human/%s' % folder)
         if (os.path.exists('%s' %self.savedgeo)!=True):
             os.mkdir('%s' %self.savedgeo)
         # if (os.path.exists('%s' %self.savedtruth)!=True):
         #     os.mkdir('%s' %self.savedtruth)
-        if (os.path.exists('%s' %self.savedenv)!=True):
-            os.mkdir('%s' %self.savedenv)
-        if (os.path.exists('%s' %self.saveddepdic)!=True):
-            os.mkdir('%s' %self.saveddepdic)
-        if (os.path.exists('%s' %self.savedeffdic)!=True):
-            os.mkdir('%s' %self.savedeffdic)         
+        if (os.path.exists('./environments/human/%s/environment' %folder)!=True):
+            os.mkdir('./environments/human/%s/environment' %folder)
         
-        self.savenumber=len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])+1
+        if (os.path.exists('./environments/human/%s/geology' %folder)!=True):
+            os.mkdir('./environments/human/%s/geology' %folder)    
+        
+        if (os.path.exists('./environments/human/%s/depdict' %folder)!=True):
+            os.mkdir('./environments/human/%s/depdict' %folder)
+        if (os.path.exists('./environments/human/%s/effdict' %folder)!=True):
+            os.mkdir('./environments/human/%s/effdict' %folder)         
+        
+        self.savenumber=self.turncounter
+        #len([name for name in os.listdir(self.savedgeo) if os.path.isfile(os.path.join(self.savedgeo, name))])+1
         
         #save geo array   
-        np.save("%s/%s_geo_array"% (self.savedgeo, self.savenumber), self.geo_array)
+        np.save("./environments/human/%s/environment/%s_geo_array" % (folder, self.savenumber), self.geo_array)
                   
         #save normalised ob_sample       
-        np.save("%s/%s_ob_sample"% (self.savedenv, self.savenumber), self.ob_sample)
+        np.save("./environments/human/%s/geology/%s_ob_sample" % (folder, self.savenumber), self.ob_sample)
                 
         #save dep_dic  
-        np.save("%s/%s_dep_dic"% (self.saveddepdic, self.savenumber), self.dep_dic)
+        np.save("./environments/human/%s/depdict/%s_dep_dic" % (folder, self.savenumber), self.dep_dic)
 
         #save eff_dic   
-        np.save("%s/%s_eff_dic"% (self.savedeffdic, self.savenumber), self.eff_dic)
+        np.save("./environments/human/%s/effdict/%s_eff_dic" % (folder, self.savenumber), self.eff_dic)
           
+
+    def loadstep(self, folder, loadid):
         
+        self.geo_array=np.load("./environments/human/%s/environment/%s_geo_array.npy" % (folder, loadid))
+        self.ob_sample=np.load("./environments/human/%s/geology/%s_ob_sample.npy" % (folder, loadid))
+        # self.truth_array=np.load("%s/%s_geo_array.npy"% (self.savedgeo, loadid))
+        self.dep_dic=np.load("./environments/human/%s/depdict/%s_dep_dic.npy" % (folder, loadid), allow_pickle='True').flat[0]
+        self.eff_dic=np.load("./environments/human/%s/effdict/%s_eff_dic.npy" % (folder, loadid), allow_pickle='True').flat[0]
+
+        self.averagereward=np.average(self.geo_array[:,:,:,0])
     
         
     def load(self, loadid):
@@ -554,6 +579,11 @@ class environment(gym.Env):
             self.bm_original.plot()
             
             
+    def renderstep(self, folder, step):
+        
+        self.loadstep(folder,step)
+        
+        self.render()
         
 
     def renderx(self,xx=0,yy=0,zz=0, mined='mined'):      
