@@ -106,6 +106,7 @@ class plotresults():
     def singleplot(results, labels, geo_array, minable):
         
         resultsarray=np.array(results)*100
+        resultsarray_cutoff=resultsarray[resultsarray>0.0]
         grades=geo_array[:,:,:,0]*100
         gradesf=np.ndarray.flatten(grades)
         avgrade=np.average(grades)
@@ -117,14 +118,14 @@ class plotresults():
         
         fig1=plt.figure(1)
         plt.hist(gradesf,40)
-        plt.axvline(np.average(resultsarray[0:20]), color='g', linestyle='dashed', linewidth=1)
-        plt.axvline(np.average(resultsarray[20:40]), color='r', linestyle='dashed', linewidth=1)
-        plt.axvline(np.average(resultsarray), color='k', linestyle='dashed', linewidth=1)
+        plt.axvline(np.average(resultsarray_cutoff[0:20]), color='g', linestyle='dashed', linewidth=1)
+        plt.axvline(np.average(resultsarray_cutoff[20:40]), color='r', linestyle='dashed', linewidth=1)
+        plt.axvline(np.average(resultsarray_cutoff), color='k', linestyle='dashed', linewidth=1)
         min_ylim, max_ylim = plt.ylim()
         
-        plt.text(np.average(resultsarray[0:20])*1.05, max_ylim*0.4, '0-20 Grade: {:.1f}'.format(np.average(resultsarray[0:20])), rotation=45, color='g')
-        plt.text(np.average(resultsarray[20:40])*1.05, max_ylim*0.6, '20-40 Grade: {:.1f}'.format(np.average(resultsarray[20:40])), rotation=45, color='r')
-        plt.text(np.average(resultsarray)*1.05, max_ylim*0.8, 'Total Mined Grade: {:.1f}'.format(np.average(resultsarray)), rotation=45)
+        plt.text(np.average(resultsarray_cutoff[0:20])*1.05, max_ylim*0.4, '0-20 Grade: {:.1f}'.format(np.average(resultsarray_cutoff[0:20])), rotation=45, color='g')
+        plt.text(np.average(resultsarray_cutoff[20:40])*1.05, max_ylim*0.6, '20-40 Grade: {:.1f}'.format(np.average(resultsarray_cutoff[20:40])), rotation=45, color='r')
+        plt.text(np.average(resultsarray_cutoff)*1.05, max_ylim*0.8, 'Total Mined Grade: {:.1f}'.format(np.average(resultsarray_cutoff)), rotation=45)
         
         #Sequence Plot
         
@@ -182,9 +183,9 @@ class plotresults():
         # f1ax1.text(np.average(resultsarray1[20:40])*1.05, max_ylim*0.6, '20-40 Grade: {:.3f}'.format(np.average(resultsarray1[20:40])), rotation=45, color='r')
         # f1ax1.text(np.average(resultsarray1)*1.05, max_ylim*0.8, 'Total Mined Grade: {:.3f}'.format(np.average(resultsarray1)), rotation=45)
         
-        f1ax1.text(max_xlim*0.45, max_ylim*0.4, '0-20 %H2O: {:.1f}'.format(np.average(resultsarray1[0:20])), rotation=0, color='g')
-        f1ax1.text(max_xlim*0.45, max_ylim*0.5, '20-40 %H2O: {:.1f}'.format(np.average(resultsarray1[20:40])), rotation=0, color='r')
-        f1ax1.text(max_xlim*0.45, max_ylim*0.6, 'Total %H2O: {:.1f}'.format(np.average(resultsarray1)), rotation=0)
+        f1ax1.text(max_xlim*0.4, max_ylim*0.4, '0-20 %H2O: {:.1f}'.format(np.average(resultsarray1[0:20])), rotation=0, color='g')
+        f1ax1.text(max_xlim*0.4, max_ylim*0.5, '20-40 %H2O: {:.1f}'.format(np.average(resultsarray1[20:40])), rotation=0, color='r')
+        f1ax1.text(max_xlim*0.4, max_ylim*0.6, 'Total %H2O: {:.1f}'.format(np.average(resultsarray1)), rotation=0)
         f1ax1.text(max_xlim*0.4, max_ylim*1.02, labels1, rotation=0)    
         
         #Histogram 2
@@ -200,9 +201,9 @@ class plotresults():
         # f1ax2.text(np.average(resultsarray2[0:20])*1.05, max_ylim*0.4, '0-20 Grade: {:.3f}'.format(np.average(resultsarray2[0:20])), rotation=45, color='g')
         # f1ax2.text(np.average(resultsarray2[20:40])*1.05, max_ylim*0.6, '20-40 Grade: {:.3f}'.format(np.average(resultsarray2[20:40])), rotation=45, color='r')
         # f1ax2.text(np.average(resultsarray2)*1.05, max_ylim*0.8, 'Total Mined Grade: {:.3f}'.format(np.average(resultsarray2)), rotation=45)
-        f1ax2.text(max_xlim*0.45, max_ylim*0.4, '0-20 %H2O: {:.1f}'.format(np.average(resultsarray2[0:20])), rotation=0, color='g')
-        f1ax2.text(max_xlim*0.45, max_ylim*0.5, '20-40 %H2O: {:.1f}'.format(np.average(resultsarray2[20:40])), rotation=0, color='r')
-        f1ax2.text(max_xlim*0.45, max_ylim*0.6, 'Total %H2O: {:.1f}'.format(np.average(resultsarray2)), rotation=0)       
+        f1ax2.text(max_xlim*0.4, max_ylim*0.4, '0-20 %H2O: {:.1f}'.format(np.average(resultsarray2[0:20])), rotation=0, color='g')
+        f1ax2.text(max_xlim*0.4, max_ylim*0.5, '20-40 %H2O: {:.1f}'.format(np.average(resultsarray2[20:40])), rotation=0, color='r')
+        f1ax2.text(max_xlim*0.4, max_ylim*0.6, 'Total %H2O: {:.1f}'.format(np.average(resultsarray2)), rotation=0)       
         f1ax2.text(max_xlim*0.45, max_ylim*1.02, labels2, rotation=0)     
         
         #Grade sequence 1
@@ -250,4 +251,25 @@ class plotresults():
         f3ax1.legend(loc='lower right')
         
 
+
+    def geohist(geo_array):
+    
+        
+        fig1, (f1ax1) = plt.subplots(1,1)
+    
+        grades=geo_array[:,:,:,0]*100
+        gradesf=np.ndarray.flatten(grades)
+        avgrade=np.average(grades)    
+    
+    
+        #Histogram 1
+        
+        fig1.text(0.54, 0.02, 'Grade %H2O', ha='center', va='center', fontsize='large')
+        fig1.text(0.02, 0.5, '# of available blocks', ha='center', va='center', rotation='vertical', fontsize='large')
+        
+        #fig1=plt.figure(1)
+        f1ax1.hist(gradesf,40)
+
+        min_ylim, max_ylim = f1ax1.get_ylim()
+        min_xlim, max_xlim = f1ax1.get_xlim()
     

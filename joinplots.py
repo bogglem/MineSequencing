@@ -47,7 +47,7 @@ from tools.evalBMenv2 import environment as evalenv
 inputarray=pd.read_csv('jobarrays/general_katana_job_input.csv')
 
 #for idx in range(len(inputarray)):
-idx=0
+idx=2
 #block model (environment) dimensions
 x=inputarray.loc[idx].x
 y=inputarray.loc[idx].y
@@ -58,12 +58,12 @@ policyname=inputarray.loc[idx].policyname  #change this name to change RL policy
 if policyname == 'CnnPolicy':
     
     policy=CnnPolicy
-    test='CNNA2C'
+    test='CNNACER'
 
 elif policyname =='MlpPolicy':
 
     policy=MlpPolicy
-    test='MLPA2C'
+    test='MLPACER'
 
 trialv=inputarray.loc[idx].trialv 
 #LR_critic=inputarray.loc[idx].LR_critic

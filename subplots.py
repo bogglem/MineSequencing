@@ -25,7 +25,7 @@ from stable_baselines import ACER
 #os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
 #prepare input parameters
-inputarray=pd.read_csv('jobarrays/ACER_katana_g_job_input.csv')
+inputarray=pd.read_csv('jobarrays/A2C_katana_job_input.csv')
 
 #initate subplots
 
@@ -70,12 +70,12 @@ for ax in axes.flatten():
         if policyname == 'CnnPolicy':
             
             policy=CnnPolicy
-            test='CNNACER'
+            test='CNNA2C'
         
         elif policyname =='MlpPolicy':
         
             policy=MlpPolicy
-            test='MLPACER'
+            test='MLPA2C'
         
         trialv=inputarray.loc[idx].trialv 
         #LR_critic=inputarray.loc[idx].LR_critic
@@ -118,7 +118,7 @@ for ax in axes.flatten():
         y=np.average(results, axis=1)
         timesteps=[]
         timesteps=data['timesteps']
-        label='Gamma %s' % gamma
+        label='Scalar %s' % scalar
         #plt.plot(timesteps,y, label=label, linewidth=1.2)
        # plt.legend()
         
@@ -131,8 +131,8 @@ for ax in axes.flatten():
         """ Iterate row's axes"""
         #subplot(row, col, timesteps, y, label)
         #ax=axes[row,col]
-        ax.set_ylim([-30,0])
-        ax.set_xlim([0,2e7])
+        ax.set_ylim([-30,10])
+        ax.set_xlim([0,7e7])
            
         ax.grid(axis='y')
         ax.plot(timesteps, y, label=label, linewidth=1.2)    
@@ -146,7 +146,7 @@ for ax in axes.flatten():
         break
         
 fig.subplots_adjust(hspace = .3)     
-fig.text(0.51, 0.91, 'ACER Gamma Tuning', ha='center', va='center', fontsize='xx-large')
+fig.text(0.51, 0.91, 'A2C Penalty Scalar Tuning', ha='center', va='center', fontsize='xx-large')
 fig.text(0.51, 0.08, 'Timesteps', ha='center', va='center', fontsize='xx-large')
 fig.text(0.08, 0.5, 'Evaluation Score', ha='center', va='center', rotation='vertical', fontsize='xx-large')
 
