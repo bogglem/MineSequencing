@@ -74,14 +74,14 @@ class riskreturn():
         #gaussian_kde_zi = 
         #ax.plot(x, gaussian_kde_zi(x)*scale_factor
         
-        ax1.hist([a,b],20, label=['Human','AI'])
+        ax1.hist([a,b],20, label=['Human','Agent'])
         ax1.legend(loc='upper right')
         
         kde_a = stats.gaussian_kde(a)
         kde_b = stats.gaussian_kde(b)
         
         ax2.plot(a, kde_a(a), label='KDE Human', linestyle='None', marker='x')
-        ax2.plot(b, kde_b(b), label='KDE AI', linestyle='None',  marker='x')
+        ax2.plot(b, kde_b(b), label='KDE Agent', linestyle='None',  marker='x')
         
         #ax2.hist([eplength],89, label=['eplength'])
         ax2.legend(loc='upper right')
@@ -105,10 +105,10 @@ class riskreturn():
         f1ax1.bar(e[:-1], h, width=np.diff(e), ec='k', align='edge', label='Human Performance pdf')
         # plot the real KDE
         kde1 = stats.gaussian_kde(humansamples)
-        f1ax1.plot(e, kde1.pdf(e), c='C1', lw=2, label='KDE')
+        f1ax1.plot(e, kde1.pdf(e), c='C1', lw=2, label='KDE Density Trend')
         #plot CDF
-        cum=np.cumsum(h*np.diff(e))
-        f1ax3.plot(e[:-1],cum, label='Human Performance cdf')
+        cum_h=np.cumsum(h*np.diff(e))
+        f1ax3.plot(e[:-1],cum_h, label='Human Performance cdf')
         
         f1ax1.legend(loc='upper right')
        # f1ax2.legend(loc='upper right')
@@ -123,20 +123,24 @@ class riskreturn():
        # x = np.linspace(e.min(), e.max())
         
         #plt.figure(figsize=(8,6))
-        f1ax2.bar(e[:-1], h, width=np.diff(e),color='r', ec='k', align='edge', label='AI Performance pdf')
+        f1ax2.bar(e[:-1], h, width=np.diff(e),color='r', ec='k', align='edge', label='Agent Performance pdf')
         # plot the real KDE
         kde2 = stats.gaussian_kde(aisamples)
-        f1ax2.plot(e, kde2.pdf(e), c='C2', lw=2, label='KDE')
+        f1ax2.plot(e, kde2.pdf(e), c='C2', lw=2, label='KDE Density Trend')
         #plot CDF
-        cum=np.cumsum(h*np.diff(e))
-        f1ax3.plot(e[:-1],cum, color='r', label='AI Performance cdf')
+        cum_a=np.cumsum(h*np.diff(e))
+        f1ax3.plot(e[:-1],cum_a, color='r', label='Agent Performance cdf')
+        #f1ax3.fill_between(e[:-1], cum_a, cum_h, alpha=0.4)
         
         f1ax2.legend(loc='upper right')
         f1ax3.legend(loc='lower right' )
        # f1ax4.legend(loc='upper right')
         
-       # ax.set_ylim([-30,10])
-        xlim=800
+        ylim=0.008
+        f1ax1.set_ylim([0,ylim])
+        f1ax2.set_ylim([0,ylim])
+        
+        xlim=700
         f1ax1.set_xlim([0,xlim])
         f1ax2.set_xlim([0,xlim])
         f1ax3.set_xlim([0,xlim])
@@ -184,4 +188,9 @@ class riskreturn():
         
         self.plothist2(human,ai, eplength)
         
-        
+# if __name__ == '__main__':
+    
+
+#     rr=riskreturn(0.001,10000,human.results,ai.results)
+#     rr.dokde()
+    

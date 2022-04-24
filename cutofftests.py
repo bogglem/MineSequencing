@@ -28,7 +28,8 @@ from stable_baselines import ACER
 from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.policies import CnnPolicy
 from stable_baselines.common.evaluation import evaluate_policy
-from tools.plotresults import plotresults
+#from tools.plotresults import plotresults
+import tools.plotresults as plotresults
 #from tools.BMenv import environment
 from tools.loadsaveBMenv_cutoff import environment
 #from tools.evalBMenv2_exerror import environment
@@ -44,7 +45,7 @@ gamma=0.8
 turnspc=0.10
 episodetimesteps=round(x*y*z*turnspc)
 ncpu=16
-cutoff=0.0
+cutoffarray=[0.0,0.02, 0.05,0.08,0.1,0.15]
 
 policyname='MlpPolicy' #change this name to change RL policy type (MlpPolicy/CnnPolicy)
 
@@ -74,87 +75,99 @@ savepath='./output/%s/%s' % (scenario, 'eval')
 
 turns=round(x*y*z*turnspc)
 
-env = environment(x,y,z, cutoff, turnspc, policyname, rg_prob='loadenv')
 
-if test=='CNNACER' or test=='MLPACER':
 
-    # Instantiate the agent
-    model = ACER(policy, env, gamma=gamma, learning_rate=LR,n_steps=episodetimesteps,   verbose=1)
-    #model = DQN('MlpPolicy', env, learning_rate=LR, prioritized_replay=True, verbose=1)
-    #
-    # Load the trained agent
-    model = ACER.load("%s/best_model" % savepath)
-    #model = DQN.load("%s/best_model" % savepath)
-    print('loaded agent %s' % savepath)
+store=list()
+labels=list()
+cutoff_i=0
 
+for cutoff in cutoffarray:
     
-else:
-    # Instantiate the agent
-    model = A2C(policy, env, gamma=gamma, learning_rate=LR,n_steps=episodetimesteps,   verbose=1)
-    #model = DQN('MlpPolicy', env, learning_rate=LR, prioritized_replay=True, verbose=1)
-    #
-    # Load the trained agent
-    model = A2C.load("%s/best_model" % savepath)
-    #model = DQN.load("%s/best_model" % savepath)
-    print('loaded agent %s' % savepath)
-
-# Evaluate the agent
-mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=20, deterministic=False)
-print('mean_reward = %s +/- %s' %(mean_reward,std_reward))
-
-# Enjoy trained agent
-env.rendermode='on'
-obs = env.reset()
-cumreward=0
-results=list()
-minable=list()
-
-while True:
-#for i in range(turns):
-    action, _states = model.predict(obs, deterministic=False)
-    obs, rewards, dones, info = env.step(action)
-    cumreward+=rewards
-    print(action, rewards, dones, cumreward)
-    results.append(info[0])
-    a=abs(info[1]-1) #translating sequence errors to be positive, else zero
-    minable.append(a)
+    env = environment(x,y,z, cutoff, turnspc, policyname, rg_prob='loadenv')
+        
+    if test=='CNNACER' or test=='MLPACER':
     
-    # if info[1]==1:
-    #     results.append(info[0])
-    #     a=abs(info[1]-1) #translating sequence errors to be positive, else zero
-    #     minable.append(a)
-    #env.renderif('on')
-    if dones == True:
-        break
+        # Instantiate the agent
+        model = ACER(policy, env, gamma=gamma, learning_rate=LR,n_steps=episodetimesteps,   verbose=1)
+        #model = DQN('MlpPolicy', env, learning_rate=LR, prioritized_replay=True, verbose=1)
+        #
+        # Load the trained agent
+        model = ACER.load("%s/best_model" % savepath)
+        #model = DQN.load("%s/best_model" % savepath)
+        print('loaded agent %s' % savepath)
+    
+        
+    else:
+        # Instantiate the agent
+        model = A2C(policy, env, gamma=gamma, learning_rate=LR,n_steps=episodetimesteps,   verbose=1)
+        #model = DQN('MlpPolicy', env, learning_rate=LR, prioritized_replay=True, verbose=1)
+        #
+        # Load the trained agent
+        model = A2C.load("%s/best_model" % savepath)
+        #model = DQN.load("%s/best_model" % savepath)
+        print('loaded agent %s' % savepath)
+    
+    
+    for i in range(8): #number of repeats for non deterministic agent (MC method)
+        
+        
+        # Evaluate the agent
+        mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=20, deterministic=False)
+        print('mean_reward = %s +/- %s' %(mean_reward,std_reward))
+        
+        # Enjoy trained agent
+        env.rendermode='off'
+        obs = env.reset()
+        cumreward=0
+        results=list()
+        results_cutoff=list()
+        minable=list()
+        timestep=list()
+        t=0
+        while True:
+        #for i in range(turns):
+            action, _states = model.predict(obs, deterministic=False)
+            obs, rewards, dones, info = env.step(action)
+            cumreward+=rewards
+            print(action, rewards, dones, cumreward)
+            results.append(info[0])
+            if info[0]>0:
+                results_cutoff.append(info[0])
+                timestep.append(t)
+                t+=1
+            a=abs(info[1]-1) #translating sequence errors to be positive, else zero
+            minable.append(a)
+            
+            # if info[1]==1:
+            #     results.append(info[0])
+            #     a=abs(info[1]-1) #translating sequence errors to be positive, else zero
+            #     minable.append(a)
+            #env.renderif('on')
+            if dones == True:
+                while t<90:
+                    results_cutoff.append(np.nan)
+                    timestep.append(t)
+                    t+=1
+                break
+        
+            if len(results)>500:
+                while t<90:
+                    results_cutoff.append(np.nan)
+                    timestep.append(t)
+                    t+=1
+                break
+        
+        label='Cutoff Grade {:.1f}%'.format(cutoff*100)
+        #store.append([label, cutoff, i, env.geo_array, results, results_cutoff, minable])
+        store.append([cutoff_i, timestep, results_cutoff])
+    
+    labels.append(label)    
+    cutoff_i+=1
 
-    if len(results)>500:
-        break
+storearray=np.array(store)
 
-plotresults.singleplot(results,'AI', env.geo_array, minable)
-
-# resultsarray=np.array(results)
-# grades=env.geo_array[:,:,:,0]
-# gradesf=np.ndarray.flatten(grades)
-# avgrade=np.average(grades)
-
-# fig1=plt.figure(1)
-# plt.hist(gradesf,40)
-# plt.axvline(np.average(resultsarray[0:20]), color='g', linestyle='dashed', linewidth=1)
-# plt.axvline(np.average(resultsarray[20:40]), color='r', linestyle='dashed', linewidth=1)
-# plt.axvline(np.average(resultsarray), color='k', linestyle='dashed', linewidth=1)
-# min_ylim, max_ylim = plt.ylim()
-
-# plt.text(np.average(resultsarray[0:20])*1.05, max_ylim*0.4, '0-20 Grade: {:.3f}'.format(np.average(resultsarray[0:20])), rotation=45, color='g')
-# plt.text(np.average(resultsarray[20:40])*1.05, max_ylim*0.6, '20-40 Grade: {:.3f}'.format(np.average(resultsarray[20:40])), rotation=45, color='r')
-# plt.text(np.average(resultsarray)*1.05, max_ylim*0.8, 'Total Mined Grade: {:.3f}'.format(np.average(resultsarray)), rotation=45)
-
-
-
-# plt.figure(2)
-# plt.plot(resultsarray)    
-# plt.axhline(np.max(resultsarray), color='k', linestyle='dashed', linewidth=1)
-# min_xlim, max_xlim = plt.xlim()
-# plt.text(max_xlim*0.7, np.max(resultsarray)*0.9, 'Max Grade: {:.3f}'.format(np.max(resultsarray)))
+#store=np.array(store)
+plotresults.batchplot(storearray, labels)
 
 
     

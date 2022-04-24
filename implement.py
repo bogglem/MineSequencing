@@ -28,7 +28,7 @@ from stable_baselines import ACER
 from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.policies import CnnPolicy
 from stable_baselines.common.evaluation import evaluate_policy
-from tools.plotresults import plotresults
+import tools.plotresults as plotresults
 #from tools.BMenv import environment
 from tools.loadsaveBMenv_cutoff import environment
 #from tools.evalBMenv2_exerror import environment
@@ -44,7 +44,7 @@ gamma=0.8
 turnspc=0.10
 episodetimesteps=round(x*y*z*turnspc)
 ncpu=16
-cutoff=0.0
+cutoff=0.08
 
 policyname='MlpPolicy' #change this name to change RL policy type (MlpPolicy/CnnPolicy)
 

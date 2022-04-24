@@ -36,8 +36,9 @@ from stable_baselines.common.callbacks import BaseCallback, CallbackList, EvalCa
 from stable_baselines import A2C
 from stable_baselines import ACER
 from tools.humanBMenv import environment
-from tools.plotresults import plotresults
+import tools.plotresults as plotresults
 import numpy as np
+from riskreturn import riskreturn
 
 
 class human():
@@ -166,7 +167,7 @@ class ai():
         
 if __name__ == '__main__':
     
-    envnum=2
+    envnum=1
     
     env = environment(15, 15, 4, 0.1, 'MlpPolicy', rg_prob=envnum)
     
@@ -180,5 +181,6 @@ if __name__ == '__main__':
     ai.run()
     
     plotresults.subplot([human.results, ai.results], ['Human', 'Agent'], env.geo_array, [human.minable, ai.minable])
-    
+    rr=riskreturn(0.001,10000,human.results,ai.results)
+    rr.dokde()
     
